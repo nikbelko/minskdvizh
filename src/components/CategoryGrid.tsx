@@ -1,6 +1,7 @@
 import { categories, type CategorySlug } from '@/data/events';
 import { useCategoryCounts } from '@/hooks/use-events';
 import { CategorySkeletons } from './SkeletonCard';
+import { haptic } from '@/lib/telegram';
 
 interface CategoryGridProps {
   activeCategory: CategorySlug | null;
@@ -9,6 +10,11 @@ interface CategoryGridProps {
 
 const CategoryGrid = ({ activeCategory, onCategoryClick }: CategoryGridProps) => {
   const { data: counts, isLoading } = useCategoryCounts();
+
+  const handleClick = (slug: CategorySlug, isActive: boolean) => {
+    haptic('light');
+    onCategoryClick(isActive ? null : slug);
+  };
 
   return (
     <section className="container mx-auto px-4 py-12">
@@ -25,7 +31,7 @@ const CategoryGrid = ({ activeCategory, onCategoryClick }: CategoryGridProps) =>
             return (
               <button
                 key={cat.slug}
-                onClick={() => onCategoryClick(isActive ? null : cat.slug)}
+                onClick={() => handleClick(cat.slug, isActive)}
                 className={`opacity-0 animate-fade-up animate-stagger-${i + 1} glass-card-hover p-5 text-left group cursor-pointer ${
                   isActive ? 'ring-2 ring-primary border-primary/50' : ''
                 }`}

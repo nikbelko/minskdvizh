@@ -52,12 +52,19 @@
 }
 
 @layer base {
+  :root {
+    --tg-safe-top: env(safe-area-inset-top, 0px);
+    --tg-safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
   * {
     @apply border-border;
   }
 
   body {
     @apply bg-background text-foreground font-body antialiased;
+    padding-top: var(--tg-safe-top);
+    padding-bottom: var(--tg-safe-bottom);
   }
 
   h1, h2, h3, h4, h5, h6 {

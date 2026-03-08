@@ -3,6 +3,7 @@ import { ru } from 'date-fns/locale';
 import { type GroupedEvent, getCategoryBySlug } from '@/data/events';
 import { ArrowRight, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { haptic, openLink, showMainButton, hideMainButton } from '@/lib/telegram';
 
 interface EventGroupCardProps {
   group: GroupedEvent;
@@ -17,6 +18,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
   };
 
   const handleShare = async () => {
+    haptic('medium');
     const date = group.cinemaDate
       ? formatDate(group.cinemaDate)
       : group.dateTimes?.[0]
@@ -30,7 +32,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
     if (venue) text += `, ${venue}`;
     if (price) text += `, ${price}`;
     if (group.sourceUrl) text += `\nПодробнее: ${group.sourceUrl}`;
-    text += `\n\nАфиша Минска: t.me/MinskDvizhBot`;
+    text += `\n\nАфиша Минска: https://minskdvizh.lovable.app`;
 
     try {
       await navigator.clipboard.writeText(text);
@@ -38,6 +40,24 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
     } catch {
       toast.error('Не удалось скопировать');
     }
+  };
+
+  const handleSourceClick = (e: React.MouseEvent) => {
+    if (group.sourceUrl) {
+      e.preventDefault();
+      haptic('medium');
+      openLink(group.sourceUrl);
+    }
+  };
+
+  const handleSourceHover = () => {
+    if (group.sourceUrl) {
+      showMainButton('🔗 Открыть на сайте', () => openLink(group.sourceUrl!));
+    }
+  };
+
+  const handleSourceLeave = () => {
+    hideMainButton();
   };
 
   return (
@@ -103,6 +123,9 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
               href={group.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={handleSourceClick}
+              onMouseEnter={handleSourceHover}
+              onMouseLeave={handleSourceLeave}
               className="flex items-center gap-1 text-xs text-primary font-body font-medium opacity-0 group-hover/card:opacity-100 transition-opacity"
             >
               Подробнее <ArrowRight className="h-3 w-3" />

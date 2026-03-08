@@ -14,7 +14,10 @@ const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const { data: calendarDatesArr } = useCalendarDates();
-  const eventDatesSet = useMemo(() => new Set(calendarDatesArr ?? []), [calendarDatesArr]);
+  const eventDatesSet = useMemo(() => {
+    const arr = Array.isArray(calendarDatesArr) ? calendarDatesArr : [];
+    return new Set(arr);
+  }, [calendarDatesArr]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);

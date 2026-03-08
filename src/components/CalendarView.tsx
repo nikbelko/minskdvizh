@@ -25,6 +25,8 @@ const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) => {
   const startDayOfWeek = (getDay(monthStart) + 6) % 7;
 
   const hasEvent = (day: Date) => eventDatesSet.has(format(day, 'yyyy-MM-dd'));
+  const today = startOfDay(new Date());
+  const isActive = (day: Date) => hasEvent(day) && !isBefore(day, today);
 
   return (
     <div className="absolute left-0 right-0 z-30 px-4 pt-2 pb-4 animate-in slide-in-from-top-2 fade-in duration-200">

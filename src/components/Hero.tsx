@@ -56,7 +56,7 @@ const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, 
           </p>
         </div>
 
-        {/* Mobile: just filter pills */}
+        {/* Mobile: filter pills + categories */}
         <div className="sm:hidden opacity-0 animate-fade-up">
           <div className="flex gap-2">
             {pills.map((pill) => (
@@ -73,6 +73,44 @@ const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, 
               </button>
             ))}
           </div>
+
+          {/* Mobile category tabs */}
+          {onCategoryChange && (
+            <div
+              className="flex gap-1 overflow-x-auto mt-3 -mx-1 px-1 no-scrollbar"
+            >
+              <button
+                onClick={() => onCategoryChange(null)}
+                className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-body font-medium transition-all whitespace-nowrap ${
+                  activeCategory === null
+                    ? 'bg-primary/15 text-primary border-b-2 border-primary'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                }`}
+              >
+                Все ({totalFiltered})
+              </button>
+              {categories.map((cat) => {
+                const count = categoryCounts?.[cat.slug] ?? 0;
+                const isActive = activeCategory === cat.slug;
+                return (
+                  <button
+                    key={cat.slug}
+                    onClick={() => onCategoryChange(isActive ? null : cat.slug)}
+                    className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-body font-medium transition-all whitespace-nowrap ${
+                      isActive
+                        ? 'bg-primary/15 text-primary border-b-2 border-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                    }`}
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      <CategoryIcon slug={cat.slug} size="sm" />
+                      {cat.name} ({count})
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Desktop: original layout */}

@@ -31,7 +31,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
 
   return (
     <>
-      <header className="sticky top-0 z-40 glass-card max-sm:border-b-0 max-sm:rounded-none sm:border-b sm:border-border/50">
+      <header className="sticky top-0 z-40 sm:glass-card sm:border-b sm:border-border/50 max-sm:border-b-0 max-sm:rounded-none max-sm:bg-[hsl(240_15%_5%/0.95)] max-sm:backdrop-blur-md">
         <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3">
           {/* Logo */}
           <div className="flex items-center gap-3 shrink-0">

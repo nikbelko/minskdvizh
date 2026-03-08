@@ -30,8 +30,7 @@ const Index = () => {
 
   const handleMobileTab = useCallback((tab: 'home' | 'calendar' | 'search' | 'categories') => {
     setMobileTab(tab);
-    if (tab === 'calendar') setCalendarOpen(true);
-    else if (tab === 'home') { setCalendarOpen(false); setCalendarDate(null); }
+    if (tab === 'home') { setCalendarOpen(false); setCalendarDate(null); }
   }, []);
 
   const handleCategoryClick = useCallback((slug: CategorySlug | null) => {

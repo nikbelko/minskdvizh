@@ -28,7 +28,7 @@ const Index = () => {
     setCalendarDate(date);
   }, []);
 
-  const handleMobileTab = useCallback((tab: 'home' | 'calendar' | 'search' | 'subscriptions') => {
+  const handleMobileTab = useCallback((tab: 'home' | 'calendar' | 'search' | 'categories') => {
     setMobileTab(tab);
     if (tab === 'calendar') setCalendarOpen(true);
     else if (tab === 'home') { setCalendarOpen(false); setCalendarDate(null); }

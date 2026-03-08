@@ -49,28 +49,22 @@ const Hero = ({ activeFilter, onFilterChange }: HeroProps) => {
           </p>
         </div>
 
-        {/* Mobile: compact row with title + pills */}
+        {/* Mobile: just filter pills */}
         <div className="sm:hidden opacity-0 animate-fade-up">
-          <div className="flex items-center gap-3 mb-2">
-            <h2 className="text-lg font-display font-bold leading-tight shrink-0">
-              <span className="text-foreground">Что </span>
-              <span className="text-primary">в Минске?</span>
-            </h2>
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
-              {pills.map((pill) => (
-                <button
-                  key={pill.key}
-                  onClick={() => handleFilterClick(pill.key)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-body font-medium whitespace-nowrap transition-all duration-300 ${
-                    activeFilter === pill.key
-                      ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
-                      : 'glass-card text-foreground'
-                  }`}
-                >
-                  {pill.label}
-                </button>
-              ))}
-            </div>
+          <div className="flex gap-2">
+            {pills.map((pill) => (
+              <button
+                key={pill.key}
+                onClick={() => handleFilterClick(pill.key)}
+                className={`flex-1 py-2 rounded-full text-xs font-body font-medium whitespace-nowrap transition-all duration-300 text-center ${
+                  activeFilter === pill.key
+                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
+                    : 'glass-card text-foreground'
+                }`}
+              >
+                {pill.label}
+              </button>
+            ))}
           </div>
         </div>
 

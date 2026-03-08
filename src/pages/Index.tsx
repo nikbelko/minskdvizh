@@ -58,7 +58,7 @@ const Index = () => {
               onCalendarToggle={handleCalendarToggle}
               calendarOpen={calendarOpen}
             />
-            <div className="mx-4 border-t border-border/30" />
+            <div className="mx-4 h-[2px] bg-primary/30" />
             <Hero
               activeFilter={quickFilter}
               onFilterChange={setQuickFilter}

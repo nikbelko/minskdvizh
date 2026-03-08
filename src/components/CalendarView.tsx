@@ -65,6 +65,7 @@ const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) => {
             const isToday = isDateToday(day);
             const isSelected = selectedDate && isSameDay(day, selectedDate);
             const hasEvents = hasEvent(day);
+            const active = isActive(day);
             return (
               <button
                 key={day.toISOString()}

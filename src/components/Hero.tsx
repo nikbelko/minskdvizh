@@ -93,7 +93,7 @@ const Hero = ({ activeFilter, onFilterChange }: HeroProps) => {
 
         {/* Telegram environment banner */}
         {!inTelegram && !tgBannerDismissed && (
-          <div className="opacity-0 animate-fade-up animate-stagger-3 mt-6">
+          <div className="hidden sm:block opacity-0 animate-fade-up animate-stagger-3 mt-6">
             <div className="glass-card p-3 flex items-center justify-between gap-3 max-w-lg">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-lg shrink-0">🤖</span>

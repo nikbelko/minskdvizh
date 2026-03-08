@@ -31,13 +31,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
 
   return (
     <>
-      <header className="sticky top-0 z-40 glass-card max-sm:border-b-0 max-sm:rounded-none sm:border-b sm:border-border/50">
-        {/* Mobile glass background */}
-        <div className="absolute inset-0 sm:hidden" style={{
-          background: 'linear-gradient(180deg, hsla(293, 69%, 49%, 0.08) 0%, hsla(var(--glass-bg)) 100%)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-        }} />
+      <header className="sm:sticky sm:top-0 z-40 sm:glass-card sm:border-b sm:border-border/50">
         <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3 relative z-10">
           {/* Logo */}
           <div className="flex items-center gap-3 shrink-0">

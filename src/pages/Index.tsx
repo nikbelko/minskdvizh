@@ -43,26 +43,58 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background relative">
       <div className="grain-overlay" />
-      <Header
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onCalendarToggle={handleCalendarToggle}
-        calendarOpen={calendarOpen}
-      />
+      {/* Mobile: unified sticky header + filters */}
+      <div className="sm:hidden sticky top-0 z-40">
+        <div className="relative">
+          <div className="absolute inset-0" style={{
+            background: 'linear-gradient(180deg, hsla(293, 69%, 49%, 0.08) 0%, hsla(var(--glass-bg)) 100%)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+          }} />
+          <div className="relative z-10">
+            <Header
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onCalendarToggle={handleCalendarToggle}
+              calendarOpen={calendarOpen}
+            />
+            <div className="mx-4 border-t border-border/30" />
+            <Hero
+              activeFilter={quickFilter}
+              onFilterChange={setQuickFilter}
+              activeCategory={activeCategory}
+              onCategoryChange={handleCategoryClick}
+              categoryCounts={categoryCounts}
+              totalFiltered={totalFiltered}
+            />
+          </div>
+        </div>
+      </div>
+      {/* Desktop: separate header */}
+      <div className="hidden sm:block">
+        <Header
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onCalendarToggle={handleCalendarToggle}
+          calendarOpen={calendarOpen}
+        />
+      </div>
       {/* Desktop calendar */}
       {calendarOpen && (
         <div className="sticky top-[57px] z-30 hidden sm:block">
           <CalendarView selectedDate={calendarDate} onSelectDate={handleCalendarDate} />
         </div>
       )}
-      <Hero
-        activeFilter={quickFilter}
-        onFilterChange={setQuickFilter}
-        activeCategory={activeCategory}
-        onCategoryChange={handleCategoryClick}
-        categoryCounts={categoryCounts}
-        totalFiltered={totalFiltered}
-      />
+      <div className="hidden sm:block">
+        <Hero
+          activeFilter={quickFilter}
+          onFilterChange={setQuickFilter}
+          activeCategory={activeCategory}
+          onCategoryChange={handleCategoryClick}
+          categoryCounts={categoryCounts}
+          totalFiltered={totalFiltered}
+        />
+      </div>
       <SubscriptionBanner />
       <CategoryGrid activeCategory={activeCategory} onCategoryClick={handleCategoryClick} />
 

@@ -61,6 +61,10 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
   const total = data?.total ?? 0;
   const totalPages = data?.totalPages ?? 1;
 
+  useEffect(() => {
+    onTotalChange?.(total);
+  }, [total, onTotalChange]);
+
   const getEmptyState = () => {
     if (debouncedSearch.trim()) {
       return (

@@ -9,6 +9,7 @@ import MobileNav from '@/components/MobileNav';
 import Footer from '@/components/Footer';
 import type { CategorySlug } from '@/data/events';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useCategoryCounts } from '@/hooks/use-events';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');

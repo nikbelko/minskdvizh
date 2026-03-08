@@ -103,7 +103,7 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
     }
 
     return categories.map(cat => ({
-      slug: cat.slug,
+      category: cat.slug,
       count: events.filter(e => e.category === cat.slug).length,
     }));
   }, [quickFilter, debouncedSearch, calendarDate]);

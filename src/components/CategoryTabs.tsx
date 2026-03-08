@@ -34,7 +34,7 @@ const CategoryTabs = ({ activeCategory, onCategoryChange, filteredEvents }: Cate
         </button>
 
         {categories.map((cat) => {
-          const count = filteredEvents.find(f => f.slug === cat.slug)?.count ?? 0;
+          const count = filteredEvents.find(f => f.category === cat.slug)?.count ?? 0;
           const isActive = activeCategory === cat.slug;
           return (
             <button

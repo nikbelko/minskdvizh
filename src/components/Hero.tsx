@@ -27,7 +27,7 @@ const pills: { key: QuickFilter; label: string }[] = [
 
 const TG_BANNER_KEY = 'minskdvizh_tg_banner_dismissed';
 
-const Hero = ({ activeFilter, onFilterChange }: HeroProps) => {
+const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, categoryCounts, totalFiltered = 0 }: HeroProps) => {
   const today = new Date();
   const dateStr = format(today, "d MMMM yyyy, EEEE", { locale: ru });
   const inTelegram = isTelegram();

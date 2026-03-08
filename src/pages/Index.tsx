@@ -4,6 +4,7 @@ import Hero, { type QuickFilter } from '@/components/Hero';
 import CategoryGrid from '@/components/CategoryGrid';
 import EventsList from '@/components/EventsList';
 import CalendarView from '@/components/CalendarView';
+import SubscriptionBanner from '@/components/SubscriptionBanner';
 import MobileNav from '@/components/MobileNav';
 import Footer from '@/components/Footer';
 import type { CategorySlug } from '@/data/events';
@@ -20,9 +21,7 @@ const Index = () => {
 
   const handleCalendarToggle = useCallback(() => {
     setCalendarOpen(prev => !prev);
-    if (calendarOpen) {
-      setCalendarDate(null);
-    }
+    if (calendarOpen) setCalendarDate(null);
   }, [calendarOpen]);
 
   const handleCalendarDate = useCallback((date: Date | null) => {
@@ -31,14 +30,8 @@ const Index = () => {
 
   const handleMobileTab = useCallback((tab: 'home' | 'calendar' | 'search' | 'subscriptions') => {
     setMobileTab(tab);
-    if (tab === 'calendar') {
-      setCalendarOpen(true);
-    } else if (tab === 'home') {
-      setCalendarOpen(false);
-      setCalendarDate(null);
-    } else if (tab === 'search') {
-      // Focus handled by header mobile search
-    }
+    if (tab === 'calendar') setCalendarOpen(true);
+    else if (tab === 'home') { setCalendarOpen(false); setCalendarDate(null); }
   }, []);
 
   const handleCategoryClick = useCallback((slug: CategorySlug | null) => {
@@ -55,6 +48,7 @@ const Index = () => {
         calendarOpen={calendarOpen}
       />
       <Hero activeFilter={quickFilter} onFilterChange={setQuickFilter} />
+      <SubscriptionBanner />
       <CategoryGrid activeCategory={activeCategory} onCategoryClick={handleCategoryClick} />
 
       {calendarOpen && (

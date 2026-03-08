@@ -1,27 +1,20 @@
-import { categories, type CategorySlug, mockEvents } from '@/data/events';
-import { useRef, useEffect } from 'react';
+import { categories, type CategorySlug } from '@/data/events';
+import type { CategoryCounts } from '@/services/api';
 
 interface CategoryTabsProps {
   activeCategory: CategorySlug | null;
   onCategoryChange: (slug: CategorySlug | null) => void;
-  /** Pass filtered event count per category based on current filters */
-  filteredEvents: { category: CategorySlug; count: number }[];
+  counts?: CategoryCounts;
+  totalFiltered: number;
 }
 
-const CategoryTabs = ({ activeCategory, onCategoryChange, filteredEvents }: CategoryTabsProps) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const totalCount = filteredEvents.reduce((s, c) => s + c.count, 0);
-
-
+const CategoryTabs = ({ activeCategory, onCategoryChange, counts, totalFiltered }: CategoryTabsProps) => {
   return (
     <div className="container mx-auto px-4 mb-6">
       <div
-        ref={scrollRef}
-        className="flex gap-1 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1"
+        className="flex gap-1 overflow-x-auto pb-2 -mx-1 px-1"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {/* All tab */}
         <button
           onClick={() => onCategoryChange(null)}
           className={`shrink-0 px-4 py-2 rounded-lg text-sm font-body font-medium transition-all whitespace-nowrap ${
@@ -30,11 +23,10 @@ const CategoryTabs = ({ activeCategory, onCategoryChange, filteredEvents }: Cate
               : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
           }`}
         >
-          Все ({totalCount})
+          Все ({totalFiltered})
         </button>
-
         {categories.map((cat) => {
-          const count = filteredEvents.find(f => f.category === cat.slug)?.count ?? 0;
+          const count = counts?.[cat.slug] ?? 0;
           const isActive = activeCategory === cat.slug;
           return (
             <button

@@ -1,10 +1,11 @@
-import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
-import { mockEvents, categories, type CategorySlug, groupEvents, type GroupedEvent } from '@/data/events';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { type CategorySlug, categories, getCategoryBySlug } from '@/data/events';
 import EventGroupCard from './EventGroupCard';
 import CategoryTabs from './CategoryTabs';
-import { isToday, isTomorrow, isWeekend, parseISO, isAfter, startOfToday, addDays, isSameDay, format } from 'date-fns';
+import { EventSkeletons } from './SkeletonCard';
 import type { QuickFilter } from './Hero';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { useEvents, useCategoryCounts } from '@/hooks/use-events';
 
 interface EventsListProps {
   activeCategory: CategorySlug | null;
@@ -17,122 +18,96 @@ interface EventsListProps {
 
 const EVENTS_PER_PAGE = 10;
 
-const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery, debouncedSearch, calendarDate }: EventsListProps) => {
-  const [page, setPage] = useState(0);
+const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSearch, calendarDate }: EventsListProps) => {
+  const [page, setPage] = useState(1);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Filter raw events first
-  const filtered = useMemo(() => {
-    let events = [...mockEvents];
-    const today = startOfToday();
+  const { data: counts } = useCategoryCounts();
 
-    // Calendar date overrides quick filter
-    if (calendarDate) {
-      events = events.filter(e => isSameDay(parseISO(e.date), calendarDate));
-    } else {
-      if (quickFilter === 'today') {
-        events = events.filter(e => isToday(parseISO(e.date)));
-      } else if (quickFilter === 'tomorrow') {
-        events = events.filter(e => isTomorrow(parseISO(e.date)));
-      } else if (quickFilter === 'weekend') {
-        events = events.filter(e => {
-          const d = parseISO(e.date);
-          return isWeekend(d) && (isAfter(d, today) || isSameDay(d, today));
-        });
-      } else {
-        const limit = addDays(today, 30);
-        events = events.filter(e => {
-          const d = parseISO(e.date);
-          return (isAfter(d, today) || isSameDay(d, today)) && !isAfter(d, limit);
-        });
-      }
-    }
-
-    // Search
-    if (debouncedSearch.trim()) {
-      const q = debouncedSearch.toLowerCase();
-      events = events.filter(e =>
-        e.title.toLowerCase().includes(q) ||
-        e.venue.toLowerCase().includes(q)
-      );
-    }
-
-    // Category filter
-    if (activeCategory) {
-      events = events.filter(e => e.category === activeCategory);
-    }
-
-    // Sort
-    events.sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
-
-    return events;
-  }, [quickFilter, debouncedSearch, activeCategory, calendarDate]);
-
-  // Category counts for tabs (without category filter applied)
-  const categoryCounts = useMemo(() => {
-    let events = [...mockEvents];
-    const today = startOfToday();
-
-    if (calendarDate) {
-      events = events.filter(e => isSameDay(parseISO(e.date), calendarDate));
-    } else {
-      if (quickFilter === 'today') {
-        events = events.filter(e => isToday(parseISO(e.date)));
-      } else if (quickFilter === 'tomorrow') {
-        events = events.filter(e => isTomorrow(parseISO(e.date)));
-      } else if (quickFilter === 'weekend') {
-        events = events.filter(e => {
-          const d = parseISO(e.date);
-          return isWeekend(d) && (isAfter(d, today) || isSameDay(d, today));
-        });
-      } else {
-        const limit = addDays(today, 30);
-        events = events.filter(e => {
-          const d = parseISO(e.date);
-          return (isAfter(d, today) || isSameDay(d, today)) && !isAfter(d, limit);
-        });
-      }
-    }
-
-    if (debouncedSearch.trim()) {
-      const q = debouncedSearch.toLowerCase();
-      events = events.filter(e =>
-        e.title.toLowerCase().includes(q) ||
-        e.venue.toLowerCase().includes(q)
-      );
-    }
-
-    return categories.map(cat => ({
-      category: cat.slug,
-      count: events.filter(e => e.category === cat.slug).length,
-    }));
-  }, [quickFilter, debouncedSearch, calendarDate]);
-
-  // Group events
-  const grouped = useMemo(() => groupEvents(filtered), [filtered]);
+  const { data, isLoading, isError, refetch } = useEvents({
+    quickFilter,
+    category: activeCategory,
+    search: debouncedSearch || undefined,
+    calendarDate,
+    page,
+    perPage: EVENTS_PER_PAGE,
+  });
 
   // Reset page on filter change
-  useEffect(() => { setPage(0); }, [activeCategory, quickFilter, debouncedSearch, calendarDate]);
-
-  const totalPages = Math.ceil(grouped.length / EVENTS_PER_PAGE);
-  const paged = grouped.slice(page * EVENTS_PER_PAGE, (page + 1) * EVENTS_PER_PAGE);
+  useEffect(() => { setPage(1); }, [activeCategory, quickFilter, debouncedSearch, calendarDate]);
 
   const changePage = useCallback((newPage: number) => {
     setPage(newPage);
     listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
+  const grouped = data?.grouped ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = data?.totalPages ?? 1;
+
+  // Determine empty state type
+  const getEmptyState = () => {
+    if (debouncedSearch.trim()) {
+      return (
+        <div className="glass-card p-12 text-center">
+          <p className="text-4xl mb-4">🔍</p>
+          <p className="text-foreground font-body font-semibold mb-2">
+            Ничего не нашли по «{debouncedSearch}»
+          </p>
+          <p className="text-muted-foreground font-body text-sm">
+            Попробуйте: концерт, выставка, спектакль
+          </p>
+        </div>
+      );
+    }
+
+    if (quickFilter === 'today') {
+      return (
+        <div className="glass-card p-12 text-center">
+          <p className="text-4xl mb-4">😴</p>
+          <p className="text-foreground font-body font-semibold mb-2">
+            Сегодня тихо. Зато завтра...
+          </p>
+          <p className="text-muted-foreground font-body text-sm">
+            Переключитесь на «Завтра» или «Ближайшие»
+          </p>
+        </div>
+      );
+    }
+
+    if (activeCategory) {
+      const cat = getCategoryBySlug(activeCategory);
+      return (
+        <div className="glass-card p-12 text-center">
+          <p className="text-4xl mb-4">{cat.emoji}</p>
+          <p className="text-foreground font-body font-semibold mb-2">
+            Пока нет событий в этой категории
+          </p>
+          <p className="text-muted-foreground font-body text-sm">
+            Попробуйте другой период или категорию
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="glass-card p-12 text-center">
+        <p className="text-4xl mb-4">📭</p>
+        <p className="text-muted-foreground font-body">Событий не найдено</p>
+      </div>
+    );
+  };
+
   return (
     <div ref={listRef}>
-      {/* Category tabs */}
       <CategoryTabs
         activeCategory={activeCategory}
         onCategoryChange={onCategoryChange}
-        filteredEvents={categoryCounts}
+        counts={counts}
+        totalFiltered={total}
       />
 
       <section className="container mx-auto px-4 pb-24 sm:pb-12">
-        {/* Header with count and search indicator */}
         <div className="flex flex-col gap-2 mb-6">
           {debouncedSearch.trim() && (
             <p className="text-sm text-muted-foreground font-body">
@@ -140,35 +115,40 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
             </p>
           )}
           <div className="flex items-center justify-between">
-            <h3 className="text-2xl font-display font-bold">
-              События
-            </h3>
+            <h3 className="text-2xl font-display font-bold">События</h3>
             <span className="text-sm text-muted-foreground font-body">
-              Найдено: {grouped.length} событий
+              Найдено: {total} событий
             </span>
           </div>
         </div>
 
-        {/* Empty state */}
-        {paged.length === 0 ? (
+        {/* Loading */}
+        {isLoading && <EventSkeletons count={3} />}
+
+        {/* Error */}
+        {isError && !isLoading && (
           <div className="glass-card p-12 text-center">
-            <p className="text-4xl mb-4">😕</p>
-            {debouncedSearch.trim() ? (
-              <div>
-                <p className="text-foreground font-body font-semibold mb-2">
-                  По запросу «{debouncedSearch}» ничего не найдено
-                </p>
-                <p className="text-muted-foreground font-body text-sm">
-                  Попробуйте другие ключевые слова или выберите другую категорию
-                </p>
-              </div>
-            ) : (
-              <p className="text-muted-foreground font-body">Событий не найдено</p>
-            )}
+            <p className="text-4xl mb-4">⚠️</p>
+            <p className="text-foreground font-body font-semibold mb-3">
+              Не удалось загрузить события
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-body font-medium hover:bg-primary/90 transition-colors"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Попробовать снова
+            </button>
           </div>
-        ) : (
+        )}
+
+        {/* Empty */}
+        {!isLoading && !isError && grouped.length === 0 && getEmptyState()}
+
+        {/* Events */}
+        {!isLoading && !isError && grouped.length > 0 && (
           <div className="grid gap-4">
-            {paged.map((group, i) => (
+            {grouped.map((group, i) => (
               <div key={group.key} className="opacity-0 animate-fade-up" style={{ animationDelay: `${i * 0.05}s` }}>
                 <EventGroupCard group={group} />
               </div>
@@ -180,18 +160,18 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-4 mt-8">
             <button
-              onClick={() => changePage(Math.max(0, page - 1))}
-              disabled={page === 0}
+              onClick={() => changePage(Math.max(1, page - 1))}
+              disabled={page <= 1}
               className="p-2 rounded-lg glass-card text-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:border-primary/40 transition-all"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
             <span className="text-sm font-body text-muted-foreground">
-              <span className="text-foreground font-semibold">{page + 1}</span> / {totalPages}
+              <span className="text-foreground font-semibold">{page}</span> / {totalPages}
             </span>
             <button
-              onClick={() => changePage(Math.min(totalPages - 1, page + 1))}
-              disabled={page >= totalPages - 1}
+              onClick={() => changePage(Math.min(totalPages, page + 1))}
+              disabled={page >= totalPages}
               className="p-2 rounded-lg glass-card text-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:border-primary/40 transition-all"
             >
               <ChevronRight className="h-5 w-5" />

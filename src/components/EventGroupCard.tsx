@@ -1,7 +1,8 @@
 import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { type GroupedEvent, getCategoryBySlug } from '@/data/events';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface EventGroupCardProps {
   group: GroupedEvent;
@@ -15,15 +16,38 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
     return format(d, 'dd MMM', { locale: ru }).toUpperCase().replace('.', '');
   };
 
+  const handleShare = async () => {
+    const date = group.cinemaDate
+      ? formatDate(group.cinemaDate)
+      : group.dateTimes?.[0]
+      ? formatDate(group.dateTimes[0].date)
+      : '';
+    const venue = group.venue || group.cinemaShowtimes?.[0]?.venue || '';
+    const price = group.price || '';
+
+    let text = `${group.title}`;
+    if (date) text += ` — ${date}`;
+    if (venue) text += `, ${venue}`;
+    if (price) text += `, ${price}`;
+    if (group.sourceUrl) text += `\nПодробнее: ${group.sourceUrl}`;
+    text += `\n\nАфиша Минска: t.me/MinskDvizhBot`;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Скопировано ✓');
+    } catch {
+      toast.error('Не удалось скопировать');
+    }
+  };
+
   return (
-    <div className={`glass-card border-l-4 ${cat.borderClass} p-5 hover:border-l-primary transition-all duration-300 group`}>
+    <div className={`glass-card border-l-4 ${cat.borderClass} p-5 hover:border-l-primary transition-all duration-300 group/card`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <h4 className="text-foreground font-body font-bold text-base mb-3 group-hover:text-primary transition-colors">
+          <h4 className="text-foreground font-body font-bold text-base mb-3 group-hover/card:text-primary transition-colors">
             {group.title}
           </h4>
 
-          {/* Cinema layout */}
           {group.category === 'cinema' && group.cinemaDate && (
             <div className="space-y-2">
               <span className="amber-pill text-xs font-bold">
@@ -38,46 +62,52 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
                 ))}
               </div>
               {group.price && (
-                <p className="text-sm text-muted-foreground mt-2 font-body">
-                  💰 {group.price}
-                </p>
+                <p className="text-sm text-muted-foreground mt-2 font-body">💰 {group.price}</p>
               )}
             </div>
           )}
 
-          {/* Non-cinema layout */}
           {group.category !== 'cinema' && (
             <div className="space-y-2">
               {group.venue && (
-                <p className="text-sm text-muted-foreground font-body">
-                  🏢 {group.venue}
-                </p>
+                <p className="text-sm text-muted-foreground font-body">🏢 {group.venue}</p>
               )}
               {group.price && (
-                <p className="text-sm text-muted-foreground font-body">
-                  💰 {group.price}
-                </p>
+                <p className="text-sm text-muted-foreground font-body">💰 {group.price}</p>
               )}
               <div className="flex flex-wrap gap-2 mt-1">
                 {group.dateTimes?.map((dt, i) => (
                   <div key={i} className="flex items-center gap-1.5 text-sm">
-                    <span className="amber-pill text-xs font-bold">
-                      📅 {formatDate(dt.date)}
-                    </span>
-                    {dt.time && (
-                      <span className="text-muted-foreground">⏰ {dt.time}</span>
-                    )}
+                    <span className="amber-pill text-xs font-bold">📅 {formatDate(dt.date)}</span>
+                    {dt.time && <span className="text-muted-foreground">⏰ {dt.time}</span>}
                   </div>
                 ))}
               </div>
             </div>
           )}
         </div>
+
         <div className="flex flex-col items-end gap-2 shrink-0">
-          <span className="text-2xl">{cat.emoji}</span>
-          <button className="flex items-center gap-1 text-xs text-primary font-body font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-            Подробнее <ArrowRight className="h-3 w-3" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleShare}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/card:opacity-100"
+              title="Поделиться"
+            >
+              <Share2 className="h-4 w-4" />
+            </button>
+            <span className="text-2xl">{cat.emoji}</span>
+          </div>
+          {group.sourceUrl && (
+            <a
+              href={group.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-xs text-primary font-body font-medium opacity-0 group-hover/card:opacity-100 transition-opacity"
+            >
+              Подробнее <ArrowRight className="h-3 w-3" />
+            </a>
+          )}
         </div>
       </div>
     </div>

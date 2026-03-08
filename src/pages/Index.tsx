@@ -65,7 +65,12 @@ const Index = () => {
         calendarDate={calendarDate}
       />
       <Footer />
-      <MobileNav activeTab={mobileTab} onTabChange={handleMobileTab} />
+      <MobileNav 
+        activeTab={mobileTab} 
+        onTabChange={handleMobileTab} 
+        activeCategory={activeCategory}
+        onCategorySelect={handleCategoryClick}
+      />
     </div>
   );
 };

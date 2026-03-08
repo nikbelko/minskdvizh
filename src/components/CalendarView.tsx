@@ -69,13 +69,13 @@ const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) => {
             return (
               <button
                 key={day.toISOString()}
-                onClick={() => hasEvents ? onSelectDate(isSelected ? null : day) : undefined}
-                disabled={!hasEvents}
+                onClick={() => active ? onSelectDate(isSelected ? null : day) : undefined}
+                disabled={!active}
                 className={`relative flex flex-col items-center justify-center py-2 rounded-lg text-sm font-body transition-all ${
                   isSelected ? 'bg-primary text-primary-foreground'
-                    : isToday && hasEvents ? 'ring-2 ring-accent text-accent font-bold'
+                    : isToday && active ? 'ring-2 ring-accent text-accent font-bold'
                     : isToday ? 'ring-2 ring-accent/30 text-muted-foreground'
-                    : hasEvents ? 'text-foreground hover:bg-secondary/50 cursor-pointer'
+                    : active ? 'text-foreground hover:bg-secondary/50 cursor-pointer'
                     : 'text-muted-foreground/30 cursor-default'
                 }`}
               >

@@ -39,7 +39,7 @@ const Hero = ({ activeFilter, onFilterChange }: HeroProps) => {
   };
 
   return (
-    <section className="relative py-6 sm:py-20 md:py-28 overflow-hidden city-grid">
+    <section className="relative py-6 pb-2 sm:py-20 md:py-28 overflow-hidden city-grid">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-[120px] animate-glow-pulse pointer-events-none" />
       
       <div className="container mx-auto px-4 relative z-10">

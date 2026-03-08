@@ -2,6 +2,7 @@ import { categories, type CategorySlug } from '@/data/events';
 import { useCategoryCounts } from '@/hooks/use-events';
 import { CategorySkeletons } from './SkeletonCard';
 import { haptic } from '@/lib/telegram';
+import CategoryIcon from './CategoryIcon';
 
 interface CategoryGridProps {
   activeCategory: CategorySlug | null;

@@ -73,6 +73,7 @@ const Index = () => {
         searchQuery={searchQuery}
         debouncedSearch={debouncedSearch}
         calendarDate={calendarDate}
+        onTotalChange={setTotalFiltered}
       />
       <Footer />
       <MobileNav 

@@ -15,11 +15,12 @@ interface EventsListProps {
   searchQuery: string;
   debouncedSearch: string;
   calendarDate: Date | null;
+  onTotalChange?: (total: number) => void;
 }
 
 const EVENTS_PER_PAGE = 10;
 
-const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSearch, calendarDate }: EventsListProps) => {
+const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSearch, calendarDate, onTotalChange }: EventsListProps) => {
   const [page, setPage] = useState(1);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -59,6 +60,10 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
   const grouped = data?.grouped ?? [];
   const total = data?.total ?? 0;
   const totalPages = data?.totalPages ?? 1;
+
+  useEffect(() => {
+    onTotalChange?.(total);
+  }, [total, onTotalChange]);
 
   const getEmptyState = () => {
     if (debouncedSearch.trim()) {

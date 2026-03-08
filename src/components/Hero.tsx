@@ -3,12 +3,19 @@ import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { X } from 'lucide-react';
 import { haptic, isTelegram } from '@/lib/telegram';
+import { categories, type CategorySlug } from '@/data/events';
+import type { CategoryCounts } from '@/services/api';
+import CategoryIcon from './CategoryIcon';
 
 type QuickFilter = 'today' | 'tomorrow' | 'weekend' | 'upcoming';
 
 interface HeroProps {
   activeFilter: QuickFilter;
   onFilterChange: (filter: QuickFilter) => void;
+  activeCategory?: CategorySlug | null;
+  onCategoryChange?: (slug: CategorySlug | null) => void;
+  categoryCounts?: CategoryCounts;
+  totalFiltered?: number;
 }
 
 const pills: { key: QuickFilter; label: string }[] = [
@@ -20,7 +27,7 @@ const pills: { key: QuickFilter; label: string }[] = [
 
 const TG_BANNER_KEY = 'minskdvizh_tg_banner_dismissed';
 
-const Hero = ({ activeFilter, onFilterChange }: HeroProps) => {
+const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, categoryCounts, totalFiltered = 0 }: HeroProps) => {
   const today = new Date();
   const dateStr = format(today, "d MMMM yyyy, EEEE", { locale: ru });
   const inTelegram = isTelegram();
@@ -49,7 +56,7 @@ const Hero = ({ activeFilter, onFilterChange }: HeroProps) => {
           </p>
         </div>
 
-        {/* Mobile: just filter pills */}
+        {/* Mobile: filter pills + categories */}
         <div className="sm:hidden opacity-0 animate-fade-up">
           <div className="flex gap-2">
             {pills.map((pill) => (
@@ -66,6 +73,44 @@ const Hero = ({ activeFilter, onFilterChange }: HeroProps) => {
               </button>
             ))}
           </div>
+
+          {/* Mobile category tabs */}
+          {onCategoryChange && (
+            <div
+              className="flex gap-1 overflow-x-auto mt-3 -mx-1 px-1 no-scrollbar"
+            >
+              <button
+                onClick={() => onCategoryChange(null)}
+                className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-body font-medium transition-all whitespace-nowrap ${
+                  activeCategory === null
+                    ? 'bg-primary/15 text-primary border-b-2 border-primary'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                }`}
+              >
+                Все ({totalFiltered})
+              </button>
+              {categories.map((cat) => {
+                const count = categoryCounts?.[cat.slug] ?? 0;
+                const isActive = activeCategory === cat.slug;
+                return (
+                  <button
+                    key={cat.slug}
+                    onClick={() => onCategoryChange(isActive ? null : cat.slug)}
+                    className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-body font-medium transition-all whitespace-nowrap ${
+                      isActive
+                        ? 'bg-primary/15 text-primary border-b-2 border-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                    }`}
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      <CategoryIcon slug={cat.slug} size="sm" />
+                      {cat.name} ({count})
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Desktop: original layout */}

@@ -9,6 +9,7 @@ import MobileNav from '@/components/MobileNav';
 import Footer from '@/components/Footer';
 import type { CategorySlug } from '@/data/events';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useCategoryCounts } from '@/hooks/use-events';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,6 +19,8 @@ const Index = () => {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [calendarDate, setCalendarDate] = useState<Date | null>(null);
   const [mobileTab, setMobileTab] = useState<'home' | 'calendar' | 'search' | 'categories'>('home');
+  const [totalFiltered, setTotalFiltered] = useState(0);
+  const { data: categoryCounts } = useCategoryCounts();
 
   const handleCalendarToggle = useCallback(() => {
     setCalendarOpen(prev => !prev);
@@ -52,7 +55,14 @@ const Index = () => {
           <CalendarView selectedDate={calendarDate} onSelectDate={handleCalendarDate} />
         </div>
       )}
-      <Hero activeFilter={quickFilter} onFilterChange={setQuickFilter} />
+      <Hero
+        activeFilter={quickFilter}
+        onFilterChange={setQuickFilter}
+        activeCategory={activeCategory}
+        onCategoryChange={handleCategoryClick}
+        categoryCounts={categoryCounts}
+        totalFiltered={totalFiltered}
+      />
       <SubscriptionBanner />
       <CategoryGrid activeCategory={activeCategory} onCategoryClick={handleCategoryClick} />
 
@@ -63,6 +73,7 @@ const Index = () => {
         searchQuery={searchQuery}
         debouncedSearch={debouncedSearch}
         calendarDate={calendarDate}
+        onTotalChange={setTotalFiltered}
       />
       <Footer />
       <MobileNav 

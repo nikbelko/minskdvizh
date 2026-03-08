@@ -1,5 +1,6 @@
 import { categories, type CategorySlug } from '@/data/events';
 import type { CategoryCounts } from '@/services/api';
+import CategoryIcon from './CategoryIcon';
 
 interface CategoryTabsProps {
   activeCategory: CategorySlug | null;

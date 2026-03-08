@@ -117,7 +117,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
             >
               <Share2 className="h-4 w-4" />
             </button>
-            <span className="text-2xl">{cat.emoji}</span>
+            <CategoryIcon slug={group.category} size="sm" />
           </div>
           {group.sourceUrl && (
             <a

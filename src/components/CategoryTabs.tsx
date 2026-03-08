@@ -39,7 +39,10 @@ const CategoryTabs = ({ activeCategory, onCategoryChange, counts, totalFiltered 
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
               }`}
             >
-              {cat.emoji} {cat.name} ({count})
+              <span className="inline-flex items-center gap-1.5">
+                <CategoryIcon slug={cat.slug} size="sm" />
+                {cat.name} ({count})
+              </span>
             </button>
           );
         })}

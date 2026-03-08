@@ -62,7 +62,7 @@ const CalendarView = ({ selectedDate, onSelectDate, embedded = false }: Calendar
           return (
             <button
               key={day.toISOString()}
-              onClick={() => active ? onSelectDate(isSelected ? null : day) : undefined}
+              onClick={() => active ? onSelectDate(day) : undefined}
               disabled={!active}
               className={`relative flex flex-col items-center justify-center py-2 rounded-lg text-sm font-body transition-all ${
                 isSelected ? 'bg-primary text-primary-foreground'

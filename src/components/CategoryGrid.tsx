@@ -18,7 +18,7 @@ const CategoryGrid = ({ activeCategory, onCategoryClick }: CategoryGridProps) =>
   };
 
   return (
-    <section className="container mx-auto px-4 py-12">
+    <section className="container mx-auto px-4 py-12 hidden sm:block">
       <h3 className="text-2xl font-display font-bold mb-8 opacity-0 animate-fade-up animate-stagger-3">
         Категории
       </h3>

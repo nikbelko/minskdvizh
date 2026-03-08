@@ -17,7 +17,7 @@ const Index = () => {
   const [activeCategory, setActiveCategory] = useState<CategorySlug | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [calendarDate, setCalendarDate] = useState<Date | null>(null);
-  const [mobileTab, setMobileTab] = useState<'home' | 'calendar' | 'search' | 'subscriptions'>('home');
+  const [mobileTab, setMobileTab] = useState<'home' | 'calendar' | 'search' | 'categories'>('home');
 
   const handleCalendarToggle = useCallback(() => {
     setCalendarOpen(prev => !prev);

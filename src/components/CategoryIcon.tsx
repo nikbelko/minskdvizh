@@ -29,8 +29,8 @@ const CategoryIcon = ({ slug, size = 'md' }: CategoryIconProps) => {
   const Icon = config.icon;
 
   return (
-    <div className={`${s.container} bg-gradient-to-br ${config.gradient} ${config.glow} shadow-lg flex items-center justify-center shrink-0`}>
-      <Icon size={s.icon} className="text-white" strokeWidth={1.8} />
+    <div className={`${s.container} bg-white/[0.06] backdrop-blur-md border ${config.border} ${config.glow} shadow-lg flex items-center justify-center shrink-0`}>
+      <Icon size={s.icon} className={config.color} strokeWidth={1.8} />
     </div>
   );
 };

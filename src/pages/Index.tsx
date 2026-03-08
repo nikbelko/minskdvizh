@@ -17,7 +17,7 @@ const Index = () => {
   const [activeCategory, setActiveCategory] = useState<CategorySlug | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [calendarDate, setCalendarDate] = useState<Date | null>(null);
-  const [mobileTab, setMobileTab] = useState<'home' | 'calendar' | 'search' | 'subscriptions'>('home');
+  const [mobileTab, setMobileTab] = useState<'home' | 'calendar' | 'search' | 'categories'>('home');
 
   const handleCalendarToggle = useCallback(() => {
     setCalendarOpen(prev => !prev);
@@ -28,7 +28,7 @@ const Index = () => {
     setCalendarDate(date);
   }, []);
 
-  const handleMobileTab = useCallback((tab: 'home' | 'calendar' | 'search' | 'subscriptions') => {
+  const handleMobileTab = useCallback((tab: 'home' | 'calendar' | 'search' | 'categories') => {
     setMobileTab(tab);
     if (tab === 'calendar') setCalendarOpen(true);
     else if (tab === 'home') { setCalendarOpen(false); setCalendarDate(null); }
@@ -65,7 +65,12 @@ const Index = () => {
         calendarDate={calendarDate}
       />
       <Footer />
-      <MobileNav activeTab={mobileTab} onTabChange={handleMobileTab} />
+      <MobileNav 
+        activeTab={mobileTab} 
+        onTabChange={handleMobileTab} 
+        activeCategory={activeCategory}
+        onCategorySelect={handleCategoryClick}
+      />
     </div>
   );
 };

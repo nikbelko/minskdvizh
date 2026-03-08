@@ -45,11 +45,12 @@ const Index = () => {
       <div className="grain-overlay" />
       {/* Mobile: unified sticky header + filters */}
       <div className="sm:hidden sticky top-0 z-40">
-        <div className="relative">
+        <div className="relative overflow-hidden rounded-b-2xl">
           <div className="absolute inset-0" style={{
             background: 'linear-gradient(180deg, hsla(293, 69%, 49%, 0.08) 0%, hsla(var(--glass-bg)) 100%)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
+            borderBottom: '1px solid hsla(var(--glass-border))',
           }} />
           <div className="relative z-10">
             <Header

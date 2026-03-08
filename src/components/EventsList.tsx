@@ -157,9 +157,16 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
         {!isLoading && !isError && grouped.length === 0 && getEmptyState()}
 
         {!isLoading && !isError && grouped.length > 0 && (
-          <div className="grid gap-4">
+          <div className="grid gap-4" key={animationKey}>
             {grouped.map((group, i) => (
-              <div key={group.key} className="opacity-0 animate-fade-up" style={{ animationDelay: `${i * 0.05}s` }}>
+              <div
+                key={group.key}
+                className="opacity-0 animate-fade-up"
+                style={{
+                  animationDelay: `${i * 0.06}s`,
+                  animationFillMode: 'forwards',
+                }}
+              >
                 <EventGroupCard group={group} />
               </div>
             ))}

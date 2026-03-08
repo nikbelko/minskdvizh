@@ -39,23 +39,49 @@ const Hero = ({ activeFilter, onFilterChange }: HeroProps) => {
   };
 
   return (
-    <section className="relative py-10 sm:py-20 md:py-28 overflow-hidden city-grid">
+    <section className="relative py-6 sm:py-20 md:py-28 overflow-hidden city-grid">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-[120px] animate-glow-pulse pointer-events-none" />
       
       <div className="container mx-auto px-4 relative z-10">
-        <div className="opacity-0 animate-fade-up">
-          <p className="text-accent font-body font-medium text-sm tracking-widest uppercase mb-2 sm:mb-4">
+        <div className="opacity-0 animate-fade-up hidden sm:block">
+          <p className="text-accent font-body font-medium text-sm tracking-widest uppercase mb-4">
             {dateStr}
           </p>
         </div>
 
-        <h2 className="opacity-0 animate-fade-up animate-stagger-1 text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-display font-bold leading-[1.1] mb-4 sm:mb-8">
+        {/* Mobile: compact row with title + pills */}
+        <div className="sm:hidden opacity-0 animate-fade-up">
+          <div className="flex items-center gap-3 mb-2">
+            <h2 className="text-lg font-display font-bold leading-tight shrink-0">
+              <span className="text-foreground">Что </span>
+              <span className="text-primary">в Минске?</span>
+            </h2>
+            <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+              {pills.map((pill) => (
+                <button
+                  key={pill.key}
+                  onClick={() => handleFilterClick(pill.key)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-body font-medium whitespace-nowrap transition-all duration-300 ${
+                    activeFilter === pill.key
+                      ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
+                      : 'glass-card text-foreground'
+                  }`}
+                >
+                  {pill.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop: original layout */}
+        <h2 className="hidden sm:block opacity-0 animate-fade-up animate-stagger-1 text-5xl md:text-7xl lg:text-8xl font-display font-bold leading-[1.1] mb-8">
           <span className="text-foreground">Что сегодня</span>
           <br />
           <span className="text-primary">в Минске?</span>
         </h2>
 
-        <div className="opacity-0 animate-fade-up animate-stagger-2 flex flex-wrap gap-3">
+        <div className="hidden sm:flex opacity-0 animate-fade-up animate-stagger-2 flex-wrap gap-3">
           {pills.map((pill) => (
             <button
               key={pill.key}

@@ -84,7 +84,7 @@ const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect }:
                         : 'hover:bg-secondary/50'
                     }`}
                   >
-                    <CategoryIcon category={cat.slug} size="sm" />
+                    <CategoryIcon slug={cat.slug} size="sm" />
                     <span className="text-[10px] font-body text-foreground truncate w-full text-center">
                       {cat.name}
                     </span>

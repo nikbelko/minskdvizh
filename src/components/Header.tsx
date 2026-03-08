@@ -1,4 +1,4 @@
-import { Search, X, CalendarDays } from 'lucide-react';
+import { Search, X, CalendarDays, Send } from 'lucide-react';
 import { useState } from 'react';
 import { getTelegramUser } from '@/lib/telegram';
 
@@ -10,7 +10,6 @@ interface HeaderProps {
 }
 
 const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }: HeaderProps) => {
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const tgUser = getTelegramUser();
 
   const handleClearSearch = () => {
@@ -57,15 +56,20 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
 
         {/* Action buttons */}
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-            className="sm:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+          {/* Mobile: subscribe button */}
+          <a
+            href="https://t.me/MinskDvizhBot"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="sm:hidden flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-body font-medium hover:bg-primary/90 transition-colors"
           >
-            <Search className="h-5 w-5" />
-          </button>
+            <Send className="h-3.5 w-3.5" />
+            <span>Подписаться</span>
+          </a>
+          {/* Desktop: calendar button */}
           <button
             onClick={onCalendarToggle}
-            className={`p-2 rounded-lg transition-all font-body text-sm flex items-center gap-2 ${
+            className={`hidden sm:flex p-2 rounded-lg transition-all font-body text-sm items-center gap-2 ${
               calendarOpen
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
@@ -76,31 +80,6 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
           </button>
         </div>
       </div>
-
-      {/* Mobile search bar */}
-      {mobileSearchOpen && (
-        <div className="sm:hidden px-4 pb-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Поиск событий..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              autoFocus
-              className="w-full rounded-lg border border-border bg-secondary/50 py-2 pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all font-body"
-            />
-            {searchQuery && (
-              <button
-                onClick={handleClearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        </div>
-      )}
     </header>
   );
 };

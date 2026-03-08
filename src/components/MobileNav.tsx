@@ -4,6 +4,7 @@ import { haptic } from '@/lib/telegram';
 import { categories } from '@/data/events';
 import type { CategorySlug } from '@/data/events';
 import CategoryIcon from '@/components/CategoryIcon';
+import CalendarView from '@/components/CalendarView';
 
 interface MobileNavProps {
   activeTab: 'home' | 'calendar' | 'search' | 'categories';
@@ -12,8 +13,8 @@ interface MobileNavProps {
   onCategorySelect: (slug: CategorySlug | null) => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
-  calendarOpen: boolean;
-  onCalendarToggle: () => void;
+  calendarDate: Date | null;
+  onCalendarDate: (date: Date | null) => void;
 }
 
 const tabs = [
@@ -23,25 +24,33 @@ const tabs = [
   { key: 'search' as const, icon: Search, label: 'Поиск' },
 ];
 
-const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, searchQuery, onSearchChange, calendarOpen, onCalendarToggle }: MobileNavProps) => {
+const glassStyle = {
+  background: 'hsla(var(--glass-bg))',
+  borderColor: 'hsla(var(--glass-border))',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+};
+
+const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, searchQuery, onSearchChange, calendarDate, onCalendarDate }: MobileNavProps) => {
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
+  const closeAll = () => { setCategoriesOpen(false); setSearchOpen(false); setCalendarOpen(false); };
 
   const handleTabChange = (key: typeof tabs[number]['key']) => {
     haptic('light');
     if (key === 'categories') {
-      setSearchOpen(false);
+      setSearchOpen(false); setCalendarOpen(false);
       setCategoriesOpen(prev => !prev);
     } else if (key === 'calendar') {
-      setCategoriesOpen(false);
-      setSearchOpen(false);
-      onCalendarToggle();
+      setCategoriesOpen(false); setSearchOpen(false);
+      setCalendarOpen(prev => !prev);
     } else if (key === 'search') {
-      setCategoriesOpen(false);
+      setCategoriesOpen(false); setCalendarOpen(false);
       setSearchOpen(prev => !prev);
     } else {
-      setCategoriesOpen(false);
-      setSearchOpen(false);
+      closeAll();
       onTabChange(key);
     }
   };
@@ -52,6 +61,8 @@ const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, s
     setCategoriesOpen(false);
   };
 
+  const anyOpen = categoriesOpen || searchOpen || calendarOpen;
+
   const isActive = (key: string) => {
     if (key === 'categories') return categoriesOpen;
     if (key === 'calendar') return calendarOpen;
@@ -61,38 +72,22 @@ const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, s
 
   return (
     <>
-      {/* Backdrop for sheets */}
-      {(categoriesOpen || searchOpen) && (
+      {/* Backdrop */}
+      {anyOpen && (
         <div 
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm sm:hidden animate-in fade-in duration-200"
-          onClick={() => { setCategoriesOpen(false); setSearchOpen(false); }}
+          onClick={closeAll}
         />
       )}
 
-      {/* Category bottom sheet */}
+      {/* Category sheet */}
       {categoriesOpen && (
-        <div 
-          className="fixed bottom-[60px] left-0 right-0 z-50 sm:hidden animate-in slide-in-from-bottom-4 fade-in duration-200"
-          style={{ paddingBottom: 'var(--tg-safe-bottom)' }}
-        >
-          <div 
-            className="mx-2 rounded-xl border border-border/50 p-4"
-            style={{
-              background: 'hsla(var(--glass-bg))',
-              borderColor: 'hsla(var(--glass-border))',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-            }}
-          >
+        <div className="fixed bottom-[60px] left-0 right-0 z-50 sm:hidden animate-in slide-in-from-bottom-4 fade-in duration-200">
+          <div className="mx-2 rounded-xl border border-border/50 p-4" style={glassStyle}>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-display font-bold text-foreground">Категории</h3>
               {activeCategory && (
-                <button 
-                  onClick={() => { onCategorySelect(null); setCategoriesOpen(false); }}
-                  className="text-xs text-primary hover:underline font-body"
-                >
-                  Сбросить
-                </button>
+                <button onClick={() => { onCategorySelect(null); setCategoriesOpen(false); }} className="text-xs text-primary hover:underline font-body">Сбросить</button>
               )}
             </div>
             <div className="grid grid-cols-4 gap-2">
@@ -101,15 +96,11 @@ const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, s
                   key={cat.slug}
                   onClick={() => handleCategoryClick(cat.slug)}
                   className={`flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all ${
-                    activeCategory === cat.slug
-                      ? 'bg-primary/20 ring-1 ring-primary'
-                      : 'hover:bg-secondary/50'
+                    activeCategory === cat.slug ? 'bg-primary/20 ring-1 ring-primary' : 'hover:bg-secondary/50'
                   }`}
                 >
                   <CategoryIcon slug={cat.slug} size="sm" />
-                  <span className="text-[10px] font-body text-foreground truncate w-full text-center">
-                    {cat.name}
-                  </span>
+                  <span className="text-[10px] font-body text-foreground truncate w-full text-center">{cat.name}</span>
                 </button>
               ))}
             </div>
@@ -117,21 +108,19 @@ const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, s
         </div>
       )}
 
-      {/* Search bottom sheet */}
+      {/* Calendar sheet */}
+      {calendarOpen && (
+        <div className="fixed bottom-[60px] left-0 right-0 z-50 sm:hidden animate-in slide-in-from-bottom-4 fade-in duration-200">
+          <div className="mx-2 rounded-xl border border-border/50 p-4" style={glassStyle}>
+            <CalendarView selectedDate={calendarDate} onSelectDate={onCalendarDate} embedded />
+          </div>
+        </div>
+      )}
+
+      {/* Search sheet */}
       {searchOpen && (
-        <div 
-          className="fixed bottom-[60px] left-0 right-0 z-50 sm:hidden animate-in slide-in-from-bottom-4 fade-in duration-200"
-          style={{ paddingBottom: 'var(--tg-safe-bottom)' }}
-        >
-          <div 
-            className="mx-2 rounded-xl border border-border/50 p-4"
-            style={{
-              background: 'hsla(var(--glass-bg))',
-              borderColor: 'hsla(var(--glass-border))',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-            }}
-          >
+        <div className="fixed bottom-[60px] left-0 right-0 z-50 sm:hidden animate-in slide-in-from-bottom-4 fade-in duration-200">
+          <div className="mx-2 rounded-xl border border-border/50 p-4" style={glassStyle}>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-display font-bold text-foreground">Поиск событий</h3>
             </div>

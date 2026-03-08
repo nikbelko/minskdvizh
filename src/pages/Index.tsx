@@ -46,8 +46,9 @@ const Index = () => {
         onCalendarToggle={handleCalendarToggle}
         calendarOpen={calendarOpen}
       />
+      {/* Desktop calendar */}
       {calendarOpen && (
-        <div className="sticky top-[57px] z-30">
+        <div className="sticky top-[57px] z-30 hidden sm:block">
           <CalendarView selectedDate={calendarDate} onSelectDate={handleCalendarDate} />
         </div>
       )}
@@ -71,8 +72,8 @@ const Index = () => {
         onCategorySelect={handleCategoryClick}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        calendarOpen={calendarOpen}
-        onCalendarToggle={handleCalendarToggle}
+        calendarDate={calendarDate}
+        onCalendarDate={handleCalendarDate}
       />
     </div>
   );

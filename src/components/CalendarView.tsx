@@ -13,9 +13,13 @@ const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
 const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const { data: calendarDatesArr } = useCalendarDates();
+  const { data: calendarDatesArr, isLoading } = useCalendarDates();
+  
+  console.log('[Calendar] dates data:', calendarDatesArr, 'isLoading:', isLoading);
+  
   const eventDatesSet = useMemo(() => {
     const arr = Array.isArray(calendarDatesArr) ? calendarDatesArr : [];
+    console.log('[Calendar] parsed dates count:', arr.length, 'sample:', arr.slice(0, 3));
     return new Set(arr);
   }, [calendarDatesArr]);
 

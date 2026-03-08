@@ -20,7 +20,7 @@ interface EventsListProps {
 
 const EVENTS_PER_PAGE = 10;
 
-const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSearch, calendarDate }: EventsListProps) => {
+const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSearch, calendarDate, onTotalChange }: EventsListProps) => {
   const [page, setPage] = useState(1);
   const listRef = useRef<HTMLDivElement>(null);
 

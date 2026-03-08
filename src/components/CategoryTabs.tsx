@@ -13,9 +13,6 @@ const CategoryTabs = ({ activeCategory, onCategoryChange, filteredEvents }: Cate
 
   const totalCount = filteredEvents.reduce((s, c) => s + c.count, 0);
 
-  const getCount = (slug: CategorySlug) => {
-    return filteredEvents.find(f => f.slug === slug)?.count ?? 0;
-  };
 
   return (
     <div className="container mx-auto px-4 mb-6">

@@ -129,6 +129,7 @@
   .category-border-free { border-left-color: hsl(100 60% 50%); }
 }
 
+@layer utilities {
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;

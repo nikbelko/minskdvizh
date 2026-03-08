@@ -15,6 +15,7 @@ interface EventsListProps {
   searchQuery: string;
   debouncedSearch: string;
   calendarDate: Date | null;
+  onTotalChange?: (total: number) => void;
 }
 
 const EVENTS_PER_PAGE = 10;

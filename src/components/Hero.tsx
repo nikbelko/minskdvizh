@@ -46,8 +46,15 @@ const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, 
   };
 
   return (
-    <section className="relative py-6 pb-2 sm:py-20 md:py-28 overflow-hidden city-grid">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-[120px] animate-glow-pulse pointer-events-none" />
+    <section className="relative sm:py-20 md:py-28 overflow-hidden city-grid sm:static sticky top-[57px] z-30 sm:z-auto">
+      {/* Mobile glass background */}
+      <div className="absolute inset-0 sm:hidden" style={{
+        background: 'hsla(var(--glass-bg))',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: '1px solid hsla(var(--glass-border))',
+      }} />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-[120px] animate-glow-pulse pointer-events-none hidden sm:block" />
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="opacity-0 animate-fade-up hidden sm:block">
@@ -57,7 +64,7 @@ const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, 
         </div>
 
         {/* Mobile: filter pills + categories */}
-        <div className="sm:hidden opacity-0 animate-fade-up">
+        <div className="sm:hidden py-3">
           <div className="flex gap-2">
             {pills.map((pill) => (
               <button

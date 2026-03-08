@@ -14,9 +14,9 @@ interface MobileNavProps {
 
 const tabs = [
   { key: 'home' as const, icon: Home, label: 'Главная' },
+  { key: 'categories' as const, icon: Grid3X3, label: 'Категории' },
   { key: 'calendar' as const, icon: CalendarDays, label: 'Календарь' },
   { key: 'search' as const, icon: Search, label: 'Поиск' },
-  { key: 'categories' as const, icon: Grid3X3, label: 'Категории' },
 ];
 
 const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect }: MobileNavProps) => {

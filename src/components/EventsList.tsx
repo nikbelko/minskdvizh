@@ -163,7 +163,9 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
                 key={group.key}
                 className="opacity-0 animate-fade-up"
                 style={{
-                  animationDelay: `${i * 0.06}s`,
+                  animationDelay: `${i * 0.12}s`,
+                  animationDuration: '0.5s',
+                  animationTimingFunction: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                   animationFillMode: 'forwards',
                 }}
               >

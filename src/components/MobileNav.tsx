@@ -112,7 +112,7 @@ const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, s
       {calendarOpen && (
         <div className="fixed bottom-[60px] left-0 right-0 z-50 sm:hidden animate-in slide-in-from-bottom-4 fade-in duration-200">
           <div className="mx-2 rounded-xl border border-border/50 p-4" style={glassStyle}>
-            <CalendarView selectedDate={calendarDate} onSelectDate={onCalendarDate} />
+            <CalendarView selectedDate={calendarDate} onSelectDate={onCalendarDate} embedded />
           </div>
         </div>
       )}

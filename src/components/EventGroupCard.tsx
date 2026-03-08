@@ -2,6 +2,7 @@ import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { type GroupedEvent, getCategoryBySlug } from '@/data/events';
 import { ArrowRight, Share2 } from 'lucide-react';
+import CategoryIcon from './CategoryIcon';
 import { toast } from 'sonner';
 import { haptic, openLink, showMainButton, hideMainButton } from '@/lib/telegram';
 

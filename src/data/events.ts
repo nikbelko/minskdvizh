@@ -18,6 +18,20 @@ export interface EventItem {
   description?: string;
 }
 
+/** Grouped event for display */
+export interface GroupedEvent {
+  key: string;
+  title: string;
+  category: CategorySlug;
+  price?: string;
+  // For cinema: grouped by title+date, multiple venues with times
+  cinemaShowtimes?: { venue: string; times: string[] }[];
+  cinemaDate?: string;
+  // For non-cinema: grouped by title+venue, multiple date/times
+  venue?: string;
+  dateTimes?: { date: string; time?: string }[];
+}
+
 export const categories: Category[] = [
   { slug: 'cinema', emoji: '🎬', name: 'Кино', borderClass: 'category-border-cinema' },
   { slug: 'concert', emoji: '🎵', name: 'Концерты', borderClass: 'category-border-concert' },
@@ -30,12 +44,19 @@ export const categories: Category[] = [
 ];
 
 export const mockEvents: EventItem[] = [
-  // Cinema
-  { id: 'c1', title: 'Дюна: Часть третья', date: '2026-03-08', time: '19:00', venue: 'Кинотеатр Москва', price: 'от 15 BYN', category: 'cinema' },
-  { id: 'c2', title: 'Оскар 2026: Лучшие фильмы', date: '2026-03-10', time: '20:00', venue: 'Кинотеатр Беларусь', price: 'от 12 BYN', category: 'cinema' },
-  { id: 'c3', title: 'Ретроспектива Тарковского', date: '2026-03-15', time: '18:30', venue: 'Кинотеатр Москва', price: 'от 10 BYN', category: 'cinema' },
+  // Cinema — multiple showtimes/venues per film
+  { id: 'c1a', title: 'Дюна: Часть третья', date: '2026-03-08', time: '10:00', venue: 'Кинотеатр Москва', price: 'от 15 BYN', category: 'cinema' },
+  { id: 'c1b', title: 'Дюна: Часть третья', date: '2026-03-08', time: '13:30', venue: 'Кинотеатр Москва', price: 'от 15 BYN', category: 'cinema' },
+  { id: 'c1c', title: 'Дюна: Часть третья', date: '2026-03-08', time: '16:00', venue: 'Кинотеатр Москва', price: 'от 15 BYN', category: 'cinema' },
+  { id: 'c1d', title: 'Дюна: Часть третья', date: '2026-03-08', time: '12:00', venue: 'Кинотеатр Беларусь', price: 'от 15 BYN', category: 'cinema' },
+  { id: 'c1e', title: 'Дюна: Часть третья', date: '2026-03-08', time: '19:30', venue: 'Кинотеатр Беларусь', price: 'от 15 BYN', category: 'cinema' },
+  { id: 'c2a', title: 'Оскар 2026: Лучшие фильмы', date: '2026-03-10', time: '20:00', venue: 'Кинотеатр Беларусь', price: 'от 12 BYN', category: 'cinema' },
+  { id: 'c2b', title: 'Оскар 2026: Лучшие фильмы', date: '2026-03-10', time: '17:00', venue: 'Кинотеатр Москва', price: 'от 12 BYN', category: 'cinema' },
+  { id: 'c3a', title: 'Ретроспектива Тарковского', date: '2026-03-15', time: '18:30', venue: 'Кинотеатр Москва', price: 'от 10 BYN', category: 'cinema' },
+  { id: 'c3b', title: 'Ретроспектива Тарковского', date: '2026-03-15', time: '14:00', venue: 'Кинотеатр Беларусь', price: 'от 10 BYN', category: 'cinema' },
   { id: 'c4', title: 'Аниме-марафон: Миядзаки', date: '2026-03-22', time: '12:00', venue: 'Кинотеатр Беларусь', price: 'от 8 BYN', category: 'cinema' },
   { id: 'c5', title: 'Премьера: Последний рубеж', date: '2026-03-28', time: '21:00', venue: 'Кинотеатр Москва', price: 'от 18 BYN', category: 'cinema' },
+  { id: 'c5b', title: 'Премьера: Последний рубеж', date: '2026-03-28', time: '18:00', venue: 'Кинотеатр Беларусь', price: 'от 18 BYN', category: 'cinema' },
 
   // Concerts
   { id: 'co1', title: 'Симфонический оркестр: Рахманинов', date: '2026-03-09', time: '19:00', venue: 'Белорусская государственная филармония', price: 'от 25 BYN', category: 'concert' },
@@ -45,10 +66,12 @@ export const mockEvents: EventItem[] = [
   { id: 'co5', title: 'Акустический вечер: Инди', date: '2026-04-03', time: '19:30', venue: 'Prime Hall', price: 'от 30 BYN', category: 'concert' },
   { id: 'co6', title: 'Хор Турецкого', date: '2026-04-10', time: '19:00', venue: 'Дворец Республики', price: 'от 35 BYN', category: 'concert' },
 
-  // Theater
-  { id: 't1', title: 'Вишнёвый сад', date: '2026-03-08', time: '19:00', venue: 'Театр им. Янки Купалы', price: 'от 20 BYN', category: 'theater' },
+  // Theater — some with multiple dates at same venue
+  { id: 't1a', title: 'Вишнёвый сад', date: '2026-03-08', time: '19:00', venue: 'Театр им. Янки Купалы', price: 'от 20 BYN', category: 'theater' },
+  { id: 't1b', title: 'Вишнёвый сад', date: '2026-03-14', time: '18:00', venue: 'Театр им. Янки Купалы', price: 'от 20 BYN', category: 'theater' },
   { id: 't2', title: 'Гамлет: Новая интерпретация', date: '2026-03-12', time: '19:00', venue: 'Молодёжный театр', price: 'от 18 BYN', category: 'theater' },
-  { id: 't3', title: 'Мастер и Маргарита', date: '2026-03-18', time: '19:00', venue: 'Театр им. Янки Купалы', price: 'от 25 BYN', category: 'theater' },
+  { id: 't3a', title: 'Мастер и Маргарита', date: '2026-03-18', time: '19:00', venue: 'Театр им. Янки Купалы', price: 'от 25 BYN', category: 'theater' },
+  { id: 't3b', title: 'Мастер и Маргарита', date: '2026-03-22', time: '18:00', venue: 'Театр им. Янки Купалы', price: 'от 25 BYN', category: 'theater' },
   { id: 't4', title: 'Сон в летнюю ночь', date: '2026-03-25', time: '18:30', venue: 'Молодёжный театр', price: 'от 15 BYN', category: 'theater' },
   { id: 't5', title: 'Три сестры', date: '2026-04-02', time: '19:00', venue: 'Театр им. Янки Купалы', price: 'от 22 BYN', category: 'theater' },
 
@@ -95,4 +118,63 @@ export function getCategoryBySlug(slug: CategorySlug): Category {
 
 export function getEventCountByCategory(slug: CategorySlug): number {
   return mockEvents.filter(e => e.category === slug).length;
+}
+
+/** Group filtered events according to cinema vs non-cinema logic */
+export function groupEvents(events: EventItem[]): GroupedEvent[] {
+  const groups: GroupedEvent[] = [];
+  const processed = new Set<string>();
+
+  for (const event of events) {
+    if (event.category === 'cinema') {
+      // Cinema: group by title + date
+      const key = `cinema:${event.title}:${event.date}`;
+      if (processed.has(key)) continue;
+      processed.add(key);
+
+      const sameGroup = events.filter(e => e.category === 'cinema' && e.title === event.title && e.date === event.date);
+      const venueMap = new Map<string, string[]>();
+      for (const e of sameGroup) {
+        if (!e.time) continue;
+        if (!venueMap.has(e.venue)) venueMap.set(e.venue, []);
+        venueMap.get(e.venue)!.push(e.time);
+      }
+      // Sort times
+      venueMap.forEach((times) => times.sort());
+
+      groups.push({
+        key,
+        title: event.title,
+        category: event.category,
+        price: event.price,
+        cinemaDate: event.date,
+        cinemaShowtimes: Array.from(venueMap.entries()).map(([venue, times]) => ({ venue, times })),
+      });
+    } else {
+      // Non-cinema: group by title + venue
+      const key = `other:${event.title}:${event.venue}`;
+      if (processed.has(key)) continue;
+      processed.add(key);
+
+      const sameGroup = events.filter(e => e.title === event.title && e.venue === event.venue);
+      const dateTimes = sameGroup.map(e => ({ date: e.date, time: e.time }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      groups.push({
+        key,
+        title: event.title,
+        category: event.category,
+        price: event.price,
+        venue: event.venue,
+        dateTimes,
+      });
+    }
+  }
+
+  return groups;
+}
+
+/** Get all unique dates that have events */
+export function getEventDates(): Set<string> {
+  return new Set(mockEvents.map(e => e.date));
 }

@@ -49,7 +49,9 @@ const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, 
     <section className="relative sm:py-20 md:py-28 overflow-hidden city-grid sm:static sticky top-[56px] z-30 sm:z-auto">
       {/* Mobile glass background with purple tint */}
       <div className="absolute inset-0 sm:hidden" style={{
-        background: 'linear-gradient(180deg, hsl(293 69% 49% / 0.06) 0%, hsl(240 15% 5% / 0.95) 100%)',
+        background: 'linear-gradient(180deg, hsla(293, 69%, 49%, 0.08) 0%, hsla(var(--glass-bg)) 100%)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
         borderBottom: '1px solid hsla(var(--glass-border))',
       }} />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-[120px] animate-glow-pulse pointer-events-none hidden sm:block" />

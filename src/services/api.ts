@@ -112,7 +112,8 @@ export async function fetchCategoryCounts(): Promise<CategoryCounts> {
 }
 
 export async function fetchCalendarDates(): Promise<string[]> {
-  return apiFetch<string[]>('/api/calendar/dates');
+  const data = await apiFetch<{ dates: string[] } | string[]>('/api/calendar/dates');
+  return Array.isArray(data) ? data : data.dates ?? [];
 }
 
 export async function fetchLastUpdated(): Promise<string> {

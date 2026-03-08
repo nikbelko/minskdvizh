@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { type CategorySlug, categories, getCategoryBySlug } from '@/data/events';
 import EventGroupCard from './EventGroupCard';
 import CategoryTabs from './CategoryTabs';

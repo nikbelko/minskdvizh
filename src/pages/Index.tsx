@@ -55,7 +55,14 @@ const Index = () => {
           <CalendarView selectedDate={calendarDate} onSelectDate={handleCalendarDate} />
         </div>
       )}
-      <Hero activeFilter={quickFilter} onFilterChange={setQuickFilter} />
+      <Hero
+        activeFilter={quickFilter}
+        onFilterChange={setQuickFilter}
+        activeCategory={activeCategory}
+        onCategoryChange={handleCategoryClick}
+        categoryCounts={categoryCounts}
+        totalFiltered={totalFiltered}
+      />
       <SubscriptionBanner />
       <CategoryGrid activeCategory={activeCategory} onCategoryClick={handleCategoryClick} />
 

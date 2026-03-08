@@ -47,13 +47,14 @@ const Index = () => {
         onCalendarToggle={handleCalendarToggle}
         calendarOpen={calendarOpen}
       />
+      <div className="relative">
+        {calendarOpen && (
+          <CalendarView selectedDate={calendarDate} onSelectDate={handleCalendarDate} />
+        )}
+      </div>
       <Hero activeFilter={quickFilter} onFilterChange={setQuickFilter} />
       <SubscriptionBanner />
       <CategoryGrid activeCategory={activeCategory} onCategoryClick={handleCategoryClick} />
-
-      {calendarOpen && (
-        <CalendarView selectedDate={calendarDate} onSelectDate={handleCalendarDate} />
-      )}
 
       <EventsList
         activeCategory={activeCategory}

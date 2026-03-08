@@ -81,7 +81,6 @@ const CalendarView = ({ selectedDate, onSelectDate, embedded = false }: Calendar
         })}
       </div>
 
-      {selectedDate && (
       <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-center gap-3 min-h-[36px]">
         {selectedDate ? (
           <>

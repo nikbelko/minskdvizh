@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isToday as isDateToday } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isToday as isDateToday, isBefore, startOfDay } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCalendarDates } from '@/hooks/use-events';
@@ -25,6 +25,8 @@ const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) => {
   const startDayOfWeek = (getDay(monthStart) + 6) % 7;
 
   const hasEvent = (day: Date) => eventDatesSet.has(format(day, 'yyyy-MM-dd'));
+  const today = startOfDay(new Date());
+  const isActive = (day: Date) => hasEvent(day) && !isBefore(day, today);
 
   return (
     <div className="absolute left-0 right-0 z-30 px-4 pt-2 pb-4 animate-in slide-in-from-top-2 fade-in duration-200">
@@ -63,16 +65,17 @@ const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) => {
             const isToday = isDateToday(day);
             const isSelected = selectedDate && isSameDay(day, selectedDate);
             const hasEvents = hasEvent(day);
+            const active = isActive(day);
             return (
               <button
                 key={day.toISOString()}
-                onClick={() => hasEvents ? onSelectDate(isSelected ? null : day) : undefined}
-                disabled={!hasEvents}
+                onClick={() => active ? onSelectDate(isSelected ? null : day) : undefined}
+                disabled={!active}
                 className={`relative flex flex-col items-center justify-center py-2 rounded-lg text-sm font-body transition-all ${
                   isSelected ? 'bg-primary text-primary-foreground'
-                    : isToday && hasEvents ? 'ring-2 ring-accent text-accent font-bold'
+                    : isToday && active ? 'ring-2 ring-accent text-accent font-bold'
                     : isToday ? 'ring-2 ring-accent/30 text-muted-foreground'
-                    : hasEvents ? 'text-foreground hover:bg-secondary/50 cursor-pointer'
+                    : active ? 'text-foreground hover:bg-secondary/50 cursor-pointer'
                     : 'text-muted-foreground/30 cursor-default'
                 }`}
               >

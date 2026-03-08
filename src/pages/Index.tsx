@@ -69,6 +69,10 @@ const Index = () => {
         onTabChange={handleMobileTab} 
         activeCategory={activeCategory}
         onCategorySelect={handleCategoryClick}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        calendarOpen={calendarOpen}
+        onCalendarToggle={handleCalendarToggle}
       />
     </div>
   );

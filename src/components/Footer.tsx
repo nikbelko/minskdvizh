@@ -1,6 +1,14 @@
 import { Send } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { fetchLastUpdated } from '@/services/api';
 
 const Footer = () => {
+  const { data: lastUpdated } = useQuery({
+    queryKey: ['lastUpdated'],
+    queryFn: fetchLastUpdated,
+    staleTime: 5 * 60 * 1000,
+  });
+
   return (
     <footer className="border-t border-border/50 py-8 pb-20 sm:pb-8">
       <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -9,7 +17,7 @@ const Footer = () => {
             © 2026 <span className="text-primary font-semibold">MinskDvizh</span> — Афиша Минска
           </p>
           <span className="text-xs text-muted-foreground/60 font-body">
-            Обновляется ежедневно в 06:00
+            🔄 Обновлено {lastUpdated || 'ежедневно в 06:00'}
           </span>
         </div>
         <a

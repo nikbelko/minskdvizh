@@ -1,5 +1,6 @@
 import { Search, X, CalendarDays } from 'lucide-react';
 import { useState } from 'react';
+import { getTelegramUser } from '@/lib/telegram';
 
 interface HeaderProps {
   searchQuery: string;
@@ -10,6 +11,15 @@ interface HeaderProps {
 
 const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }: HeaderProps) => {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const tgUser = getTelegramUser();
+
+  const handleClearSearch = () => {
+    onSearchChange('');
+    try {
+      const { haptic } = require('@/lib/telegram');
+      haptic('selection');
+    } catch {}
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/50 glass-card">
@@ -21,7 +31,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
             <span className="text-foreground">Dvizh</span>
           </h1>
           <span className="hidden md:inline text-sm text-muted-foreground font-body">
-            Афиша Минска
+            {tgUser ? `Привет, ${tgUser.first_name}! 👋` : 'Афиша Минска'}
           </span>
         </div>
 
@@ -37,7 +47,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
           />
           {searchQuery && (
             <button
-              onClick={() => onSearchChange('')}
+              onClick={handleClearSearch}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="h-4 w-4" />
@@ -47,14 +57,12 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
 
         {/* Action buttons */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Mobile search toggle */}
           <button
             onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
             className="sm:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
           >
             <Search className="h-5 w-5" />
           </button>
-          {/* Calendar toggle */}
           <button
             onClick={onCalendarToggle}
             className={`p-2 rounded-lg transition-all font-body text-sm flex items-center gap-2 ${
@@ -84,7 +92,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
             />
             {searchQuery && (
               <button
-                onClick={() => onSearchChange('')}
+                onClick={handleClearSearch}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="h-4 w-4" />

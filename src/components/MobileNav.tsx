@@ -1,4 +1,5 @@
 import { Home, CalendarDays, Search, Bell } from 'lucide-react';
+import { haptic } from '@/lib/telegram';
 
 interface MobileNavProps {
   activeTab: 'home' | 'calendar' | 'search' | 'subscriptions';
@@ -13,13 +14,18 @@ const tabs = [
 ];
 
 const MobileNav = ({ activeTab, onTabChange }: MobileNavProps) => {
+  const handleTabChange = (key: typeof tabs[number]['key']) => {
+    haptic('light');
+    onTabChange(key);
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 glass-card border-t border-border/50 sm:hidden">
-      <div className="flex items-center justify-around py-2">
+      <div className="flex items-center justify-around py-2" style={{ paddingBottom: 'max(0.5rem, var(--tg-safe-bottom))' }}>
         {tabs.map(({ key, icon: Icon, label }) => (
           <button
             key={key}
-            onClick={() => onTabChange(key)}
+            onClick={() => handleTabChange(key)}
             className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors ${
               activeTab === key
                 ? 'text-primary'

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Send } from 'lucide-react';
+import { isTelegram } from '@/lib/telegram';
 
 const DISMISSED_KEY = 'minskdvizh_banner_dismissed';
 
@@ -7,6 +8,10 @@ const SubscriptionBanner = () => {
   const [dismissed, setDismissed] = useState(true);
 
   useEffect(() => {
+    if (isTelegram()) {
+      setDismissed(true);
+      return;
+    }
     setDismissed(localStorage.getItem(DISMISSED_KEY) === 'true');
   }, []);
 

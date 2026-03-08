@@ -6,6 +6,7 @@ import { EventSkeletons } from './SkeletonCard';
 import type { QuickFilter } from './Hero';
 import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { useEvents, useCategoryCounts } from '@/hooks/use-events';
+import { haptic, showBackButton, hideBackButton } from '@/lib/telegram';
 
 interface EventsListProps {
   activeCategory: CategorySlug | null;
@@ -36,7 +37,20 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
   // Reset page on filter change
   useEffect(() => { setPage(1); }, [activeCategory, quickFilter, debouncedSearch, calendarDate]);
 
+  // Telegram back button for filters
+  useEffect(() => {
+    if (activeCategory || debouncedSearch.trim() || calendarDate) {
+      showBackButton(() => {
+        onCategoryChange(null);
+      });
+    } else {
+      hideBackButton();
+    }
+    return () => { hideBackButton(); };
+  }, [activeCategory, debouncedSearch, calendarDate, onCategoryChange]);
+
   const changePage = useCallback((newPage: number) => {
+    haptic('soft');
     setPage(newPage);
     listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
@@ -45,7 +59,6 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
   const total = data?.total ?? 0;
   const totalPages = data?.totalPages ?? 1;
 
-  // Determine empty state type
   const getEmptyState = () => {
     if (debouncedSearch.trim()) {
       return (
@@ -122,13 +135,11 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
           </div>
         </div>
 
-        {/* Loading */}
         {isLoading && <EventSkeletons count={3} />}
 
-        {/* Error */}
         {isError && !isLoading && (
           <div className="glass-card p-12 text-center">
-            <p className="text-4xl mb-4">⚠️</p>
+            <p className="text-4xl mb-4">😕</p>
             <p className="text-foreground font-body font-semibold mb-3">
               Не удалось загрузить события
             </p>
@@ -142,10 +153,8 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
           </div>
         )}
 
-        {/* Empty */}
         {!isLoading && !isError && grouped.length === 0 && getEmptyState()}
 
-        {/* Events */}
         {!isLoading && !isError && grouped.length > 0 && (
           <div className="grid gap-4">
             {grouped.map((group, i) => (
@@ -156,7 +165,6 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
           </div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-4 mt-8">
             <button

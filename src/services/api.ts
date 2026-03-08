@@ -1,7 +1,7 @@
 import type { CategorySlug, EventItem, GroupedEvent } from '@/data/events';
 import { groupEvents } from '@/data/events';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const API_BASE = 'https://minskdvizh.up.railway.app';
 
 export interface ApiEventsResponse {
   total: number;
@@ -26,7 +26,6 @@ export interface ApiEvent {
 
 export type CategoryCounts = Record<CategorySlug, number>;
 
-/** Convert API event to internal EventItem */
 function toEventItem(e: ApiEvent): EventItem {
   return {
     id: String(e.id),
@@ -43,7 +42,7 @@ function toEventItem(e: ApiEvent): EventItem {
 }
 
 async function apiFetch<T>(path: string, params?: Record<string, string>): Promise<T> {
-  const url = new URL(path, API_BASE || window.location.origin);
+  const url = new URL(path, API_BASE);
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
       if (v) url.searchParams.set(k, v);
@@ -114,4 +113,13 @@ export async function fetchCategoryCounts(): Promise<CategoryCounts> {
 
 export async function fetchCalendarDates(): Promise<string[]> {
   return apiFetch<string[]>('/api/calendar/dates');
+}
+
+export async function fetchLastUpdated(): Promise<string> {
+  try {
+    const data = await apiFetch<{ last_updated?: string }>('/api/last-updated');
+    return data.last_updated || 'ежедневно в 06:00';
+  } catch {
+    return 'ежедневно в 06:00';
+  }
 }

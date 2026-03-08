@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { type CategorySlug, categories, getCategoryBySlug } from '@/data/events';
 import EventGroupCard from './EventGroupCard';
 import CategoryTabs from './CategoryTabs';
@@ -34,7 +34,8 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
     perPage: EVENTS_PER_PAGE,
   });
 
-  // Reset page on filter change
+  // Reset page on filter change & create animation key
+  const animationKey = useMemo(() => `${activeCategory}-${quickFilter}-${debouncedSearch}-${calendarDate?.toISOString()}-${page}`, [activeCategory, quickFilter, debouncedSearch, calendarDate, page]);
   useEffect(() => { setPage(1); }, [activeCategory, quickFilter, debouncedSearch, calendarDate]);
 
   // Telegram back button for filters
@@ -156,9 +157,16 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
         {!isLoading && !isError && grouped.length === 0 && getEmptyState()}
 
         {!isLoading && !isError && grouped.length > 0 && (
-          <div className="grid gap-4">
+          <div className="grid gap-4" key={animationKey}>
             {grouped.map((group, i) => (
-              <div key={group.key} className="opacity-0 animate-fade-up" style={{ animationDelay: `${i * 0.05}s` }}>
+              <div
+                key={group.key}
+                className="opacity-0 animate-fade-up"
+                style={{
+                  animationDelay: `${i * 0.06}s`,
+                  animationFillMode: 'forwards',
+                }}
+              >
                 <EventGroupCard group={group} />
               </div>
             ))}

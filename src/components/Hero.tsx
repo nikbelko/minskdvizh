@@ -3,12 +3,19 @@ import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { X } from 'lucide-react';
 import { haptic, isTelegram } from '@/lib/telegram';
+import { categories, type CategorySlug } from '@/data/events';
+import type { CategoryCounts } from '@/services/api';
+import CategoryIcon from './CategoryIcon';
 
 type QuickFilter = 'today' | 'tomorrow' | 'weekend' | 'upcoming';
 
 interface HeroProps {
   activeFilter: QuickFilter;
   onFilterChange: (filter: QuickFilter) => void;
+  activeCategory?: CategorySlug | null;
+  onCategoryChange?: (slug: CategorySlug | null) => void;
+  categoryCounts?: CategoryCounts;
+  totalFiltered?: number;
 }
 
 const pills: { key: QuickFilter; label: string }[] = [

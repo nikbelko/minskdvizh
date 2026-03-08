@@ -82,14 +82,24 @@ const CalendarView = ({ selectedDate, onSelectDate, embedded = false }: Calendar
       </div>
 
       {selectedDate && (
-        <div className="mt-3 pt-3 border-t border-border/50">
-          <p className="text-sm text-muted-foreground font-body text-center">
-            Показаны события за{' '}
-            <span className="text-accent font-semibold">{format(selectedDate, 'd MMMM yyyy', { locale: ru })}</span>
-            <button onClick={() => onSelectDate(null)} className="ml-2 text-primary hover:underline">Сбросить</button>
-          </p>
-        </div>
-      )}
+      <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-center gap-3 min-h-[36px]">
+        {selectedDate ? (
+          <>
+            <p className="text-sm text-muted-foreground font-body">
+              <span className="text-accent font-semibold">{format(selectedDate, 'd MMMM yyyy', { locale: ru })}</span>
+            </p>
+            <button
+              onClick={() => onSelectDate(null)}
+              title="Сбросить выбор"
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground font-body">Выберите дату</p>
+        )}
+      </div>
     </>
   );
 

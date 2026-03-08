@@ -2,6 +2,7 @@ import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { type GroupedEvent, getCategoryBySlug } from '@/data/events';
 import { ArrowRight, Share2 } from 'lucide-react';
+import CategoryIcon from './CategoryIcon';
 import { toast } from 'sonner';
 import { haptic, openLink, showMainButton, hideMainButton } from '@/lib/telegram';
 
@@ -116,7 +117,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
             >
               <Share2 className="h-4 w-4" />
             </button>
-            <span className="text-2xl">{cat.emoji}</span>
+            <CategoryIcon slug={group.category} size="sm" />
           </div>
           {group.sourceUrl && (
             <a

@@ -2,6 +2,7 @@ import { categories, type CategorySlug } from '@/data/events';
 import { useCategoryCounts } from '@/hooks/use-events';
 import { CategorySkeletons } from './SkeletonCard';
 import { haptic } from '@/lib/telegram';
+import CategoryIcon from './CategoryIcon';
 
 interface CategoryGridProps {
   activeCategory: CategorySlug | null;
@@ -36,8 +37,8 @@ const CategoryGrid = ({ activeCategory, onCategoryClick }: CategoryGridProps) =>
                   isActive ? 'ring-2 ring-primary border-primary/50' : ''
                 }`}
               >
-                <span className="text-4xl block mb-3">{cat.emoji}</span>
-                <span className="text-foreground font-body font-semibold text-sm block">
+                <CategoryIcon slug={cat.slug} size="lg" />
+                <span className="text-foreground font-body font-semibold text-sm block mt-3">
                   {cat.name}
                 </span>
                 <span className="amber-pill mt-2 text-[11px]">{count}</span>

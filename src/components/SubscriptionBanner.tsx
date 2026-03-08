@@ -23,7 +23,7 @@ const SubscriptionBanner = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 pt-6">
+    <div className="container mx-auto px-4 pt-6 hidden sm:block">
       <div className="glass-card p-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <span className="text-xl shrink-0">🔔</span>

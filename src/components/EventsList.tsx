@@ -34,7 +34,8 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
     perPage: EVENTS_PER_PAGE,
   });
 
-  // Reset page on filter change
+  // Reset page on filter change & create animation key
+  const animationKey = useMemo(() => `${activeCategory}-${quickFilter}-${debouncedSearch}-${calendarDate?.toISOString()}-${page}`, [activeCategory, quickFilter, debouncedSearch, calendarDate, page]);
   useEffect(() => { setPage(1); }, [activeCategory, quickFilter, debouncedSearch, calendarDate]);
 
   // Telegram back button for filters

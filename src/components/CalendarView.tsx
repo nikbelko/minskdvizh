@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isToday as isDateToday, isBefore, startOfDay } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, X, ListChecks } from 'lucide-react';
-import { useCalendarDates } from '@/hooks/use-events';
+import { useCalendarDates, useEvents } from '@/hooks/use-events';
 
 interface CalendarViewProps {
   selectedDate: Date | null;
@@ -16,6 +16,13 @@ const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 const CalendarView = ({ selectedDate, onSelectDate, embedded = false }: CalendarViewProps) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const { data: calendarDatesArr } = useCalendarDates();
+  const { data: selectedDateEvents } = useEvents({
+    quickFilter: 'upcoming',
+    calendarDate: selectedDate,
+    page: 1,
+    perPage: 1,
+  });
+  const selectedDateCount = selectedDate ? (selectedDateEvents?.total ?? null) : null;
   const eventDatesSet = useMemo(() => {
     const arr = Array.isArray(calendarDatesArr) ? calendarDatesArr : [];
     return new Set(arr);
@@ -86,6 +93,11 @@ const CalendarView = ({ selectedDate, onSelectDate, embedded = false }: Calendar
           <>
             <p className="text-sm text-muted-foreground font-body">
               <span className="text-accent font-semibold">{format(selectedDate, 'd MMMM yyyy', { locale: ru })}</span>
+              {selectedDateCount !== null && (
+                <span className="ml-2 text-muted-foreground">
+                  — {selectedDateCount} {selectedDateCount === 1 ? 'событие' : selectedDateCount >= 2 && selectedDateCount <= 4 ? 'события' : 'событий'}
+                </span>
+              )}
             </p>
             <button
               onClick={() => onSelectDate(null)}

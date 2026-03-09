@@ -17,7 +17,7 @@ const CalendarView = ({ selectedDate, onSelectDate, embedded = false }: Calendar
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const { data: calendarDatesArr } = useCalendarDates();
   const { data: selectedDateEvents } = useEvents({
-    quickFilter: 'all',
+    quickFilter: 'upcoming',
     calendarDate: selectedDate,
     page: 1,
     perPage: 1,

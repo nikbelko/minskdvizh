@@ -5,9 +5,14 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  preview: {
+    allowedHosts: ['minskdvizh-web.up.railway.app', 'localhost'],
+    host: '0.0.0.0',
+    port: 3000,
+  },
   server: {
-    host: "::",
-    port: 8080,
+    host: '0.0.0.0',
+    port: 3000,
     hmr: {
       overlay: false,
     },

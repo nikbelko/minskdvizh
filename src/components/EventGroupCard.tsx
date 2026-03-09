@@ -33,7 +33,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
     if (venue) text += `, ${venue}`;
     if (price) text += `, ${price}`;
     if (group.sourceUrl) text += `\nПодробнее: ${group.sourceUrl}`;
-    text += `\n\nАфиша Минска: https://minskdvizh.lovable.app`;
+    text += `\n\nАфиша Минска: https://minskdvizh-web.up.railway.app`;
 
     try {
       await navigator.clipboard.writeText(text);

@@ -24,7 +24,7 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
   const [page, setPage] = useState(1);
   const listRef = useRef<HTMLDivElement>(null);
 
-  const { data: counts } = useCategoryCounts();
+  const { data: counts } = useCategoryCounts(quickFilter, calendarDate);
 
   const { data, isLoading, isError, refetch } = useEvents({
     quickFilter,

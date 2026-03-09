@@ -24,7 +24,7 @@ const CategoryTabs = ({ activeCategory, onCategoryChange, counts, totalFiltered 
               : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
           }`}
         >
-          Все ({totalFiltered})
+          Все ({Object.values(counts ?? {}).reduce((s: number, n: number) => s + n, 0)})
         </button>
         {categories.map((cat) => {
           const count = counts?.[cat.slug] ?? 0;

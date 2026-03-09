@@ -87,7 +87,7 @@ const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, 
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
                 }`}
               >
-                Все ({totalFiltered})
+                Все ({Object.values(categoryCounts ?? {}).reduce((s, n) => s + n, 0)})
               </button>
               {categories.map((cat) => {
                 const count = categoryCounts?.[cat.slug] ?? 0;

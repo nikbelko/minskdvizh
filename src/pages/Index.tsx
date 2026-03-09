@@ -20,7 +20,7 @@ const Index = () => {
   const [calendarDate, setCalendarDate] = useState<Date | null>(null);
   const [mobileTab, setMobileTab] = useState<'home' | 'calendar' | 'search' | 'categories'>('home');
   const [totalFiltered, setTotalFiltered] = useState(0);
-  const { data: categoryCounts } = useCategoryCounts();
+  const { data: categoryCounts } = useCategoryCounts(quickFilter, calendarDate);
 
   const handleCalendarToggle = useCallback(() => {
     setCalendarOpen(prev => !prev);

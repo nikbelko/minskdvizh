@@ -108,20 +108,28 @@ export async function fetchEventsByFilter(filter: 'today' | 'tomorrow' | 'weeken
 }
 
 export async function fetchCategoryCounts(filter?: 'today' | 'tomorrow' | 'weekend' | 'upcoming', calendarDate?: string): Promise<CategoryCounts> {
-  // If a filter or date is active, fetch all events for that scope and count by category
-  if (filter || calendarDate) {
-    const queryParams: Record<string, string> = { per_page: '500' };
-    if (calendarDate) queryParams.date = calendarDate;
-
-    const path = calendarDate ? '/api/events' : `/api/events/${filter}`;
-    const data = await apiFetch<ApiEventsResponse>(path, queryParams);
-    const counts = {} as CategoryCounts;
-    for (const e of data.events) {
-      counts[e.category] = (counts[e.category] ?? 0) + 1;
-    }
-    return counts;
+  if (!filter && !calendarDate) {
+    return apiFetch<CategoryCounts>('/api/categories/counts');
   }
-  return apiFetch<CategoryCounts>('/api/categories/counts');
+
+  // Fetch total per category in parallel (per_page=1 to minimize payload)
+  const slugs = categories.map(c => c.slug);
+  const results = await Promise.all(
+    slugs.map(slug => {
+      const queryParams: Record<string, string> = { per_page: '1', category: slug };
+      if (calendarDate) queryParams.date = calendarDate;
+      const path = calendarDate ? '/api/events' : `/api/events/${filter}`;
+      return apiFetch<ApiEventsResponse>(path, queryParams)
+        .then(data => ({ slug, total: data.total }))
+        .catch(() => ({ slug, total: 0 }));
+    })
+  );
+
+  const counts = {} as CategoryCounts;
+  for (const r of results) {
+    counts[r.slug] = r.total;
+  }
+  return counts;
 }
 
 export async function fetchCalendarDates(): Promise<string[]> {

@@ -93,6 +93,11 @@ const CalendarView = ({ selectedDate, onSelectDate, embedded = false }: Calendar
           <>
             <p className="text-sm text-muted-foreground font-body">
               <span className="text-accent font-semibold">{format(selectedDate, 'd MMMM yyyy', { locale: ru })}</span>
+              {selectedDateCount !== null && (
+                <span className="ml-2 text-muted-foreground">
+                  — {selectedDateCount} {selectedDateCount === 1 ? 'событие' : selectedDateCount >= 2 && selectedDateCount <= 4 ? 'события' : 'событий'}
+                </span>
+              )}
             </p>
             <button
               onClick={() => onSelectDate(null)}

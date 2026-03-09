@@ -42,10 +42,14 @@ export function useEvents(params: {
   });
 }
 
-export function useCategoryCounts() {
+export function useCategoryCounts(quickFilter?: QuickFilter, calendarDate?: Date | null) {
+  const dateStr = calendarDate ? format(calendarDate, 'yyyy-MM-dd') : undefined;
   return useQuery({
-    queryKey: ['categoryCounts'],
-    queryFn: fetchCategoryCounts,
+    queryKey: ['categoryCounts', quickFilter, dateStr],
+    queryFn: () => fetchCategoryCounts(
+      calendarDate ? undefined : quickFilter,
+      dateStr,
+    ),
     staleTime: STALE_TIME,
   });
 }

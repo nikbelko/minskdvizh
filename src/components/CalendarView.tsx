@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isToday as isDateToday, isBefore, startOfDay } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, X, ListChecks } from 'lucide-react';
-import { useCalendarDates } from '@/hooks/use-events';
+import { useCalendarDates, useEvents } from '@/hooks/use-events';
 
 interface CalendarViewProps {
   selectedDate: Date | null;

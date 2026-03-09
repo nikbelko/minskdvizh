@@ -1,4 +1,4 @@
-import type { CategorySlug, EventItem, GroupedEvent } from '@/data/events';
+import { type CategorySlug, type EventItem, type GroupedEvent, categories } from '@/data/events';
 import { groupEvents } from '@/data/events';
 
 const API_BASE = 'https://minskdvizh.up.railway.app';

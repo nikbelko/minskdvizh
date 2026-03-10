@@ -11,8 +11,8 @@ interface EventGroupCardProps {
 
 const EventGroupCard = ({ group }: EventGroupCardProps) => {
   const cat = getCategoryBySlug(group.category);
-  const [showTimes, setShowTimes] = useState(false);
   const cinemaCount = group.cinemaShowtimes?.length ?? 0;
+  const [showTimes, setShowTimes] = useState(cinemaCount <= 1);
 
   const formatDateShort = (dateStr: string) => {
     const d = new Date(dateStr + 'T00:00:00');
@@ -73,14 +73,16 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
               <span className="amber-pill text-xs font-bold">
                 📅 {formatDateShort(group.cinemaDate)}
               </span>
-              {/* Collapsible showtimes */}
-              <button
-                onClick={() => { haptic('light'); setShowTimes(p => !p); }}
-                className="flex items-center gap-1.5 text-xs text-primary font-body font-medium mt-1 hover:opacity-80 transition-opacity"
-              >
-                {showTimes ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                {showTimes ? 'Скрыть сеансы' : `Сеансы (${cinemaCount} ${cinemaCount === 1 ? 'кинотеатр' : cinemaCount <= 4 ? 'кинотеатра' : 'кинотеатров'})`}
-              </button>
+              {/* Collapsible showtimes — кнопка только если кинотеатров > 1 */}
+              {cinemaCount > 1 && (
+                <button
+                  onClick={() => { haptic('light'); setShowTimes(p => !p); }}
+                  className="flex items-center gap-1.5 text-xs text-primary font-body font-medium mt-1 hover:opacity-80 transition-opacity"
+                >
+                  {showTimes ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  {showTimes ? 'Скрыть сеансы' : `Сеансы (${cinemaCount} ${cinemaCount <= 4 ? 'кинотеатра' : 'кинотеатров'})`}
+                </button>
+              )}
               {showTimes && (
                 <div className="space-y-1.5 mt-1 pl-1 border-l-2 border-primary/30">
                   {group.cinemaShowtimes?.map((st) => (
@@ -123,8 +125,6 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
     )}
   </div>
 )}
-        </div>{/* end flex-1 */}
-
         <div className="flex flex-col items-end gap-2 shrink-0">
           <div className="flex items-center gap-1.5">
             <button

@@ -181,7 +181,7 @@ export default function SubmitEventModal() {
               {/* Категория */}
               <div>
                 <label className={labelClass}>Категория <span className="text-red-400">*</span></label>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   {categories.map(cat => (
                     <button
                       key={cat.slug}

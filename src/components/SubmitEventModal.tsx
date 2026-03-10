@@ -10,7 +10,9 @@ interface FormData {
   title: string;
   format: string;
   category: CategorySlug | '';
+  date_mode: 'single' | 'range';
   event_date: string;
+  event_date_to: string;
   show_time: string;
   place: string;
   address: string;
@@ -24,6 +26,7 @@ interface FormErrors {
   format?: string;
   category?: string;
   event_date?: string;
+  event_date_to?: string;
   place?: string;
   source_url?: string;
 }
@@ -31,7 +34,8 @@ interface FormErrors {
 const today = new Date().toISOString().split('T')[0];
 
 const EMPTY_FORM: FormData = {
-  title: '', format: '', category: '', event_date: '', show_time: '',
+  title: '', format: '', category: '', date_mode: 'single',
+  event_date: '', event_date_to: '', show_time: '',
   place: '', address: '', price: '', description: '', source_url: '',
 };
 
@@ -68,6 +72,12 @@ export default function SubmitEventModal() {
       e.event_date = 'Выберите дату';
     else if (form.event_date < today)
       e.event_date = 'Дата не может быть в прошлом';
+    if (form.date_mode === 'range') {
+      if (!form.event_date_to)
+        e.event_date_to = 'Выберите дату окончания';
+      else if (form.event_date_to <= form.event_date)
+        e.event_date_to = 'Дата окончания должна быть позже начала';
+    }
     if (!form.place.trim() || form.place.trim().length < 3)
       e.place = 'Введите название площадки (мин. 3 символа)';
     if (form.source_url && !form.source_url.startsWith('http'))
@@ -86,11 +96,12 @@ export default function SubmitEventModal() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          details: form.format,             // Формат → details в БД
+          details: form.format,
+          event_date_to: form.date_mode === 'range' ? form.event_date_to : undefined,
           show_time: form.show_time || undefined,
           address: form.address || undefined,
           price: form.price || undefined,
-          description: form.description || undefined,  // Описание → description в БД
+          description: form.description || undefined,
           source_url: form.source_url || undefined,
         }),
       });
@@ -219,28 +230,70 @@ export default function SubmitEventModal() {
                 {errors.category && <p className="text-xs text-red-400 mt-1">{errors.category}</p>}
               </div>
 
-              {/* Дата + Время */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelClass}>Дата <span className="text-red-400">*</span></label>
-                  <input
-                    type="date"
-                    min={today}
-                    value={form.event_date}
-                    onChange={e => set('event_date', e.target.value)}
-                    className={inputClass(errors.event_date)}
-                  />
-                  {errors.event_date && <p className="text-xs text-red-400 mt-1">{errors.event_date}</p>}
+              {/* Режим даты */}
+              <div>
+                <label className={labelClass}>Дата проведения <span className="text-red-400">*</span></label>
+                <div className="flex gap-2 mb-2">
+                  {(['single', 'range'] as const).map(mode => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => { haptic('light'); set('date_mode', mode); }}
+                      className={`flex-1 py-1.5 rounded-lg border text-xs font-body transition-all ${
+                        form.date_mode === mode
+                          ? 'border-primary bg-primary/20 text-primary'
+                          : 'border-white/10 bg-white/5 text-muted-foreground'
+                      }`}
+                    >
+                      {mode === 'single' ? '📅 Одна дата' : '📆 Период'}
+                    </button>
+                  ))}
                 </div>
-                <div>
-                  <label className={labelClass}>Время</label>
-                  <input
-                    type="time"
-                    value={form.show_time}
-                    onChange={e => set('show_time', e.target.value)}
-                    className={inputClass()}
-                  />
-                </div>
+
+                {form.date_mode === 'single' ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <input type="date" min={today} value={form.event_date}
+                        onChange={e => set('event_date', e.target.value)}
+                        className={inputClass(errors.event_date)} />
+                      {errors.event_date && <p className="text-xs text-red-400 mt-1">{errors.event_date}</p>}
+                    </div>
+                    <div>
+                      <input type="time" value={form.show_time}
+                        onChange={e => set('show_time', e.target.value)}
+                        className={inputClass()} placeholder="Время" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground/70 mb-1 block">С</label>
+                        <input type="date" min={today} value={form.event_date}
+                          onChange={e => set('event_date', e.target.value)}
+                          className={inputClass(errors.event_date)} />
+                        {errors.event_date && <p className="text-xs text-red-400 mt-1">{errors.event_date}</p>}
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground/70 mb-1 block">По</label>
+                        <input type="date" min={form.event_date || today} value={form.event_date_to}
+                          onChange={e => set('event_date_to', e.target.value)}
+                          className={inputClass(errors.event_date_to)} />
+                        {errors.event_date_to && <p className="text-xs text-red-400 mt-1">{errors.event_date_to}</p>}
+                      </div>
+                    </div>
+                    <div>
+                      <input type="time" value={form.show_time}
+                        onChange={e => set('show_time', e.target.value)}
+                        className={inputClass()} placeholder="Время (одинаковое каждый день)" />
+                    </div>
+                    {form.event_date && form.event_date_to && form.event_date_to > form.event_date && (
+                      <p className="text-xs text-muted-foreground/60">
+                        ℹ️ Будет создана запись для каждого дня периода
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Площадка */}

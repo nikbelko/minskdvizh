@@ -98,29 +98,31 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
           )}
 
           {group.category !== 'cinema' && (
-            <div className="space-y-2">
-              {group.venue && (
-                <p className="text-sm text-muted-foreground font-body">🏢 {group.venue}</p>
-              )}
-              {group.price && (
-                <p className="text-sm text-muted-foreground font-body">💰 {group.price}</p>
-              )}
-              {group.dateTimeGroups && group.dateTimeGroups.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {group.dateTimeGroups.map((dtg, i) => (
-                    <div key={i} className="flex flex-wrap items-center gap-1.5 text-sm">
-                      {dtg.dateRanges.map((range, j) => (
-                        <span key={j} className="amber-pill text-xs font-bold">📅 {range}</span>
-                      ))}
-                      {dtg.time && <span className="text-muted-foreground">⏰ {dtg.time}</span>}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
+  <div className="space-y-2">
+    {group.venue && (
+      <p className="text-sm text-muted-foreground font-body">🏢 {group.venue}</p>
+    )}
+    {group.price && (
+      <p className="text-sm text-muted-foreground font-body">💰 {group.price}</p>
+    )}
+    {group.dateTimeGroups && group.dateTimeGroups.length > 0 && (
+      <div className="flex flex-wrap gap-2 mt-1">
+        {group.dateTimeGroups.map((dtg, i) => (
+          <div key={i} className="flex flex-wrap items-center gap-1.5 text-sm">
+            {dtg.dateRanges && dtg.dateRanges.length > 0 ? (
+              dtg.dateRanges.map((range, j) => (
+                <span key={j} className="amber-pill text-xs font-bold">📅 {range}</span>
+              ))
+            ) : (
+              <span className="text-muted-foreground text-xs">📅 Дата уточняется</span>
+            )}
+            {dtg.time && <span className="text-muted-foreground">⏰ {dtg.time}</span>}
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
         <div className="flex flex-col items-end gap-2 shrink-0">
           <div className="flex items-center gap-1.5">
             <button

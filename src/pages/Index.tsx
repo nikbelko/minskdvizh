@@ -8,6 +8,7 @@ import SubscriptionBanner from '@/components/SubscriptionBanner';
 import MobileNav from '@/components/MobileNav';
 import Footer from '@/components/Footer';
 import type { CategorySlug } from '@/data/events';
+import SubmitEventModal from '@/components/SubmitEventModal';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useCategoryCounts } from '@/hooks/use-events';
 
@@ -83,7 +84,11 @@ const Index = () => {
       {/* Desktop calendar */}
       {calendarOpen && (
         <div className="sticky top-[57px] z-30 hidden sm:block">
-          <CalendarView selectedDate={calendarDate} onSelectDate={handleCalendarDate} />
+          <CalendarView
+            selectedDate={calendarDate}
+            onSelectDate={handleCalendarDate}
+            onClose={() => setCalendarOpen(false)}
+          />
         </div>
       )}
       <div className="hidden sm:block">
@@ -119,6 +124,7 @@ const Index = () => {
         calendarDate={calendarDate}
         onCalendarDate={handleCalendarDate}
       />
+      <SubmitEventModal />
     </div>
   );
 };

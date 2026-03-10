@@ -1,5 +1,3 @@
-import { format, parseISO } from 'date-fns';
-import { ru } from 'date-fns/locale';
 import { type GroupedEvent, getCategoryBySlug } from '@/data/events';
 import { ArrowRight, Share2 } from 'lucide-react';
 import CategoryIcon from './CategoryIcon';
@@ -13,18 +11,16 @@ interface EventGroupCardProps {
 const EventGroupCard = ({ group }: EventGroupCardProps) => {
   const cat = getCategoryBySlug(group.category);
 
-  const formatDate = (dateStr: string) => {
-    const d = parseISO(dateStr);
-    return format(d, 'dd MMM', { locale: ru }).toUpperCase().replace('.', '');
+  const formatDateShort = (dateStr: string) => {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' }).toUpperCase().replace('.', '');
   };
 
   const handleShare = async () => {
     haptic('medium');
     const date = group.cinemaDate
-      ? formatDate(group.cinemaDate)
-      : group.dateTimes?.[0]
-      ? formatDate(group.dateTimes[0].date)
-      : '';
+      ? formatDateShort(group.cinemaDate)
+      : group.dateTimeGroups?.[0]?.dateRanges?.[0] || '';
     const venue = group.venue || group.cinemaShowtimes?.[0]?.venue || '';
     const price = group.price || '';
 
@@ -72,7 +68,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
           {group.category === 'cinema' && group.cinemaDate && (
             <div className="space-y-2">
               <span className="amber-pill text-xs font-bold">
-                📅 {formatDate(group.cinemaDate)}
+                📅 {formatDateShort(group.cinemaDate)}
               </span>
               <div className="space-y-1.5 mt-2">
                 {group.cinemaShowtimes?.map((st) => (
@@ -96,14 +92,18 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
               {group.price && (
                 <p className="text-sm text-muted-foreground font-body">💰 {group.price}</p>
               )}
-              <div className="flex flex-wrap gap-2 mt-1">
-                {group.dateTimes?.map((dt, i) => (
-                  <div key={i} className="flex items-center gap-1.5 text-sm">
-                    <span className="amber-pill text-xs font-bold">📅 {formatDate(dt.date)}</span>
-                    {dt.time && <span className="text-muted-foreground">⏰ {dt.time}</span>}
-                  </div>
-                ))}
-              </div>
+              {group.dateTimeGroups && group.dateTimeGroups.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {group.dateTimeGroups.map((dtg, i) => (
+                    <div key={i} className="flex flex-wrap items-center gap-1.5 text-sm">
+                      {dtg.dateRanges.map((range, j) => (
+                        <span key={j} className="amber-pill text-xs font-bold">📅 {range}</span>
+                      ))}
+                      {dtg.time && <span className="text-muted-foreground">⏰ {dtg.time}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

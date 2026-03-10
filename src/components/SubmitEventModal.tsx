@@ -8,6 +8,7 @@ const API_BASE = 'https://minskdvizh.up.railway.app';
 
 interface FormData {
   title: string;
+  format: string;
   category: CategorySlug | '';
   event_date: string;
   show_time: string;
@@ -20,6 +21,7 @@ interface FormData {
 
 interface FormErrors {
   title?: string;
+  format?: string;
   category?: string;
   event_date?: string;
   place?: string;
@@ -29,7 +31,7 @@ interface FormErrors {
 const today = new Date().toISOString().split('T')[0];
 
 const EMPTY_FORM: FormData = {
-  title: '', category: '', event_date: '', show_time: '',
+  title: '', format: '', category: '', event_date: '', show_time: '',
   place: '', address: '', price: '', description: '', source_url: '',
 };
 
@@ -58,6 +60,8 @@ export default function SubmitEventModal() {
     const e: FormErrors = {};
     if (!form.title.trim() || form.title.trim().length < 3)
       e.title = 'Введите название (мин. 3 символа)';
+    if (!form.format.trim() || form.format.trim().length < 3)
+      e.format = 'Введите формат (мин. 3 символа)';
     if (!form.category)
       e.category = 'Выберите категорию';
     if (!form.event_date)
@@ -82,10 +86,11 @@ export default function SubmitEventModal() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          details: form.format,             // Формат → details в БД
           show_time: form.show_time || undefined,
           address: form.address || undefined,
           price: form.price || undefined,
-          description: form.description || undefined,
+          description: form.description || undefined,  // Описание → description в БД
           source_url: form.source_url || undefined,
         }),
       });
@@ -176,6 +181,19 @@ export default function SubmitEventModal() {
                   className={inputClass(errors.title)}
                 />
                 {errors.title && <p className="text-xs text-red-400 mt-1">{errors.title}</p>}
+              </div>
+
+              {/* Формат */}
+              <div>
+                <label className={labelClass}>Формат <span className="text-red-400">*</span></label>
+                <input
+                  type="text"
+                  placeholder="Концерт, спектакль, мастер-класс..."
+                  value={form.format}
+                  onChange={e => set('format', e.target.value)}
+                  className={inputClass(errors.format)}
+                />
+                {errors.format && <p className="text-xs text-red-400 mt-1">{errors.format}</p>}
               </div>
 
               {/* Категория */}

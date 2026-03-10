@@ -1,5 +1,4 @@
-import { type CategorySlug, type EventItem, type GroupedEvent, categories } from '@/data/events';
-import { groupEvents } from '@/data/events';
+import { type CategorySlug, type EventItem, categories } from '@/data/events';
 
 const API_BASE = 'https://minskdvizh.up.railway.app';
 
@@ -29,15 +28,15 @@ export type CategoryCounts = Record<CategorySlug, number>;
 function toEventItem(e: ApiEvent): EventItem {
   return {
     id: String(e.id),
-    title: e.title,
-    date: e.event_date,
-    time: e.show_time,
-    venue: e.place,
-    price: e.price,
+    title: e.title || '',
+    date: e.event_date || '',
+    time: e.show_time || undefined,
+    venue: e.place || '',
+    price: e.price || undefined,
     category: e.category,
-    description: e.details,
-    sourceUrl: e.source_url,
-    sourceName: e.source_name,
+    description: e.details || undefined,
+    sourceUrl: e.source_url || undefined,
+    sourceName: e.source_name || undefined,
   };
 }
 
@@ -61,7 +60,7 @@ export async function fetchEvents(params: {
   search?: string;
   page?: number;
   per_page?: number;
-}): Promise<{ events: EventItem[]; grouped: GroupedEvent[]; total: number; page: number; totalPages: number }> {
+}): Promise<{ events: EventItem[]; total: number }> {
   const queryParams: Record<string, string> = {};
   if (params.category) queryParams.category = params.category;
   if (params.date) queryParams.date = params.date;
@@ -72,14 +71,9 @@ export async function fetchEvents(params: {
   if (params.per_page) queryParams.per_page = String(params.per_page);
 
   const data = await apiFetch<ApiEventsResponse>('/api/events', queryParams);
-  const events = data.events.map(toEventItem);
-  const grouped = groupEvents(events);
   return {
-    events,
-    grouped,
+    events: data.events.map(toEventItem),
     total: data.total,
-    page: data.page,
-    totalPages: Math.ceil(data.total / data.per_page),
   };
 }
 
@@ -88,7 +82,7 @@ export async function fetchEventsByFilter(filter: 'today' | 'tomorrow' | 'weeken
   search?: string;
   page?: number;
   per_page?: number;
-}): Promise<{ events: EventItem[]; grouped: GroupedEvent[]; total: number; page: number; totalPages: number }> {
+}): Promise<{ events: EventItem[]; total: number }> {
   const queryParams: Record<string, string> = {};
   if (params?.category) queryParams.category = params.category;
   if (params?.search) queryParams.search = params.search;
@@ -96,14 +90,9 @@ export async function fetchEventsByFilter(filter: 'today' | 'tomorrow' | 'weeken
   if (params?.per_page) queryParams.per_page = String(params.per_page);
 
   const data = await apiFetch<ApiEventsResponse>(`/api/events/${filter}`, queryParams);
-  const events = data.events.map(toEventItem);
-  const grouped = groupEvents(events);
   return {
-    events,
-    grouped,
+    events: data.events.map(toEventItem),
     total: data.total,
-    page: data.page,
-    totalPages: Math.ceil(data.total / data.per_page),
   };
 }
 

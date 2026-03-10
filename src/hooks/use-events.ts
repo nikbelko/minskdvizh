@@ -20,20 +20,27 @@ export function useEvents(params: {
 
   // Fetch ALL raw events (per_page=500)
   const query = useQuery({
-    queryKey: ['events-all', quickFilter, category, search, calendarDate?.toISOString()],
+    queryKey: ['events-all', search ? `search:${search}` : quickFilter, category, calendarDate?.toISOString()],
     queryFn: () => {
+      // При поиске — ищем по всем будущим событиям (как в боте: title + details + place)
+      if (search && search.trim().length >= 2) {
+        return fetchEvents({
+          category: category || undefined,
+          search: search.trim(),
+          page: 1,
+          per_page: 500,
+        });
+      }
       if (calendarDate) {
         return fetchEvents({
           date: format(calendarDate, 'yyyy-MM-dd'),
           category: category || undefined,
-          search: search || undefined,
           page: 1,
           per_page: 500,
         });
       }
       return fetchEventsByFilter(quickFilter, {
         category: category || undefined,
-        search: search || undefined,
         page: 1,
         per_page: 500,
       });

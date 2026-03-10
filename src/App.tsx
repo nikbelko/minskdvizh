@@ -15,6 +15,19 @@ const AppInner = () => {
   useEffect(() => { tgReady(); }, []);
   useTelegramTheme();
 
+  useEffect(() => {
+    const tg = window.Telegram?.WebApp;
+    fetch('https://minskdvizh.up.railway.app/api/webapp-ping', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: tg?.initDataUnsafe?.user?.id ?? null,
+        username: tg?.initDataUnsafe?.user?.username ?? null,
+        first_name: tg?.initDataUnsafe?.user?.first_name ?? null,
+      }),
+    }).catch(() => {});
+  }, []);
+
   return (
     <Routes>
       <Route path="/" element={<Index />} />

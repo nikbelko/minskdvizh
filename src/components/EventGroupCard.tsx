@@ -26,14 +26,12 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
       : group.dateTimeGroups?.[0]?.dateRanges?.[0] || '';
     const venue = group.venue || group.cinemaShowtimes?.[0]?.venue || '';
     const price = group.price || '';
-
     let text = `${group.title}`;
     if (date) text += ` — ${date}`;
     if (venue) text += `, ${venue}`;
     if (price) text += `, ${price}`;
     if (group.sourceUrl) text += `\nПодробнее: ${group.sourceUrl}`;
     text += `\n\nАфиша Минска: https://minskdvizh-web.up.railway.app`;
-
     try {
       await navigator.clipboard.writeText(text);
       toast.success('Скопировано ✓');
@@ -63,6 +61,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
   return (
     <div className={`glass-card border-l-4 ${cat.borderClass} p-5 hover:border-l-primary transition-all duration-300 group/card`}>
       <div className="flex items-start justify-between gap-3">
+
         <div className="flex-1 min-w-0">
           <h4 className="text-foreground font-body font-bold text-base mb-3 group-hover/card:text-primary transition-colors">
             {group.title}
@@ -73,7 +72,6 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
               <span className="amber-pill text-xs font-bold">
                 📅 {formatDateShort(group.cinemaDate)}
               </span>
-              {/* Collapsible showtimes — кнопка только если кинотеатров > 1 */}
               {cinemaCount > 1 && (
                 <button
                   onClick={() => { haptic('light'); setShowTimes(p => !p); }}
@@ -100,31 +98,33 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
           )}
 
           {group.category !== 'cinema' && (
-  <div className="space-y-2">
-    {group.venue && (
-      <p className="text-sm text-muted-foreground font-body">🏢 {group.venue}</p>
-    )}
-    {group.price && (
-      <p className="text-sm text-muted-foreground font-body">💰 {group.price}</p>
-    )}
-    {group.dateTimeGroups && group.dateTimeGroups.length > 0 && (
-      <div className="flex flex-wrap gap-2 mt-1">
-        {group.dateTimeGroups.map((dtg, i) => (
-          <div key={i} className="flex flex-wrap items-center gap-1.5 text-sm">
-            {dtg.dateRanges && dtg.dateRanges.length > 0 ? (
-              dtg.dateRanges.map((range, j) => (
-                <span key={j} className="amber-pill text-xs font-bold">📅 {range}</span>
-              ))
-            ) : (
-              <span className="text-muted-foreground text-xs">📅 Дата уточняется</span>
-            )}
-            {dtg.time && <span className="text-muted-foreground">⏰ {dtg.time}</span>}
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-)}
+            <div className="space-y-2">
+              {group.venue && (
+                <p className="text-sm text-muted-foreground font-body">🏢 {group.venue}</p>
+              )}
+              {group.price && (
+                <p className="text-sm text-muted-foreground font-body">💰 {group.price}</p>
+              )}
+              {group.dateTimeGroups && group.dateTimeGroups.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {group.dateTimeGroups.map((dtg, i) => (
+                    <div key={i} className="flex flex-wrap items-center gap-1.5 text-sm">
+                      {dtg.dateRanges && dtg.dateRanges.length > 0 ? (
+                        dtg.dateRanges.map((range, j) => (
+                          <span key={j} className="amber-pill text-xs font-bold">📅 {range}</span>
+                        ))
+                      ) : (
+                        <span className="text-muted-foreground text-xs">📅 Дата уточняется</span>
+                      )}
+                      {dtg.time && <span className="text-muted-foreground">⏰ {dtg.time}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         <div className="flex flex-col items-end gap-2 shrink-0">
           <div className="flex items-center gap-1.5">
             <button
@@ -150,6 +150,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
             </a>
           )}
         </div>
+
       </div>
     </div>
   );

@@ -122,12 +122,11 @@ export default function SubmitEventModal() {
       {/* Floating button */}
       <button
         onClick={() => { haptic('light'); setOpen(true); }}
-        className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 z-40 flex items-center gap-2 px-4 py-3 rounded-full font-body font-semibold text-sm text-white shadow-lg shadow-primary/30 transition-all hover:scale-105 active:scale-95"
+        className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 z-40 flex items-center gap-1.5 px-3 py-2 rounded-lg font-body font-medium text-xs text-white shadow-lg shadow-primary/30 transition-all hover:scale-105 active:scale-95"
         style={{ background: 'linear-gradient(135deg, #c026d3, #9333ea)' }}
       >
-        <Plus className="h-4 w-4" />
-        <span className="hidden sm:inline">Добавить событие</span>
-        <span className="sm:hidden">Добавить</span>
+        <Plus className="h-3.5 w-3.5" />
+        <span>Добавить</span>
       </button>
 
       {/* Backdrop */}

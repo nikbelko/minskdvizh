@@ -28,7 +28,8 @@ const CategoryTabs = ({ activeCategory, onCategoryChange, counts, totalFiltered 
         </button>
         {categories.map((cat) => {
           const count = counts?.[cat.slug] ?? 0;
-          if (count === 0) return null; // скрываем пустые категории
+          // скрываем только когда counts уже загружены (counts не undefined) и count = 0
+          if (counts !== undefined && count === 0) return null;
           const isActive = activeCategory === cat.slug;
           return (
             <button

@@ -21,17 +21,35 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
 
   const handleShare = async () => {
     haptic('medium');
-    const date = group.cinemaDate
-      ? formatDateShort(group.cinemaDate)
-      : group.dateTimeGroups?.[0]?.dateRanges?.[0] || '';
-    const venue = group.venue || group.cinemaShowtimes?.[0]?.venue || '';
-    const price = group.price || '';
-    let text = `${group.title}`;
-    if (date) text += ` — ${date}`;
-    if (venue) text += `, ${venue}`;
-    if (price) text += `, ${price}`;
-    if (group.sourceUrl) text += `\nПодробнее: ${group.sourceUrl}`;
-    text += `\n\nАфиша Минска: https://minskdvizh-web.up.railway.app`;
+    const cat = getCategoryBySlug(group.category);
+    const emoji = cat.emoji;
+
+    let lines: string[] = [];
+    lines.push(`${emoji} ${group.title}`);
+
+    if (group.category === 'cinema' && group.cinemaDate) {
+      const dateStr = new Date(group.cinemaDate + 'T00:00:00')
+        .toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' });
+      lines.push(`📅 ${dateStr}`);
+      if (group.cinemaShowtimes && group.cinemaShowtimes.length > 0) {
+        group.cinemaShowtimes.forEach(st => {
+          lines.push(`📍 ${st.venue}: ${st.times.join(', ')}`);
+        });
+      }
+    } else {
+      if (group.dateTimeGroups && group.dateTimeGroups.length > 0) {
+        const dtg = group.dateTimeGroups[0];
+        if (dtg.dateRanges?.length) lines.push(`📅 ${dtg.dateRanges.join(', ')}`);
+        if (dtg.time) lines.push(`⏰ ${dtg.time}`);
+      }
+      if (group.venue) lines.push(`🏢 ${group.venue}`);
+    }
+
+    if (group.price) lines.push(`💰 ${group.price}`);
+    if (group.sourceUrl) lines.push(`🔗 ${group.sourceUrl}`);
+    lines.push(`\nАфиша Минска @MinskDvizhBot`);
+
+    const text = lines.join('\n');
     try {
       await navigator.clipboard.writeText(text);
       toast.success('Скопировано ✓');
@@ -84,9 +102,9 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
               {showTimes && (
                 <div className="space-y-1.5 mt-1 pl-1 border-l-2 border-primary/30">
                   {group.cinemaShowtimes?.map((st) => (
-                    <div key={st.venue} className="text-sm text-muted-foreground font-body">
-                      <span className="text-foreground/80">📍 {st.venue}:</span>{' '}
-                      <span className="text-accent">{st.times.join(', ')}</span>
+                    <div key={st.venue} className="text-sm text-muted-foreground font-body flex flex-wrap items-baseline gap-x-1">
+                      <span className="text-foreground/80 shrink-0">📍 {st.venue}:</span>
+                      <span className="text-accent whitespace-nowrap">{st.times.join(', ')}</span>
                     </div>
                   ))}
                 </div>

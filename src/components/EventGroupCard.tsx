@@ -1,8 +1,9 @@
 import { type GroupedEvent, getCategoryBySlug } from '@/data/events';
-import { ArrowRight, Share2 } from 'lucide-react';
+import { ArrowRight, Share2, ChevronDown, ChevronUp } from 'lucide-react';
 import CategoryIcon from './CategoryIcon';
 import { toast } from 'sonner';
 import { haptic, openLink, showMainButton, hideMainButton } from '@/lib/telegram';
+import { useState } from 'react';
 
 interface EventGroupCardProps {
   group: GroupedEvent;
@@ -10,6 +11,8 @@ interface EventGroupCardProps {
 
 const EventGroupCard = ({ group }: EventGroupCardProps) => {
   const cat = getCategoryBySlug(group.category);
+  const [showTimes, setShowTimes] = useState(false);
+  const cinemaCount = group.cinemaShowtimes?.length ?? 0;
 
   const formatDateShort = (dateStr: string) => {
     const d = new Date(dateStr + 'T00:00:00');
@@ -70,16 +73,26 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
               <span className="amber-pill text-xs font-bold">
                 📅 {formatDateShort(group.cinemaDate)}
               </span>
-              <div className="space-y-1.5 mt-2">
-                {group.cinemaShowtimes?.map((st) => (
-                  <div key={st.venue} className="text-sm text-muted-foreground font-body">
-                    <span className="text-foreground/80">📍 {st.venue}:</span>{' '}
-                    <span className="text-accent">{st.times.join(', ')}</span>
-                  </div>
-                ))}
-              </div>
+              {/* Collapsible showtimes */}
+              <button
+                onClick={() => { haptic('light'); setShowTimes(p => !p); }}
+                className="flex items-center gap-1.5 text-xs text-primary font-body font-medium mt-1 hover:opacity-80 transition-opacity"
+              >
+                {showTimes ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                {showTimes ? 'Скрыть сеансы' : `Сеансы (${cinemaCount} ${cinemaCount === 1 ? 'кинотеатр' : cinemaCount <= 4 ? 'кинотеатра' : 'кинотеатров'})`}
+              </button>
+              {showTimes && (
+                <div className="space-y-1.5 mt-1 pl-1 border-l-2 border-primary/30">
+                  {group.cinemaShowtimes?.map((st) => (
+                    <div key={st.venue} className="text-sm text-muted-foreground font-body">
+                      <span className="text-foreground/80">📍 {st.venue}:</span>{' '}
+                      <span className="text-accent">{st.times.join(', ')}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
               {group.price && (
-                <p className="text-sm text-muted-foreground mt-2 font-body">💰 {group.price}</p>
+                <p className="text-sm text-muted-foreground mt-1 font-body">💰 {group.price}</p>
               )}
             </div>
           )}

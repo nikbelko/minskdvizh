@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isToday as isDateToday, isBefore, startOfDay } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, X, ListChecks } from 'lucide-react';
@@ -7,14 +7,16 @@ import { useCalendarDates, useEvents } from '@/hooks/use-events';
 interface CalendarViewProps {
   selectedDate: Date | null;
   onSelectDate: (date: Date | null) => void;
+  onClose?: () => void;
   /** If true, renders without outer wrapper (for embedding in sheets) */
   embedded?: boolean;
 }
 
 const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
-const CalendarView = ({ selectedDate, onSelectDate, embedded = false }: CalendarViewProps) => {
+const CalendarView = ({ selectedDate, onSelectDate, onClose, embedded = false }: CalendarViewProps) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const calendarRef = useRef<HTMLDivElement>(null);
   const { data: calendarDatesArr } = useCalendarDates();
   const { data: selectedDateEvents } = useEvents({
     quickFilter: 'upcoming',
@@ -22,6 +24,25 @@ const CalendarView = ({ selectedDate, onSelectDate, embedded = false }: Calendar
     page: 1,
     perPage: 1,
   });
+
+  // Close on click outside
+  useEffect(() => {
+    if (embedded || !onClose) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (calendarRef.current && !calendarRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [embedded, onClose]);
   const selectedDateCount = selectedDate ? (selectedDateEvents?.total ?? null) : null;
   const eventDatesSet = useMemo(() => {
     const arr = Array.isArray(calendarDatesArr) ? calendarDatesArr : [];
@@ -69,7 +90,7 @@ const CalendarView = ({ selectedDate, onSelectDate, embedded = false }: Calendar
           return (
             <button
               key={day.toISOString()}
-              onClick={() => active ? onSelectDate(day) : undefined}
+              onClick={() => active ? (onSelectDate(day), onClose?.()) : undefined}
               disabled={!active}
               className={`relative flex flex-col items-center justify-center py-2 rounded-lg text-sm font-body transition-all ${
                 isSelected ? 'bg-primary text-primary-foreground'
@@ -119,6 +140,7 @@ const CalendarView = ({ selectedDate, onSelectDate, embedded = false }: Calendar
   return (
     <div className="absolute left-0 right-0 z-30 px-4 pt-2 pb-4 animate-in slide-in-from-top-2 fade-in duration-200">
       <div
+        ref={calendarRef}
         className="mx-auto max-w-2xl rounded-xl border border-border/50 p-5"
         style={{
           background: 'hsla(var(--glass-bg))',

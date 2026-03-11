@@ -103,6 +103,9 @@ export default function SubmitEventModal() {
           price: form.price || undefined,
           description: form.description || undefined,
           source_url: form.source_url || undefined,
+          tg_user_id: window.Telegram?.WebApp?.initDataUnsafe?.user?.id ?? null,
+          tg_username: window.Telegram?.WebApp?.initDataUnsafe?.user?.username ?? null,
+          tg_first_name: window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name ?? null,
         }),
       });
       if (!res.ok) throw new Error();

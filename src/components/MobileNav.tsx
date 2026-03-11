@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Home, CalendarDays, Search, Grid3X3, X } from 'lucide-react';
 import { haptic } from '@/lib/telegram';
 import { categories } from '@/data/events';
@@ -63,6 +63,25 @@ const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, s
 
   const anyOpen = categoriesOpen || searchOpen || calendarOpen;
 
+  // Блокируем скролл фона когда открыта любая панель
+  useEffect(() => {
+    if (anyOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      return () => {
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        const top = document.body.style.top;
+        document.body.style.top = '';
+        window.scrollTo(0, -parseInt(top || '0'));
+      };
+    }
+  }, [anyOpen]);
+
   const isActive = (key: string) => {
     if (key === 'categories') return categoriesOpen;
     if (key === 'calendar') return calendarOpen;
@@ -75,7 +94,7 @@ const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, s
       {/* Backdrop */}
       {anyOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm sm:hidden animate-in fade-in duration-200"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm sm:hidden animate-in fade-in duration-200 touch-none"
           onClick={closeAll}
         />
       )}

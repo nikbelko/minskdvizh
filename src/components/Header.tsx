@@ -112,15 +112,18 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
               }}
             >
               <h3 className="text-sm font-display font-bold text-foreground mb-3">Подписаться на рассылку</h3>
-              <div className="grid grid-cols-4 gap-2">
+              <div
+                className="flex gap-2 overflow-x-auto pb-1"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
                 {categories.map((cat) => (
                   <button
                     key={cat.slug}
                     onClick={() => handleSubscribe(cat.name)}
-                    className="flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all hover:bg-secondary/50"
+                    className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg transition-all hover:bg-secondary/50 shrink-0 min-w-[64px]"
                   >
                     <CategoryIcon slug={cat.slug} size="sm" />
-                    <span className="text-[10px] font-body text-foreground truncate w-full text-center">
+                    <span className="text-[10px] font-body text-foreground text-center leading-tight w-full">
                       {cat.name}
                     </span>
                   </button>

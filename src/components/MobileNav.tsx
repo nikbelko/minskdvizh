@@ -15,6 +15,7 @@ interface MobileNavProps {
   onSearchChange: (q: string) => void;
   calendarDate: Date | null;
   onCalendarDate: (date: Date | null) => void;
+  categoryCounts?: Record<string, number>;
 }
 
 const tabs = [
@@ -31,7 +32,7 @@ const glassStyle = {
   WebkitBackdropFilter: 'blur(20px)',
 };
 
-const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, searchQuery, onSearchChange, calendarDate, onCalendarDate }: MobileNavProps) => {
+const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, searchQuery, onSearchChange, calendarDate, onCalendarDate, categoryCounts }: MobileNavProps) => {
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -110,7 +111,7 @@ const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, s
               )}
             </div>
             <div className="grid grid-cols-4 gap-2">
-              {categories.map((cat) => (
+              {categories.filter(cat => !categoryCounts || (categoryCounts[cat.slug] ?? 0) > 0).map((cat) => (
                 <button
                   key={cat.slug}
                   onClick={() => handleCategoryClick(cat.slug)}

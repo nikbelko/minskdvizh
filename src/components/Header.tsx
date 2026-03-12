@@ -129,24 +129,24 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
       {/* Subscriptions panel */}
       {subsOpen && (
         <div className="fixed top-[57px] left-0 right-0 z-30 px-3 pt-2 sm:hidden animate-in slide-in-from-top-2 fade-in duration-200">
-          <div className="rounded-xl border border-border/50 p-4" style={glassStyle}>
+          <div className="rounded-xl border border-border/50 p-3" style={glassStyle}>
 
             {!addMode ? (
               <>
                 {/* Мои подписки */}
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-display font-bold text-foreground">🔔 Мои подписки</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-display font-bold text-foreground">🔔 Мои подписки</h3>
                   <button onClick={() => setAddMode(true)} className="text-xs text-primary font-body font-medium hover:underline">
                     + Добавить
                   </button>
                 </div>
 
                 {subs.length === 0 ? (
-                  <div className="text-center py-3">
-                    <p className="text-sm text-muted-foreground font-body mb-3">Нет активных подписок</p>
+                  <div className="text-center py-2">
+                    <p className="text-xs text-muted-foreground font-body mb-2">Нет активных подписок</p>
                     <button
                       onClick={() => setAddMode(true)}
-                      className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-body font-medium"
+                      className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-body font-medium"
                     >
                       Подписаться на категорию
                     </button>
@@ -154,16 +154,19 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                 ) : (
                   <div className="space-y-1">
                     {subs.map(sub => (
-                      <div key={sub.slug} className="flex items-center justify-between px-3 py-2 rounded-lg bg-secondary/30">
-                        <div className="flex items-center gap-2">
+                      <div
+                        key={sub.slug}
+                        className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-secondary/30"
+                      >
+                        <div className="flex items-center gap-1.5">
                           <CategoryIcon slug={sub.slug as any} size="sm" />
-                          <span className="text-sm font-body text-foreground">{sub.name}</span>
+                          <span className="text-xs font-body text-foreground">{sub.name}</span>
                         </div>
                         <button
                           onClick={() => handleUnsubscribe(sub.slug, sub.name)}
-                          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-red-400 transition-colors font-body"
+                          className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-red-400 transition-colors font-body shrink-0 ml-2"
                         >
-                          <BellOff className="h-3.5 w-3.5" />
+                          <BellOff className="h-3 w-3" />
                           <span>Отписаться</span>
                         </button>
                       </div>
@@ -174,8 +177,8 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
             ) : (
               <>
                 {/* Добавить подписку */}
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-display font-bold text-foreground">Выберите категорию</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-display font-bold text-foreground">Выберите категорию</h3>
                   <button onClick={() => setAddMode(false)} className="text-xs text-muted-foreground hover:text-foreground font-body">
                     ← Назад
                   </button>

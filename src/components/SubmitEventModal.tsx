@@ -277,23 +277,18 @@ export default function SubmitEventModal() {
                           className={inputClass(errors.event_date)} />
                         {errors.event_date && <p className="text-xs text-red-400 mt-1">{errors.event_date}</p>}
                       </div>
-                      <div>
+                      <div className="grid grid-cols-2 gap-1.5">
                         <input type="time" value={form.show_time}
                           onChange={e => set('show_time', e.target.value)}
-                          className={inputClass()} placeholder="Время начала" />
+                          className={inputClass()}
+                          placeholder="Начало" />
+                        <input type="time" value={form.show_time_end}
+                          onChange={e => set('show_time_end', e.target.value)}
+                          disabled={!form.show_time}
+                          className={`${inputClass()} disabled:opacity-40 disabled:cursor-not-allowed`}
+                          placeholder="Конец" />
                       </div>
                     </div>
-                    {form.show_time && (
-                      <div className="grid grid-cols-2 gap-3">
-                        <div />
-                        <div>
-                          <input type="time" value={form.show_time_end}
-                            onChange={e => set('show_time_end', e.target.value)}
-                            className={inputClass()} placeholder="Время окончания" />
-                          <p className="text-xs text-muted-foreground/60 mt-1">необязательно</p>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -324,8 +319,8 @@ export default function SubmitEventModal() {
                         <label className="text-xs text-muted-foreground/70 mb-1 block">Время окончания</label>
                         <input type="time" value={form.show_time_end}
                           onChange={e => set('show_time_end', e.target.value)}
-                          className={inputClass()} />
-                        <p className="text-xs text-muted-foreground/60 mt-1">необязательно</p>
+                          disabled={!form.show_time}
+                          className={`${inputClass()} disabled:opacity-40 disabled:cursor-not-allowed`} />
                       </div>
                     </div>
                     {form.event_date && form.event_date_to && form.event_date_to > form.event_date && (
@@ -428,4 +423,3 @@ export default function SubmitEventModal() {
     </>
   );
 }
-

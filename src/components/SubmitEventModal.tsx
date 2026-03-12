@@ -14,6 +14,7 @@ interface FormData {
   event_date: string;
   event_date_to: string;
   show_time: string;
+  show_time_end: string;
   place: string;
   address: string;
   price: string;
@@ -35,7 +36,7 @@ const today = new Date().toISOString().split('T')[0];
 
 const EMPTY_FORM: FormData = {
   title: '', format: '', category: '', date_mode: 'single',
-  event_date: '', event_date_to: '', show_time: '',
+  event_date: '', event_date_to: '', show_time: '', show_time_end: '',
   place: '', address: '', price: '', description: '', source_url: '',
 };
 
@@ -98,7 +99,9 @@ export default function SubmitEventModal() {
           ...form,
           details: form.format,
           event_date_to: form.date_mode === 'range' ? form.event_date_to : undefined,
-          show_time: form.show_time || undefined,
+          show_time: form.show_time
+            ? (form.show_time_end ? `${form.show_time}-${form.show_time_end}` : form.show_time)
+            : undefined,
           address: form.address || undefined,
           price: form.price || undefined,
           description: form.description || undefined,
@@ -108,7 +111,19 @@ export default function SubmitEventModal() {
           tg_first_name: window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name ?? null,
         }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        let msg = 'Не удалось отправить. Попробуйте ещё раз.';
+        try {
+          const errData = await res.json();
+          if (errData?.detail) msg = errData.detail;
+        } catch {}
+        if (res.status === 409) {
+          toast.error(`⚠️ ${msg}`, { duration: 5000 });
+        } else {
+          toast.error(msg, { duration: 4000 });
+        }
+        return;
+      }
       setOpen(false);
       setForm(EMPTY_FORM);
       setErrors({});
@@ -254,18 +269,31 @@ export default function SubmitEventModal() {
                 </div>
 
                 {form.date_mode === 'single' ? (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <input type="date" min={today} value={form.event_date}
-                        onChange={e => set('event_date', e.target.value)}
-                        className={inputClass(errors.event_date)} />
-                      {errors.event_date && <p className="text-xs text-red-400 mt-1">{errors.event_date}</p>}
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <input type="date" min={today} value={form.event_date}
+                          onChange={e => set('event_date', e.target.value)}
+                          className={inputClass(errors.event_date)} />
+                        {errors.event_date && <p className="text-xs text-red-400 mt-1">{errors.event_date}</p>}
+                      </div>
+                      <div>
+                        <input type="time" value={form.show_time}
+                          onChange={e => set('show_time', e.target.value)}
+                          className={inputClass()} placeholder="Время начала" />
+                      </div>
                     </div>
-                    <div>
-                      <input type="time" value={form.show_time}
-                        onChange={e => set('show_time', e.target.value)}
-                        className={inputClass()} placeholder="Время" />
-                    </div>
+                    {form.show_time && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div />
+                        <div>
+                          <input type="time" value={form.show_time_end}
+                            onChange={e => set('show_time_end', e.target.value)}
+                            className={inputClass()} placeholder="Время окончания" />
+                          <p className="text-xs text-muted-foreground/60 mt-1">необязательно</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -285,10 +313,20 @@ export default function SubmitEventModal() {
                         {errors.event_date_to && <p className="text-xs text-red-400 mt-1">{errors.event_date_to}</p>}
                       </div>
                     </div>
-                    <div>
-                      <input type="time" value={form.show_time}
-                        onChange={e => set('show_time', e.target.value)}
-                        className={inputClass()} placeholder="Время (одинаковое каждый день)" />
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground/70 mb-1 block">Время начала</label>
+                        <input type="time" value={form.show_time}
+                          onChange={e => set('show_time', e.target.value)}
+                          className={inputClass()} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground/70 mb-1 block">Время окончания</label>
+                        <input type="time" value={form.show_time_end}
+                          onChange={e => set('show_time_end', e.target.value)}
+                          className={inputClass()} />
+                        <p className="text-xs text-muted-foreground/60 mt-1">необязательно</p>
+                      </div>
                     </div>
                     {form.event_date && form.event_date_to && form.event_date_to > form.event_date && (
                       <p className="text-xs text-muted-foreground/60">

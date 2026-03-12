@@ -8,11 +8,11 @@ export default defineConfig(({ mode }) => ({
   preview: {
     allowedHosts: ['minskdvizh-web.up.railway.app', 'localhost'],
     host: '0.0.0.0',
-    port: 3000,
+    port: parseInt(process.env.PORT || '3000'),
   },
   server: {
     host: '0.0.0.0',
-    port: 3000,
+    port: parseInt(process.env.PORT || '3000'),
     hmr: {
       overlay: false,
     },

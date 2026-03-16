@@ -12,17 +12,25 @@ interface HeaderProps {
   calendarOpen: boolean;
 }
 
-type SubItem = { slug: string; name: string };
+type SubItem = { 
+  slug: string; 
+  name: string;
+  date_type?: string; // опционально, для будущего использования
+};
 
 // Функции для работы с API
 async function fetchSubscriptions(userId: number): Promise<SubItem[]> {
   try {
-    const response = await fetch(`/api/subscriptions?user_id=${userId}`);
+    const response = await fetch(`https://minskdvizh.up.railway.app/api/subscriptions?user_id=${userId}`);
     const data = await response.json();
-    // Преобразуем из формата API в формат компонента
+    
+    console.log('Подписки из API:', data);
+    
+    // Преобразуем все подписки, независимо от date_type
     return data.subscriptions.map((s: any) => ({
       slug: s.category,
       name: categories.find(c => c.slug === s.category)?.name || s.category,
+      date_type: s.date_type // сохраняем для будущего использования
     }));
   } catch (error) {
     console.error('Ошибка загрузки подписок:', error);

@@ -78,6 +78,25 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
   const tgUser = getTelegramUser();
   const userId = tgUser?.id;
 
+  // Блокировка скролла при открытой панели подписок
+  useEffect(() => {
+    if (subsOpen) {
+      // Сохраняем текущую позицию скролла
+      const scrollY = window.scrollY;
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+    } else {
+      // Восстанавливаем скролл
+      const scrollY = document.body.style.top;
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
+    }
+  }, [subsOpen]);
+
   // Загружаем подписки при открытии панели
   useEffect(() => {
     if (subsOpen && userId) {
@@ -238,12 +257,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                     </button>
                   </div>
                 ) : (
-                  <div 
-                    className="space-y-1 overflow-y-auto scrollbar-thin"
-                    style={{ 
-                      maxHeight: subs.length <= 5 ? `${subs.length * 44}px` : '220px',
-                    }}
-                  >
+                  <div className="space-y-1 max-h-[300px] overflow-y-auto scrollbar-thin pr-1">
                     {subs.map(sub => (
                       <div
                         key={sub.slug}

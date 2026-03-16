@@ -23,20 +23,10 @@ const API_BASE = 'https://minskdvizh.up.railway.app';
 // Функции для работы с API
 async function fetchSubscriptions(userId: number): Promise<SubItem[]> {
   try {
-    console.log('Запрашиваю подписки для user_id:', userId);
-    const url = `${API_BASE}/api/subscriptions?user_id=${userId}`;
-    console.log('URL:', url);
-    
-    const response = await fetch(url);
-    console.log('Статус ответа:', response.status);
+    const response = await fetch(`${API_BASE}/api/subscriptions?user_id=${userId}`);
+    if (!response.ok) throw new Error(`HTTP error ${response.status}`);
     
     const data = await response.json();
-    console.log('Данные от API:', data);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}`);
-    }
-    
     return data.subscriptions.map((s: any) => ({
       slug: s.category,
       name: categories.find(c => c.slug === s.category)?.name || s.category,
@@ -50,56 +40,32 @@ async function fetchSubscriptions(userId: number): Promise<SubItem[]> {
 
 async function addSubscriptionToAPI(userId: number, category: string, dateType: string = 'upcoming'): Promise<boolean> {
   try {
-    console.log('➡️ Добавление подписки:', { userId, category, dateType });
-    
-    const url = `${API_BASE}/api/subscriptions/add`;
-    console.log('URL:', url);
-    
-    const body = JSON.stringify({ user_id: userId, category, date_type: dateType });
-    console.log('Body:', body);
-    
-    const response = await fetch(url, {
+    const response = await fetch(`${API_BASE}/api/subscriptions/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: body,
+      body: JSON.stringify({ user_id: userId, category, date_type: dateType }),
     });
     
-    console.log('Статус ответа:', response.status);
-    
     const data = await response.json();
-    console.log('Ответ API:', data);
-    
     return data.ok === true;
   } catch (error) {
-    console.error('❌ Ошибка добавления подписки:', error);
+    console.error('Ошибка добавления подписки:', error);
     return false;
   }
 }
 
 async function removeSubscriptionFromAPI(userId: number, category: string, dateType: string = 'upcoming'): Promise<boolean> {
   try {
-    console.log('➡️ Удаление подписки:', { userId, category, dateType });
-    
-    const url = `${API_BASE}/api/subscriptions/remove`;
-    console.log('URL:', url);
-    
-    const body = JSON.stringify({ user_id: userId, category, date_type: dateType });
-    console.log('Body:', body);
-    
-    const response = await fetch(url, {
+    const response = await fetch(`${API_BASE}/api/subscriptions/remove`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: body,
+      body: JSON.stringify({ user_id: userId, category, date_type: dateType }),
     });
     
-    console.log('Статус ответа:', response.status);
-    
     const data = await response.json();
-    console.log('Ответ API:', data);
-    
     return data.ok === true;
   } catch (error) {
-    console.error('❌ Ошибка удаления подписки:', error);
+    console.error('Ошибка удаления подписки:', error);
     return false;
   }
 }
@@ -112,7 +78,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
   const tgUser = getTelegramUser();
   const userId = tgUser?.id;
 
-  // Загружаем подписки при открытии панели или при изменении userId
+  // Загружаем подписки при открытии панели
   useEffect(() => {
     if (subsOpen && userId) {
       setLoading(true);
@@ -272,7 +238,12 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-1">
+                  <div 
+                    className="space-y-1 overflow-y-auto scrollbar-thin"
+                    style={{ 
+                      maxHeight: subs.length <= 5 ? `${subs.length * 44}px` : '220px',
+                    }}
+                  >
                     {subs.map(sub => (
                       <div
                         key={sub.slug}
@@ -303,7 +274,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                     ← Назад
                   </button>
                 </div>
-                <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                   {categories.map((cat) => {
                     const isSubscribed = subs.some(s => s.slug === cat.slug);
                     return (

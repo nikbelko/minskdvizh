@@ -1,5 +1,6 @@
 import { Search, X, CalendarDays, Bell, BellOff } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { getTelegramUser, haptic } from '@/lib/telegram';
 import { toast } from 'sonner';
 import { categories } from '@/data/events';
@@ -202,97 +203,106 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
         </div>
       </header>
 
-      {/* Backdrop - на том же уровне что и header */}
-      {subsOpen && (
-        <div className="fixed inset-0 z-40 bg-black/40 sm:hidden animate-in fade-in duration-150 touch-none" onClick={closePanel} />
-      )}
-
-      {/* Subscriptions panel - на том же уровне что и backdrop */}
-      {subsOpen && (
-        <div className="fixed inset-x-0 top-[57px] bottom-0 z-50 sm:hidden animate-in slide-in-from-top-2 fade-in duration-200">
-          <div className="h-full px-3 pt-2 pb-4 overflow-y-auto scrollbar-thin" style={{ paddingBottom: 'max(1rem, var(--tg-safe-bottom, 0px))' }}>
-            <div className="rounded-xl border border-border/50 p-3" style={glassStyle}>
-              {!addMode ? (
-                <>
-                  {/* Мои подписки */}
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xs font-display font-bold text-foreground">🔔 Мои подписки</h3>
-                    <button onClick={() => setAddMode(true)} className="text-xs text-primary font-body font-medium hover:underline">
-                      + Добавить
-                    </button>
-                  </div>
-
-                  {loading ? (
-                    <div className="text-center py-4">
-                      <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                      <p className="text-xs text-muted-foreground mt-1">Загрузка...</p>
-                    </div>
-                  ) : subs.length === 0 ? (
-                    <div className="text-center py-2">
-                      <p className="text-xs text-muted-foreground font-body mb-2">Нет активных подписок</p>
-                      <button
-                        onClick={() => setAddMode(true)}
-                        className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-body font-medium"
-                      >
-                        Подписаться на категорию
+      {/* Порталы для подписок - рендерятся прямо в body */}
+      {subsOpen && createPortal(
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/40 sm:hidden animate-in fade-in duration-150 touch-none"
+            style={{ zIndex: 999999998 }}
+            onClick={closePanel}
+          />
+          
+          {/* Subscriptions panel */}
+          <div 
+            className="fixed inset-x-0 top-[57px] bottom-0 sm:hidden animate-in slide-in-from-top-2 fade-in duration-200"
+            style={{ zIndex: 999999999 }}
+          >
+            <div className="h-full px-3 pt-2 pb-4 overflow-y-auto scrollbar-thin" style={{ paddingBottom: 'max(1rem, var(--tg-safe-bottom, 0px))' }}>
+              <div className="rounded-xl border border-border/50 p-3" style={glassStyle}>
+                {!addMode ? (
+                  <>
+                    {/* Мои подписки */}
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-xs font-display font-bold text-foreground">🔔 Мои подписки</h3>
+                      <button onClick={() => setAddMode(true)} className="text-xs text-primary font-body font-medium hover:underline">
+                        + Добавить
                       </button>
                     </div>
-                  ) : (
-                    <div className="space-y-1">
-                      {subs.map(sub => (
-                        <div
-                          key={sub.slug}
-                          className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-secondary/30"
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <CategoryIcon slug={sub.slug as any} size="sm" />
-                            <span className="text-xs font-body text-foreground">{sub.name}</span>
-                          </div>
-                          <button
-                            onClick={() => handleUnsubscribe(sub.slug, sub.name)}
-                            className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-red-400 transition-colors font-body shrink-0 ml-2"
-                          >
-                            <BellOff className="h-3 w-3" />
-                            <span>Отписаться</span>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  {/* Добавить подписку */}
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xs font-display font-bold text-foreground">Выберите категорию</h3>
-                    <button onClick={() => setAddMode(false)} className="text-xs text-muted-foreground hover:text-foreground font-body">
-                      ← Назад
-                    </button>
-                  </div>
-                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                    {categories.map((cat) => {
-                      const isSubscribed = subs.some(s => s.slug === cat.slug);
-                      return (
+
+                    {loading ? (
+                      <div className="text-center py-4">
+                        <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                        <p className="text-xs text-muted-foreground mt-1">Загрузка...</p>
+                      </div>
+                    ) : subs.length === 0 ? (
+                      <div className="text-center py-2">
+                        <p className="text-xs text-muted-foreground font-body mb-2">Нет активных подписок</p>
                         <button
-                          key={cat.slug}
-                          onClick={() => handleSubscribe(cat.slug, cat.name)}
-                          disabled={loading}
-                          className={`flex flex-col items-center gap-1.5 p-2.5 rounded-lg transition-all shrink-0 min-w-[64px] ${
-                            isSubscribed ? 'bg-primary/20 ring-1 ring-primary opacity-70' : 'hover:bg-secondary/50'
-                          } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          onClick={() => setAddMode(true)}
+                          className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-body font-medium"
                         >
-                          <CategoryIcon slug={cat.slug as any} size="sm" />
-                          <span className="text-[10px] font-body text-foreground text-center leading-tight w-full">{cat.name}</span>
-                          {isSubscribed && <span className="text-[9px] text-primary font-bold">✓ подписан</span>}
+                          Подписаться на категорию
                         </button>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        {subs.map(sub => (
+                          <div
+                            key={sub.slug}
+                            className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-secondary/30"
+                          >
+                            <div className="flex items-center gap-1.5">
+                              <CategoryIcon slug={sub.slug as any} size="sm" />
+                              <span className="text-xs font-body text-foreground">{sub.name}</span>
+                            </div>
+                            <button
+                              onClick={() => handleUnsubscribe(sub.slug, sub.name)}
+                              className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-red-400 transition-colors font-body shrink-0 ml-2"
+                            >
+                              <BellOff className="h-3 w-3" />
+                              <span>Отписаться</span>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {/* Добавить подписку */}
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-xs font-display font-bold text-foreground">Выберите категорию</h3>
+                      <button onClick={() => setAddMode(false)} className="text-xs text-muted-foreground hover:text-foreground font-body">
+                        ← Назад
+                      </button>
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                      {categories.map((cat) => {
+                        const isSubscribed = subs.some(s => s.slug === cat.slug);
+                        return (
+                          <button
+                            key={cat.slug}
+                            onClick={() => handleSubscribe(cat.slug, cat.name)}
+                            disabled={loading}
+                            className={`flex flex-col items-center gap-1.5 p-2.5 rounded-lg transition-all shrink-0 min-w-[64px] ${
+                              isSubscribed ? 'bg-primary/20 ring-1 ring-primary opacity-70' : 'hover:bg-secondary/50'
+                            } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            <CategoryIcon slug={cat.slug as any} size="sm" />
+                            <span className="text-[10px] font-body text-foreground text-center leading-tight w-full">{cat.name}</span>
+                            {isSubscribed && <span className="text-[9px] text-primary font-bold">✓ подписан</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </>,
+        document.body
       )}
     </>
   );

@@ -15,22 +15,32 @@ interface HeaderProps {
 type SubItem = { 
   slug: string; 
   name: string;
-  date_type?: string; // опционально, для будущего использования
+  date_type?: string;
 };
+
+const API_BASE = 'https://minskdvizh.up.railway.app';
 
 // Функции для работы с API
 async function fetchSubscriptions(userId: number): Promise<SubItem[]> {
   try {
-    const response = await fetch(`https://minskdvizh.up.railway.app/api/subscriptions?user_id=${userId}`);
+    console.log('Запрашиваю подписки для user_id:', userId);
+    const url = `${API_BASE}/api/subscriptions?user_id=${userId}`;
+    console.log('URL:', url);
+    
+    const response = await fetch(url);
+    console.log('Статус ответа:', response.status);
+    
     const data = await response.json();
+    console.log('Данные от API:', data);
     
-    console.log('Подписки из API:', data);
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`);
+    }
     
-    // Преобразуем все подписки, независимо от date_type
     return data.subscriptions.map((s: any) => ({
       slug: s.category,
       name: categories.find(c => c.slug === s.category)?.name || s.category,
-      date_type: s.date_type // сохраняем для будущего использования
+      date_type: s.date_type
     }));
   } catch (error) {
     console.error('Ошибка загрузки подписок:', error);
@@ -40,30 +50,56 @@ async function fetchSubscriptions(userId: number): Promise<SubItem[]> {
 
 async function addSubscriptionToAPI(userId: number, category: string, dateType: string = 'upcoming'): Promise<boolean> {
   try {
-    const response = await fetch('/api/subscriptions/add', {
+    console.log('➡️ Добавление подписки:', { userId, category, dateType });
+    
+    const url = `${API_BASE}/api/subscriptions/add`;
+    console.log('URL:', url);
+    
+    const body = JSON.stringify({ user_id: userId, category, date_type: dateType });
+    console.log('Body:', body);
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, category, date_type: dateType }),
+      body: body,
     });
+    
+    console.log('Статус ответа:', response.status);
+    
     const data = await response.json();
+    console.log('Ответ API:', data);
+    
     return data.ok === true;
   } catch (error) {
-    console.error('Ошибка добавления подписки:', error);
+    console.error('❌ Ошибка добавления подписки:', error);
     return false;
   }
 }
 
 async function removeSubscriptionFromAPI(userId: number, category: string, dateType: string = 'upcoming'): Promise<boolean> {
   try {
-    const response = await fetch('/api/subscriptions/remove', {
+    console.log('➡️ Удаление подписки:', { userId, category, dateType });
+    
+    const url = `${API_BASE}/api/subscriptions/remove`;
+    console.log('URL:', url);
+    
+    const body = JSON.stringify({ user_id: userId, category, date_type: dateType });
+    console.log('Body:', body);
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, category, date_type: dateType }),
+      body: body,
     });
+    
+    console.log('Статус ответа:', response.status);
+    
     const data = await response.json();
+    console.log('Ответ API:', data);
+    
     return data.ok === true;
   } catch (error) {
-    console.error('Ошибка удаления подписки:', error);
+    console.error('❌ Ошибка удаления подписки:', error);
     return false;
   }
 }

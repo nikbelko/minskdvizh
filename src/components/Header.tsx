@@ -125,7 +125,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
 
   const handleClearSearch = () => {
     onSearchChange('');
-    try { const { haptic } = require('@/lib/telegram'); haptic('selection'); } catch {}
+    import { haptic } from '@/lib/telegram';
   };
 
   const handleSubscribe = async (slug: string, name: string) => {

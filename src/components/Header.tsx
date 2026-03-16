@@ -1,6 +1,6 @@
 import { Search, X, CalendarDays, Bell, BellOff } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { getTelegramUser } from '@/lib/telegram';
+import { getTelegramUser, haptic } from '@/lib/telegram';
 import { toast } from 'sonner';
 import { categories } from '@/data/events';
 import CategoryIcon from './CategoryIcon';
@@ -125,7 +125,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
 
   const handleClearSearch = () => {
     onSearchChange('');
-    import { haptic } from '@/lib/telegram';
+    haptic('selection');
   };
 
   const handleSubscribe = async (slug: string, name: string) => {

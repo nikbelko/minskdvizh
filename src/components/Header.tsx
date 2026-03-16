@@ -12,41 +12,112 @@ interface HeaderProps {
   calendarOpen: boolean;
 }
 
-const STORAGE_KEY = 'minskdvizh_subscriptions';
 type SubItem = { slug: string; name: string };
 
-function loadSubs(): SubItem[] {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-  catch { return []; }
+// Функции для работы с API
+async function fetchSubscriptions(userId: number): Promise<SubItem[]> {
+  try {
+    const response = await fetch(`/api/subscriptions?user_id=${userId}`);
+    const data = await response.json();
+    // Преобразуем из формата API в формат компонента
+    return data.subscriptions.map((s: any) => ({
+      slug: s.category,
+      name: categories.find(c => c.slug === s.category)?.name || s.category,
+    }));
+  } catch (error) {
+    console.error('Ошибка загрузки подписок:', error);
+    return [];
+  }
 }
-function saveSubs(subs: SubItem[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(subs));
+
+async function addSubscriptionToAPI(userId: number, category: string, dateType: string = 'upcoming'): Promise<boolean> {
+  try {
+    const response = await fetch('/api/subscriptions/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, category, date_type: dateType }),
+    });
+    const data = await response.json();
+    return data.ok === true;
+  } catch (error) {
+    console.error('Ошибка добавления подписки:', error);
+    return false;
+  }
+}
+
+async function removeSubscriptionFromAPI(userId: number, category: string, dateType: string = 'upcoming'): Promise<boolean> {
+  try {
+    const response = await fetch('/api/subscriptions/remove', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, category, date_type: dateType }),
+    });
+    const data = await response.json();
+    return data.ok === true;
+  } catch (error) {
+    console.error('Ошибка удаления подписки:', error);
+    return false;
+  }
 }
 
 const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }: HeaderProps) => {
   const [subsOpen, setSubsOpen] = useState(false);
   const [addMode, setAddMode] = useState(false);
-  const [subs, setSubs] = useState<SubItem[]>(loadSubs);
+  const [subs, setSubs] = useState<SubItem[]>([]);
+  const [loading, setLoading] = useState(false);
   const tgUser = getTelegramUser();
+  const userId = tgUser?.id;
 
-  useEffect(() => { saveSubs(subs); }, [subs]);
+  // Загружаем подписки при открытии панели или при изменении userId
+  useEffect(() => {
+    if (subsOpen && userId) {
+      setLoading(true);
+      fetchSubscriptions(userId).then(data => {
+        setSubs(data);
+        setLoading(false);
+      });
+    }
+  }, [subsOpen, userId]);
 
   const handleClearSearch = () => {
     onSearchChange('');
     try { const { haptic } = require('@/lib/telegram'); haptic('selection'); } catch {}
   };
 
-  const handleSubscribe = (slug: string, name: string) => {
-    if (subs.find(s => s.slug === slug)) {
-      toast.info(`Вы уже подписаны на «${name}»`); return;
+  const handleSubscribe = async (slug: string, name: string) => {
+    if (!userId) {
+      toast.error('Не удалось определить пользователя');
+      return;
     }
-    setSubs(prev => [...prev, { slug, name }]);
-    toast.success(`Подписка на «${name}» оформлена ✓`, { duration: 2000 });
+
+    if (subs.find(s => s.slug === slug)) {
+      toast.info(`Вы уже подписаны на «${name}»`);
+      return;
+    }
+
+    const success = await addSubscriptionToAPI(userId, slug);
+    if (success) {
+      setSubs(prev => [...prev, { slug, name }]);
+      toast.success(`Подписка на «${name}» оформлена ✓`, { duration: 2000 });
+      setAddMode(false);
+    } else {
+      toast.error('Ошибка при оформлении подписки');
+    }
   };
 
-  const handleUnsubscribe = (slug: string, name: string) => {
-    setSubs(prev => prev.filter(s => s.slug !== slug));
-    toast.success(`Отписались от «${name}»`, { duration: 2000 });
+  const handleUnsubscribe = async (slug: string, name: string) => {
+    if (!userId) {
+      toast.error('Не удалось определить пользователя');
+      return;
+    }
+
+    const success = await removeSubscriptionFromAPI(userId, slug);
+    if (success) {
+      setSubs(prev => prev.filter(s => s.slug !== slug));
+      toast.success(`Отписались от «${name}»`, { duration: 2000 });
+    } else {
+      toast.error('Ошибка при отписке');
+    }
   };
 
   const closePanel = () => { setSubsOpen(false); setAddMode(false); };
@@ -141,7 +212,12 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                   </button>
                 </div>
 
-                {subs.length === 0 ? (
+                {loading ? (
+                  <div className="text-center py-4">
+                    <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                    <p className="text-xs text-muted-foreground mt-1">Загрузка...</p>
+                  </div>
+                ) : subs.length === 0 ? (
                   <div className="text-center py-2">
                     <p className="text-xs text-muted-foreground font-body mb-2">Нет активных подписок</p>
                     <button
@@ -189,10 +265,11 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                     return (
                       <button
                         key={cat.slug}
-                        onClick={() => { handleSubscribe(cat.slug, cat.name); setAddMode(false); }}
+                        onClick={() => handleSubscribe(cat.slug, cat.name)}
+                        disabled={loading}
                         className={`flex flex-col items-center gap-1.5 p-2.5 rounded-lg transition-all shrink-0 min-w-[64px] ${
                           isSubscribed ? 'bg-primary/20 ring-1 ring-primary opacity-70' : 'hover:bg-secondary/50'
-                        }`}
+                        } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
                         <CategoryIcon slug={cat.slug as any} size="sm" />
                         <span className="text-[10px] font-body text-foreground text-center leading-tight w-full">{cat.name}</span>

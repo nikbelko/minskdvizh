@@ -228,7 +228,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
 
       {/* Subscriptions panel */}
       {subsOpen && (
-        <div className="fixed inset-x-0 top-[57px] bottom-0 z-50 sm:hidden animate-in slide-in-from-top-2 fade-in duration-200">
+        <div className="fixed inset-x-0 top-[57px] bottom-0 z-[100] sm:hidden animate-in slide-in-from-top-2 fade-in duration-200">
           <div className="h-full px-3 pt-2 pb-4 overflow-y-auto scrollbar-thin" style={{ paddingBottom: 'max(1rem, var(--tg-safe-bottom, 0px))' }}>
             <div className="rounded-xl border border-border/50 p-3" style={glassStyle}>
 

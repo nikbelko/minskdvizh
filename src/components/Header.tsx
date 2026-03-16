@@ -78,25 +78,6 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
   const tgUser = getTelegramUser();
   const userId = tgUser?.id;
 
-  // Блокировка скролла при открытой панели подписок
-  useEffect(() => {
-    if (subsOpen) {
-      // Сохраняем текущую позицию скролла
-      const scrollY = window.scrollY;
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-    } else {
-      // Восстанавливаем скролл
-      const scrollY = document.body.style.top;
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      window.scrollTo(0, parseInt(scrollY || '0') * -1);
-    }
-  }, [subsOpen]);
-
   // Загружаем подписки при открытии панели
   useEffect(() => {
     if (subsOpen && userId) {
@@ -221,17 +202,16 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
         </div>
       </header>
 
-      {/* Backdrop */}
+      {/* Backdrop - на том же уровне что и header */}
       {subsOpen && (
-        <div className="fixed inset-0 z-30 bg-black/40 sm:hidden animate-in fade-in duration-150 touch-none" onClick={closePanel} />
+        <div className="fixed inset-0 z-40 bg-black/40 sm:hidden animate-in fade-in duration-150 touch-none" onClick={closePanel} />
       )}
 
-      {/* Subscriptions panel */}
+      {/* Subscriptions panel - на том же уровне что и backdrop */}
       {subsOpen && (
-        <div className="fixed inset-x-0 top-[57px] bottom-0 z-[9999] sm:hidden animate-in slide-in-from-top-2 fade-in duration-200">
+        <div className="fixed inset-x-0 top-[57px] bottom-0 z-50 sm:hidden animate-in slide-in-from-top-2 fade-in duration-200">
           <div className="h-full px-3 pt-2 pb-4 overflow-y-auto scrollbar-thin" style={{ paddingBottom: 'max(1rem, var(--tg-safe-bottom, 0px))' }}>
             <div className="rounded-xl border border-border/50 p-3" style={glassStyle}>
-
               {!addMode ? (
                 <>
                   {/* Мои подписки */}

@@ -79,6 +79,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
   const tgUser = getTelegramUser();
   const userId = tgUser?.id;
   const panelRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
   
   // Блокировка скролла body при открытой панели
   useEffect(() => {
@@ -117,6 +118,23 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
       });
     }
   }, [subsOpen, userId]);
+
+  // Добавляем обработчик клика на хедер
+  useEffect(() => {
+    const handleHeaderClick = (e: MouseEvent) => {
+      // Проверяем, что клик был по хедеру и панель открыта
+      if (headerRef.current && headerRef.current.contains(e.target as Node) && subsOpen) {
+        // Проверяем, что клик был не по кнопке подписок
+        const target = e.target as HTMLElement;
+        if (!target.closest('button[aria-label="subscriptions"]')) {
+          closePanel();
+        }
+      }
+    };
+
+    document.addEventListener('click', handleHeaderClick);
+    return () => document.removeEventListener('click', handleHeaderClick);
+  }, [subsOpen]);
 
   const handleClearSearch = () => {
     onSearchChange('');
@@ -164,13 +182,6 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
     setAddMode(false); 
   };
 
-  // Закрытие по клику вне панели
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      closePanel();
-    }
-  };
-
   const glassStyle = {
     background: 'hsla(var(--glass-bg))',
     borderColor: 'hsla(var(--glass-border))',
@@ -180,7 +191,10 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
 
   return (
     <>
-      <header className="sm:sticky sm:top-0 z-40 sm:glass-card sm:border-b sm:border-border/50">
+      <header 
+        ref={headerRef}
+        className="sm:sticky sm:top-0 z-40 sm:glass-card sm:border-b sm:border-border/50"
+      >
         <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3 relative z-10">
           {/* Logo */}
           <div className="flex items-center gap-3 shrink-0">
@@ -214,7 +228,12 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
           <div className="flex items-center gap-2 shrink-0">
             {/* Mobile: subscriptions button */}
             <button
-              onClick={() => { setSubsOpen(prev => !prev); setAddMode(false); }}
+              aria-label="subscriptions"
+              onClick={(e) => {
+                e.stopPropagation(); // Предотвращаем закрытие при клике на кнопку
+                setSubsOpen(prev => !prev); 
+                setAddMode(false);
+              }}
               className={`sm:hidden flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-body font-medium transition-colors relative ${
                 subsOpen ? 'bg-primary text-primary-foreground' : 'bg-primary text-primary-foreground hover:bg-primary/90'
               }`}
@@ -244,22 +263,34 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
       {/* Порталы для подписок - рендерятся прямо в body */}
       {subsOpen && createPortal(
         <>
-          {/* Backdrop */}
+          {/* Backdrop - теперь занимает всю область под панелью */}
           <div 
             className="fixed inset-0 bg-black/40 sm:hidden animate-in fade-in duration-150"
             style={{ zIndex: 999999998 }}
-            onClick={handleBackdropClick}
+            onClick={closePanel}
           />
           
-          {/* Subscriptions panel */}
+          {/* Subscriptions panel - теперь не занимает всю высоту, а только контент */}
           <div 
             ref={panelRef}
-            className="fixed inset-x-0 top-[57px] bottom-0 sm:hidden animate-in slide-in-from-top-2 fade-in duration-200"
-            style={{ zIndex: 999999999 }}
-            onClick={handleBackdropClick}
+            className="fixed left-0 right-0 top-[57px] sm:hidden animate-in slide-in-from-top-2 fade-in duration-200"
+            style={{ 
+              zIndex: 999999999,
+              maxHeight: 'calc(100vh - 57px)',
+              overflowY: 'hidden',
+              pointerEvents: 'none'  // панель не перехватывает клики
+            }}
           >
-            <div className="h-full px-3 pt-2 pb-4 overflow-y-auto scrollbar-thin" style={{ paddingBottom: 'max(1rem, var(--tg-safe-bottom, 0px))' }}>
-              <div className="rounded-xl border border-border/50 p-3" style={glassStyle}>
+            <div 
+              className="mx-3 overflow-y-auto rounded-xl border border-border/50"
+              style={{ 
+                ...glassStyle,
+                pointerEvents: 'auto',  // контент панели перехватывает клики
+                maxHeight: 'calc(100vh - 70px)'
+              }}
+              onClick={(e) => e.stopPropagation()}  // не закрываем при клике внутри
+            >
+              <div className="p-3">
                 {!addMode ? (
                   <>
                     {/* Мои подписки */}

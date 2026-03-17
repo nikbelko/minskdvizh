@@ -1,5 +1,5 @@
 import { Search, X, CalendarDays, Bell, BellOff } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { getTelegramUser, haptic } from '@/lib/telegram';
 import { toast } from 'sonner';
@@ -78,6 +78,34 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
   const [loading, setLoading] = useState(false);
   const tgUser = getTelegramUser();
   const userId = tgUser?.id;
+  const panelRef = useRef<HTMLDivElement>(null);
+  
+  // Блокировка скролла body при открытой панели
+  useEffect(() => {
+    if (subsOpen) {
+      // Сохраняем текущую позицию скролла
+      const scrollY = window.scrollY;
+      
+      // Блокируем скролл body
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.overflowY = 'hidden';
+      document.body.style.touchAction = 'none'; // для мобильных
+      
+      return () => {
+        // Восстанавливаем скролл
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.overflowY = '';
+        document.body.style.touchAction = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [subsOpen]);
 
   // Загружаем подписки при открытии панели
   useEffect(() => {
@@ -131,7 +159,17 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
     }
   };
 
-  const closePanel = () => { setSubsOpen(false); setAddMode(false); };
+  const closePanel = () => { 
+    setSubsOpen(false); 
+    setAddMode(false); 
+  };
+
+  // Закрытие по клику вне панели
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      closePanel();
+    }
+  };
 
   const glassStyle = {
     background: 'hsla(var(--glass-bg))',
@@ -208,15 +246,17 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-black/40 sm:hidden animate-in fade-in duration-150 touch-none"
+            className="fixed inset-0 bg-black/40 sm:hidden animate-in fade-in duration-150"
             style={{ zIndex: 999999998 }}
-            onClick={closePanel}
+            onClick={handleBackdropClick}
           />
           
           {/* Subscriptions panel */}
           <div 
+            ref={panelRef}
             className="fixed inset-x-0 top-[57px] bottom-0 sm:hidden animate-in slide-in-from-top-2 fade-in duration-200"
             style={{ zIndex: 999999999 }}
+            onClick={handleBackdropClick}
           >
             <div className="h-full px-3 pt-2 pb-4 overflow-y-auto scrollbar-thin" style={{ paddingBottom: 'max(1rem, var(--tg-safe-bottom, 0px))' }}>
               <div className="rounded-xl border border-border/50 p-3" style={glassStyle}>
@@ -246,26 +286,37 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                         </button>
                       </div>
                     ) : (
-                      <div className="space-y-1">
-                        {subs.map(sub => (
-                          <div
-                            key={sub.slug}
-                            className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-secondary/30"
-                          >
-                            <div className="flex items-center gap-1.5">
-                              <CategoryIcon slug={sub.slug as any} size="sm" />
-                              <span className="text-xs font-body text-foreground">{sub.name}</span>
-                            </div>
-                            <button
-                              onClick={() => handleUnsubscribe(sub.slug, sub.name)}
-                              className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-red-400 transition-colors font-body shrink-0 ml-2"
+                      <>
+                        {/* Список подписок с ограничением высоты */}
+                        <div className="space-y-1 max-h-[152px] overflow-y-auto pr-1 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
+                          {subs.map(sub => (
+                            <div
+                              key={sub.slug}
+                              className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-secondary/30"
                             >
-                              <BellOff className="h-3 w-3" />
-                              <span>Отписаться</span>
-                            </button>
+                              <div className="flex items-center gap-1.5">
+                                <CategoryIcon slug={sub.slug as any} size="sm" />
+                                <span className="text-xs font-body text-foreground">{sub.name}</span>
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleUnsubscribe(sub.slug, sub.name);
+                                }}
+                                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-red-400 transition-colors font-body shrink-0 ml-2"
+                              >
+                                <BellOff className="h-3 w-3" />
+                                <span>Отписаться</span>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        {subs.length > 4 && (
+                          <div className="text-[10px] text-muted-foreground text-center mt-1.5 font-body border-t border-border/50 pt-1.5">
+                            ↑ можно скроллить ↑
                           </div>
-                        ))}
-                      </div>
+                        )}
+                      </>
                     )}
                   </>
                 ) : (

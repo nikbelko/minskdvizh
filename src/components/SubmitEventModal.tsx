@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, Plus, Loader2 } from 'lucide-react';
+import { X, Plus, Loader2, Megaphone } from 'lucide-react';
 import { toast } from 'sonner';
 import { haptic } from '@/lib/telegram';
 import { categories, type CategorySlug } from '@/data/events';
@@ -20,6 +20,7 @@ interface FormData {
   price: string;
   description: string;
   source_url: string;
+  is_promo: boolean;
 }
 
 interface FormErrors {
@@ -38,6 +39,7 @@ const EMPTY_FORM: FormData = {
   title: '', format: '', category: '', date_mode: 'single',
   event_date: '', event_date_to: '', show_time: '', show_time_end: '',
   place: '', address: '', price: '', description: '', source_url: '',
+  is_promo: false,
 };
 
 export default function SubmitEventModal() {
@@ -45,6 +47,8 @@ export default function SubmitEventModal() {
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
+  // Tracks whether show_time was explicitly set by user (not just default empty)
+  const [showTimeSet, setShowTimeSet] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Close on Escape
@@ -59,6 +63,11 @@ export default function SubmitEventModal() {
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
+  // Reset showTimeSet when modal closes
+  useEffect(() => {
+    if (!open) setShowTimeSet(false);
   }, [open]);
 
   const validate = (): boolean => {
@@ -106,6 +115,7 @@ export default function SubmitEventModal() {
           price: form.price || undefined,
           description: form.description || undefined,
           source_url: form.source_url || undefined,
+          is_promo: form.is_promo,
           tg_user_id: window.Telegram?.WebApp?.initDataUnsafe?.user?.id ?? null,
           tg_username: window.Telegram?.WebApp?.initDataUnsafe?.user?.username ?? null,
           tg_first_name: window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name ?? null,
@@ -127,6 +137,7 @@ export default function SubmitEventModal() {
       setOpen(false);
       setForm(EMPTY_FORM);
       setErrors({});
+      setShowTimeSet(false);
       toast.success('✅ Событие отправлено на модерацию!');
     } catch {
       toast.error('Не удалось отправить. Попробуйте ещё раз.');
@@ -135,10 +146,22 @@ export default function SubmitEventModal() {
     }
   };
 
-  const set = (field: keyof FormData, value: string) => {
+  const set = (field: keyof FormData, value: string | boolean) => {
     setForm(f => ({ ...f, [field]: value }));
     if (errors[field as keyof FormErrors]) {
       setErrors(e => ({ ...e, [field]: undefined }));
+    }
+  };
+
+  const handleShowTimeChange = (value: string) => {
+    set('show_time', value);
+    // Enable show_time_end as soon as user picks any time value (hours or minutes)
+    if (value) {
+      setShowTimeSet(true);
+    } else {
+      setShowTimeSet(false);
+      // Also clear end time if start is cleared
+      set('show_time_end', '');
     }
   };
 
@@ -150,6 +173,8 @@ export default function SubmitEventModal() {
     }`;
 
   const labelClass = 'block text-xs font-body font-medium text-muted-foreground mb-1.5';
+
+  const timeEndDisabled = !showTimeSet && !form.show_time;
 
   return (
     <>
@@ -278,15 +303,21 @@ export default function SubmitEventModal() {
                         {errors.event_date && <p className="text-xs text-red-400 mt-1">{errors.event_date}</p>}
                       </div>
                       <div className="grid grid-cols-2 gap-1.5">
-                        <input type="time" value={form.show_time}
-                          onChange={e => set('show_time', e.target.value)}
+                        <input
+                          type="time"
+                          value={form.show_time}
+                          onChange={e => handleShowTimeChange(e.target.value)}
                           className={inputClass()}
-                          placeholder="Начало" />
-                        <input type="time" value={form.show_time_end}
+                          placeholder="Начало"
+                        />
+                        <input
+                          type="time"
+                          value={form.show_time_end}
                           onChange={e => set('show_time_end', e.target.value)}
-                          disabled={!form.show_time}
+                          disabled={timeEndDisabled}
                           className={`${inputClass()} disabled:opacity-40 disabled:cursor-not-allowed`}
-                          placeholder="Конец" />
+                          placeholder="Конец"
+                        />
                       </div>
                     </div>
                   </div>
@@ -311,16 +342,22 @@ export default function SubmitEventModal() {
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="text-xs text-muted-foreground/70 mb-1 block">Время начала</label>
-                        <input type="time" value={form.show_time}
-                          onChange={e => set('show_time', e.target.value)}
-                          className={inputClass()} />
+                        <input
+                          type="time"
+                          value={form.show_time}
+                          onChange={e => handleShowTimeChange(e.target.value)}
+                          className={inputClass()}
+                        />
                       </div>
                       <div>
                         <label className="text-xs text-muted-foreground/70 mb-1 block">Время окончания</label>
-                        <input type="time" value={form.show_time_end}
+                        <input
+                          type="time"
+                          value={form.show_time_end}
                           onChange={e => set('show_time_end', e.target.value)}
-                          disabled={!form.show_time}
-                          className={`${inputClass()} disabled:opacity-40 disabled:cursor-not-allowed`} />
+                          disabled={timeEndDisabled}
+                          className={`${inputClass()} disabled:opacity-40 disabled:cursor-not-allowed`}
+                        />
                       </div>
                     </div>
                     {form.event_date && form.event_date_to && form.event_date_to > form.event_date && (
@@ -396,6 +433,52 @@ export default function SubmitEventModal() {
                   className={inputClass(errors.source_url)}
                 />
                 {errors.source_url && <p className="text-xs text-red-400 mt-1">{errors.source_url}</p>}
+              </div>
+
+              {/* Промо-публикация */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    haptic('light');
+                    set('is_promo', !form.is_promo);
+                  }}
+                  className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border transition-all ${
+                    form.is_promo
+                      ? 'border-fuchsia-500/60 bg-fuchsia-500/10'
+                      : 'border-white/10 bg-white/5 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <Megaphone className={`h-4 w-4 shrink-0 ${form.is_promo ? 'text-fuchsia-400' : 'text-muted-foreground'}`} />
+                    <div className="text-left min-w-0">
+                      <p className={`text-sm font-body font-medium leading-tight ${form.is_promo ? 'text-fuchsia-300' : 'text-foreground'}`}>
+                        Промо-публикация
+                      </p>
+                      <p className="text-[11px] text-muted-foreground font-body leading-tight mt-0.5">
+                        После одобрения — пост в канал и рассылка подписчикам
+                      </p>
+                    </div>
+                  </div>
+                  {/* Toggle switch */}
+                  <div
+                    className={`relative shrink-0 w-10 h-5.5 rounded-full transition-colors duration-200 ${
+                      form.is_promo ? 'bg-fuchsia-500' : 'bg-white/20'
+                    }`}
+                    style={{ width: 40, height: 22 }}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-transform duration-200 ${
+                        form.is_promo ? 'translate-x-[18px]' : 'translate-x-0'
+                      }`}
+                    />
+                  </div>
+                </button>
+                {form.is_promo && (
+                  <p className="text-[11px] text-fuchsia-400/80 font-body mt-1.5 px-1">
+                    📣 Событие будет опубликовано в канале @MinskDvizh и разослано подписчикам категории после одобрения модератором.
+                  </p>
+                )}
               </div>
             </div>
 

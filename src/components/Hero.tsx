@@ -19,15 +19,22 @@ interface HeroProps {
 }
 
 const pills: { key: QuickFilter; label: string }[] = [
-  { key: 'today', label: 'Сегодня' },
+  { key: 'today',    label: 'Сегодня' },
   { key: 'tomorrow', label: 'Завтра' },
-  { key: 'weekend', label: 'Выходные' },
+  { key: 'weekend',  label: 'Выходные' },
   { key: 'upcoming', label: 'Ближайшие' },
 ];
 
 const TG_BANNER_KEY = 'minskdvizh_tg_banner_dismissed';
 
-const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, categoryCounts, totalFiltered = 0 }: HeroProps) => {
+const Hero = ({
+  activeFilter,
+  onFilterChange,
+  activeCategory,
+  onCategoryChange,
+  categoryCounts,
+  totalFiltered = 0,
+}: HeroProps) => {
   const today = new Date();
   const dateStr = format(today, "d MMMM yyyy, EEEE", { locale: ru });
   const inTelegram = isTelegram();
@@ -47,11 +54,24 @@ const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, 
 
   return (
     <section className="relative sm:py-20 md:py-28 overflow-hidden city-grid sm:static sm:z-auto">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-[120px] animate-glow-pulse pointer-events-none hidden sm:block" />
-      
+      {/* Ambient blobs */}
+      <div
+        className="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full pointer-events-none hidden sm:block animate-glow-pulse"
+        style={{ background: 'radial-gradient(circle, hsl(293 80% 52% / 0.1) 0%, transparent 70%)' }}
+      />
+      <div
+        className="absolute top-1/3 right-1/4 w-[350px] h-[350px] rounded-full pointer-events-none hidden sm:block"
+        style={{
+          background: 'radial-gradient(circle, hsl(185 100% 50% / 0.06) 0%, transparent 70%)',
+          animation: 'glow-ambient 5s ease-in-out infinite 1.5s',
+        }}
+      />
+
       <div className="container mx-auto px-4 relative z-10">
+        {/* Date — desktop */}
         <div className="opacity-0 animate-fade-up hidden sm:block">
-          <p className="text-accent font-body font-medium text-sm tracking-widest uppercase mb-4">
+          <p className="text-xs font-label font-semibold tracking-widest uppercase mb-4"
+            style={{ color: 'hsl(185 100% 50%)', textShadow: '0 0 8px hsl(185 100% 50% / 0.4)' }}>
             {dateStr}
           </p>
         </div>
@@ -59,48 +79,60 @@ const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, 
         {/* Mobile: filter pills + categories */}
         <div className="sm:hidden py-3">
           <div className="flex gap-2">
-            {pills.map((pill) => (
-              <button
-                key={pill.key}
-                onClick={() => handleFilterClick(pill.key)}
-                className={`flex-1 py-2 rounded-full text-xs font-body font-medium whitespace-nowrap transition-all duration-300 text-center ${
-                  activeFilter === pill.key
-                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
-                    : 'glass-card text-foreground'
-                }`}
-              >
-                {pill.label}
-              </button>
-            ))}
+            {pills.map(pill => {
+              const isActive = activeFilter === pill.key;
+              return (
+                <button
+                  key={pill.key}
+                  onClick={() => handleFilterClick(pill.key)}
+                  className="flex-1 py-2 rounded-lg text-xs font-label font-semibold tracking-wide whitespace-nowrap text-center transition-all duration-200"
+                  style={isActive ? {
+                    background: 'linear-gradient(135deg, hsl(293 80% 52%), hsl(270 90% 50%))',
+                    color: 'white',
+                    boxShadow: '0 0 12px hsl(293 80% 52% / 0.4)',
+                    border: '1px solid hsl(293 80% 52% / 0.6)',
+                  } : {
+                    background: 'hsl(228 18% 10% / 0.6)',
+                    color: 'hsl(228 10% 60%)',
+                    border: '1px solid hsl(228 20% 18%)',
+                  }}
+                >
+                  {pill.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Mobile category tabs */}
           {onCategoryChange && (
-            <div
-              className="flex gap-1 overflow-x-auto mt-3 -mx-1 px-1 no-scrollbar"
-            >
+            <div className="flex gap-1 overflow-x-auto mt-3 -mx-1 px-1 no-scrollbar">
               <button
                 onClick={() => onCategoryChange(null)}
-                className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-body font-medium transition-all whitespace-nowrap ${
-                  activeCategory === null
-                    ? 'bg-primary/15 text-primary border-b-2 border-primary'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
-                }`}
+                className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-label font-semibold tracking-wide transition-all whitespace-nowrap"
+                style={activeCategory === null ? {
+                  background: 'hsl(185 100% 50% / 0.12)',
+                  color: 'hsl(185 100% 60%)',
+                  borderBottom: '2px solid hsl(185 100% 50%)',
+                  border: '1px solid hsl(185 100% 50% / 0.3)',
+                } : { color: 'hsl(228 10% 55%)' }}
               >
                 Все ({Object.values(categoryCounts ?? {}).reduce((s, n) => s + n, 0)})
               </button>
-              {categories.map((cat) => {
+              {categories.map(cat => {
                 const count = categoryCounts?.[cat.slug] ?? 0;
                 const isActive = activeCategory === cat.slug;
                 return (
                   <button
                     key={cat.slug}
                     onClick={() => onCategoryChange(isActive ? null : cat.slug)}
-                    className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-body font-medium transition-all whitespace-nowrap ${
-                      isActive
-                        ? 'bg-primary/15 text-primary border-b-2 border-primary'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
-                    }`}
+                    className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-label font-semibold tracking-wide transition-all whitespace-nowrap"
+                    style={isActive ? {
+                      background: 'hsl(293 80% 52% / 0.12)',
+                      color: 'hsl(293 80% 72%)',
+                      border: '1px solid hsl(293 80% 52% / 0.3)',
+                      borderBottomWidth: '2px',
+                      borderBottomColor: 'hsl(293 80% 52%)',
+                    } : { color: 'hsl(228 10% 55%)' }}
                   >
                     <span className="inline-flex items-center gap-1">
                       <CategoryIcon slug={cat.slug} size="sm" />
@@ -113,36 +145,73 @@ const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, 
           )}
         </div>
 
-        {/* Desktop: original layout */}
-        <h2 className="hidden sm:block opacity-0 animate-fade-up animate-stagger-1 text-5xl md:text-7xl lg:text-8xl font-display font-bold leading-[1.1] mb-8">
+        {/* Desktop headline */}
+        <h2 className="hidden sm:block opacity-0 animate-fade-up animate-stagger-1 text-5xl md:text-7xl lg:text-8xl font-display font-black leading-[1.05] mb-8">
           <span className="text-foreground">Что сегодня</span>
           <br />
-          <span className="text-primary">в Минске?</span>
+          <span style={{
+            background: 'linear-gradient(135deg, hsl(293 80% 72%) 0%, hsl(185 100% 60%) 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            filter: 'drop-shadow(0 0 20px hsl(293 80% 52% / 0.4))',
+          }}>
+            в Минске?
+          </span>
         </h2>
 
+        {/* Desktop filter pills */}
         <div className="hidden sm:flex opacity-0 animate-fade-up animate-stagger-2 flex-wrap gap-3">
-          {pills.map((pill) => (
-            <button
-              key={pill.key}
-              onClick={() => handleFilterClick(pill.key)}
-              className={`px-5 py-2.5 rounded-full text-sm font-body font-medium transition-all duration-300 ${
-                activeFilter === pill.key
-                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-                  : 'glass-card text-foreground hover:border-primary/40'
-              }`}
-            >
-              {pill.label}
-            </button>
-          ))}
+          {pills.map(pill => {
+            const isActive = activeFilter === pill.key;
+            return (
+              <button
+                key={pill.key}
+                onClick={() => handleFilterClick(pill.key)}
+                className="px-5 py-2.5 rounded-full text-sm font-label font-semibold tracking-wide transition-all duration-300"
+                style={isActive ? {
+                  background: 'linear-gradient(135deg, hsl(293 80% 52%), hsl(270 90% 50%))',
+                  color: 'white',
+                  boxShadow: '0 0 16px hsl(293 80% 52% / 0.4), 0 0 32px hsl(293 80% 52% / 0.15)',
+                  border: '1px solid hsl(293 80% 52% / 0.6)',
+                } : {
+                  background: 'hsl(228 18% 10% / 0.6)',
+                  color: 'hsl(228 10% 65%)',
+                  border: '1px solid hsl(228 20% 20%)',
+                }}
+                onMouseEnter={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.borderColor = 'hsl(293 80% 52% / 0.4)';
+                    e.currentTarget.style.color = 'hsl(293 80% 72%)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.borderColor = 'hsl(228 20% 20%)';
+                    e.currentTarget.style.color = 'hsl(228 10% 65%)';
+                  }
+                }}
+              >
+                {pill.label}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Telegram environment banner */}
+        {/* Telegram banner — desktop */}
         {!inTelegram && !tgBannerDismissed && (
           <div className="hidden sm:block opacity-0 animate-fade-up animate-stagger-3 mt-6">
-            <div className="glass-card p-3 flex items-center justify-between gap-3 max-w-lg">
+            <div
+              className="max-w-lg p-3 flex items-center justify-between gap-3 rounded-xl"
+              style={{
+                background: 'hsl(185 100% 50% / 0.06)',
+                border: '1px solid hsl(185 100% 50% / 0.25)',
+                boxShadow: '0 0 20px hsl(185 100% 50% / 0.08)',
+              }}
+            >
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-lg shrink-0">🤖</span>
-                <p className="text-sm font-body text-foreground/80 truncate">
+                <p className="text-sm font-body text-muted-foreground truncate">
                   Также доступно в Telegram
                 </p>
               </div>
@@ -151,7 +220,11 @@ const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, 
                   href="https://t.me/MinskDvizhBot"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-body font-medium hover:bg-primary/90 transition-colors"
+                  className="px-3 py-1.5 rounded-lg text-xs font-label font-semibold tracking-wide text-black transition-all hover:opacity-90"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(185 100% 50%), hsl(200 100% 50%))',
+                    boxShadow: '0 0 10px hsl(185 100% 50% / 0.3)',
+                  }}
                 >
                   Открыть
                 </a>

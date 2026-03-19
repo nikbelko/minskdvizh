@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,48 +6,59 @@
 
 @layer base {
   :root {
-    --background: 240 15% 5%;
-    --foreground: 0 0% 95%;
+    /* Core dark background */
+    --background: 228 20% 4%;
+    --foreground: 210 20% 96%;
 
-    --card: 240 10% 8%;
-    --card-foreground: 0 0% 95%;
+    --card: 228 18% 7%;
+    --card-foreground: 210 20% 96%;
 
-    --popover: 240 10% 8%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 228 18% 7%;
+    --popover-foreground: 210 20% 96%;
 
-    --primary: 293 69% 49%;
+    /* Primary: vivid purple/fuchsia */
+    --primary: 293 80% 52%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 10% 14%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 228 18% 12%;
+    --secondary-foreground: 210 20% 96%;
 
-    --muted: 240 8% 14%;
-    --muted-foreground: 240 5% 55%;
+    --muted: 228 15% 12%;
+    --muted-foreground: 228 10% 50%;
 
-    --accent: 38 92% 50%;
-    --accent-foreground: 0 0% 5%;
+    /* Accent: electric cyan */
+    --accent: 185 100% 50%;
+    --accent-foreground: 228 20% 4%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 8% 16%;
-    --input: 240 8% 16%;
-    --ring: 293 69% 49%;
+    --border: 228 20% 14%;
+    --input: 228 20% 14%;
+    --ring: 293 80% 52%;
 
     --radius: 0.75rem;
 
-    --glass-bg: 240 10% 10% / 0.6;
-    --glass-border: 240 10% 30% / 0.3;
-    --glass-glow: 293 69% 49% / 0.15;
+    /* Neon palette */
+    --neon-purple: 293 80% 52%;
+    --neon-cyan: 185 100% 50%;
+    --neon-pink: 316 100% 60%;
+    --neon-blue: 210 100% 60%;
 
-    --sidebar-background: 240 15% 5%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 293 69% 49%;
+    /* Glass */
+    --glass-bg: 228 18% 8% / 0.7;
+    --glass-border: 228 30% 30% / 0.25;
+    --glass-glow: 293 80% 52% / 0.12;
+
+    /* Sidebar */
+    --sidebar-background: 228 20% 4%;
+    --sidebar-foreground: 210 20% 96%;
+    --sidebar-primary: 293 80% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 10% 14%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 240 8% 16%;
-    --sidebar-ring: 293 69% 49%;
+    --sidebar-accent: 228 18% 12%;
+    --sidebar-accent-foreground: 210 20% 96%;
+    --sidebar-border: 228 20% 14%;
+    --sidebar-ring: 293 80% 52%;
   }
 }
 
@@ -62,17 +73,74 @@
   }
 
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'DM Sans', sans-serif;
     padding-top: var(--tg-safe-top);
     padding-bottom: var(--tg-safe-bottom);
+    background-color: hsl(228 20% 4%);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display;
+    font-family: 'Exo 2', sans-serif;
   }
 }
 
+/* ── Neon Glow Keyframes ── */
+@keyframes neon-pulse-purple {
+  0%, 100% { box-shadow: 0 0 6px hsl(293 80% 52% / 0.5), 0 0 20px hsl(293 80% 52% / 0.2); }
+  50%       { box-shadow: 0 0 12px hsl(293 80% 52% / 0.8), 0 0 40px hsl(293 80% 52% / 0.4), 0 0 80px hsl(293 80% 52% / 0.15); }
+}
+
+@keyframes neon-pulse-cyan {
+  0%, 100% { box-shadow: 0 0 6px hsl(185 100% 50% / 0.5), 0 0 20px hsl(185 100% 50% / 0.2); }
+  50%       { box-shadow: 0 0 12px hsl(185 100% 50% / 0.8), 0 0 40px hsl(185 100% 50% / 0.4), 0 0 80px hsl(185 100% 50% / 0.15); }
+}
+
+@keyframes heartbeat {
+  0%   { transform: scaleX(0); opacity: 0; }
+  10%  { transform: scaleX(0.1); opacity: 1; }
+  40%  { transform: scaleX(0.4); }
+  50%  { transform: scaleX(0.5); }
+  60%  { transform: scaleX(0.6); }
+  100% { transform: scaleX(1); opacity: 1; }
+}
+
+@keyframes pulse-line {
+  0%   { stroke-dashoffset: 300; opacity: 0; }
+  20%  { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 1; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes glow-ambient {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(1.08); }
+}
+
+@keyframes scan-line {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes flicker {
+  0%, 95%, 100% { opacity: 1; }
+  96%            { opacity: 0.85; }
+  97%            { opacity: 1; }
+  98%            { opacity: 0.9; }
+}
+
 @layer components {
+
+  /* ── Glass Card Base ── */
   .glass-card {
     @apply relative overflow-hidden rounded-xl;
     background: hsla(var(--glass-bg));
@@ -81,93 +149,302 @@
     -webkit-backdrop-filter: blur(16px);
   }
 
+  /* ── Neon Border Cards ── */
+  .neon-card {
+    @apply glass-card;
+    border-color: hsl(293 80% 52% / 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .neon-card:hover {
+    border-color: hsl(293 80% 52% / 0.7);
+    box-shadow:
+      0 0 12px hsl(293 80% 52% / 0.25),
+      0 0 40px hsl(293 80% 52% / 0.1),
+      inset 0 0 20px hsl(293 80% 52% / 0.05);
+    transform: translateY(-1px);
+  }
+
+  .neon-card-cyan {
+    @apply glass-card;
+    border-color: hsl(185 100% 50% / 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .neon-card-cyan:hover {
+    border-color: hsl(185 100% 50% / 0.7);
+    box-shadow:
+      0 0 12px hsl(185 100% 50% / 0.25),
+      0 0 40px hsl(185 100% 50% / 0.1),
+      inset 0 0 20px hsl(185 100% 50% / 0.05);
+  }
+
+  /* ── Event Cards: left neon border ── */
+  .event-card {
+    @apply glass-card transition-all duration-300;
+    border-left-width: 3px;
+    position: relative;
+  }
+
+  .event-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, hsl(293 80% 52% / 0.04) 0%, transparent 60%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .event-card:hover::before { opacity: 1; }
+
+  .event-card:hover {
+    border-color: hsl(293 80% 52% / 0.6) !important;
+    box-shadow:
+      -3px 0 16px hsl(293 80% 52% / 0.4),
+      0 4px 24px hsl(293 80% 52% / 0.1);
+    transform: translateX(2px);
+  }
+
+  /* ── Glass Card Hover (legacy) ── */
   .glass-card-hover {
     @apply glass-card transition-all duration-300;
   }
 
   .glass-card-hover:hover {
-    border-color: hsl(var(--primary) / 0.5);
-    box-shadow: 0 0 30px hsl(var(--primary) / 0.15), 0 0 60px hsl(var(--primary) / 0.05);
-    transform: scale(1.03);
+    border-color: hsl(293 80% 52% / 0.5);
+    box-shadow: 0 0 30px hsl(293 80% 52% / 0.2), 0 0 60px hsl(293 80% 52% / 0.06);
+    transform: scale(1.02) translateY(-2px);
   }
 
+  /* ── Grid background ── */
+  .city-grid {
+    background-image:
+      linear-gradient(hsl(185 100% 50% / 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(185 100% 50% / 0.03) 1px, transparent 1px),
+      linear-gradient(hsl(293 80% 52% / 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(293 80% 52% / 0.02) 1px, transparent 1px);
+    background-size: 60px 60px, 60px 60px, 20px 20px, 20px 20px;
+  }
+
+  /* ── Amber pill → neon amber-cyan pill ── */
+  .amber-pill {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+    background: hsl(185 100% 50% / 0.1);
+    color: hsl(185 100% 50%);
+    border: 1px solid hsl(185 100% 50% / 0.35);
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── Neon pill (purple) ── */
+  .neon-pill {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+    background: hsl(293 80% 52% / 0.12);
+    color: hsl(293 80% 52%);
+    border: 1px solid hsl(293 80% 52% / 0.35);
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── Category border colours ── */
+  .category-border-cinema     { border-left-color: hsl(210 100% 60%); }
+  .category-border-concert    { border-left-color: hsl(293 80% 52%); }
+  .category-border-theater    { border-left-color: hsl(340 90% 60%); }
+  .category-border-exhibition { border-left-color: hsl(185 100% 50%); }
+  .category-border-kids       { border-left-color: hsl(30 100% 60%); }
+  .category-border-sport      { border-left-color: hsl(140 70% 45%); }
+  .category-border-party      { border-left-color: hsl(270 90% 65%); }
+  .category-border-free       { border-left-color: hsl(100 70% 50%); }
+
+  /* ── Grain overlay ── */
   .grain-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     pointer-events: none;
     z-index: 50;
-    opacity: 0.035;
+    opacity: 0.025;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
     background-repeat: repeat;
     background-size: 256px 256px;
   }
 
-  .city-grid {
-    background-image:
-      linear-gradient(hsl(var(--primary) / 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--primary) / 0.03) 1px, transparent 1px);
-    background-size: 60px 60px;
+  /* ── Scan line ambient ── */
+  .scan-line {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, hsl(185 100% 50% / 0.15), hsl(293 80% 52% / 0.15), transparent);
+    animation: scan-line 8s linear infinite;
+    pointer-events: none;
+    z-index: 49;
   }
 
-  .amber-pill {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
-    background: hsl(var(--accent) / 0.15);
-    color: hsl(var(--accent));
-    border: 1px solid hsl(var(--accent) / 0.3);
+  /* ── Neon button ── */
+  .btn-neon {
+    @apply relative inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200;
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.05em;
   }
 
-  .category-border-cinema { border-left-color: hsl(220 80% 60%); }
-  .category-border-concert { border-left-color: hsl(var(--primary)); }
-  .category-border-theater { border-left-color: hsl(340 70% 55%); }
-  .category-border-exhibition { border-left-color: hsl(180 60% 50%); }
-  .category-border-kids { border-left-color: hsl(30 90% 60%); }
-  .category-border-sport { border-left-color: hsl(140 60% 45%); }
-  .category-border-party { border-left-color: hsl(270 80% 65%); }
-  .category-border-free { border-left-color: hsl(100 60% 50%); }
+  .btn-neon-purple {
+    @apply btn-neon;
+    background: linear-gradient(135deg, hsl(293 80% 52%), hsl(270 90% 50%));
+    box-shadow: 0 0 16px hsl(293 80% 52% / 0.4), 0 0 32px hsl(293 80% 52% / 0.15);
+  }
+
+  .btn-neon-purple:hover {
+    box-shadow: 0 0 24px hsl(293 80% 52% / 0.6), 0 0 48px hsl(293 80% 52% / 0.25);
+    transform: translateY(-1px);
+  }
+
+  .btn-neon-cyan {
+    @apply btn-neon;
+    background: linear-gradient(135deg, hsl(185 100% 45%), hsl(200 100% 50%));
+    color: hsl(228 20% 4%);
+    box-shadow: 0 0 16px hsl(185 100% 50% / 0.4), 0 0 32px hsl(185 100% 50% / 0.15);
+  }
+
+  /* ── Neon text glow ── */
+  .text-neon-purple {
+    color: hsl(293 80% 72%);
+    text-shadow: 0 0 10px hsl(293 80% 52% / 0.7), 0 0 30px hsl(293 80% 52% / 0.3);
+  }
+
+  .text-neon-cyan {
+    color: hsl(185 100% 60%);
+    text-shadow: 0 0 10px hsl(185 100% 50% / 0.7), 0 0 30px hsl(185 100% 50% / 0.3);
+  }
+
+  /* ── Pulse line decoration ── */
+  .pulse-decoration {
+    position: relative;
+  }
+
+  .pulse-decoration::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      hsl(293 80% 52% / 0.6) 20%,
+      hsl(185 100% 50% / 0.8) 50%,
+      hsl(293 80% 52% / 0.6) 80%,
+      transparent 100%
+    );
+  }
+
+  /* ── Ambient glow blobs ── */
+  .ambient-purple {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, hsl(293 80% 52% / 0.12) 0%, transparent 70%);
+    animation: glow-ambient 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .ambient-cyan {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, hsl(185 100% 50% / 0.08) 0%, transparent 70%);
+    animation: glow-ambient 5s ease-in-out infinite 1s;
+    pointer-events: none;
+  }
+
+  /* ── Filter tab active state ── */
+  .filter-tab {
+    @apply relative transition-all duration-200;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .filter-tab.active {
+    color: hsl(293 80% 72%);
+    text-shadow: 0 0 8px hsl(293 80% 52% / 0.5);
+  }
+
+  .filter-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 50%; right: 50%;
+    height: 2px;
+    background: linear-gradient(90deg, hsl(293 80% 52%), hsl(185 100% 50%));
+    animation: filter-expand 0.2s ease forwards;
+    border-radius: 2px;
+    box-shadow: 0 0 6px hsl(293 80% 52% / 0.6);
+  }
+
+  @keyframes filter-expand {
+    to { left: 0; right: 0; }
+  }
 }
 
 @layer utilities {
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  
-  /* Кастомный скроллбар */
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: hsla(var(--primary) / 0.2) transparent;
+    scrollbar-color: hsla(var(--neon-purple) / 0.25) transparent;
   }
-  
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-  }
-  
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: hsla(var(--primary) / 0.2);
+    background: hsl(293 80% 52% / 0.25);
     border-radius: 20px;
   }
-  
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: hsla(var(--primary) / 0.4);
+    background: hsl(293 80% 52% / 0.5);
   }
 
-  .animate-stagger-1 { animation-delay: 0.1s; }
-  .animate-stagger-2 { animation-delay: 0.2s; }
-  .animate-stagger-3 { animation-delay: 0.3s; }
-  .animate-stagger-4 { animation-delay: 0.4s; }
-  .animate-stagger-5 { animation-delay: 0.5s; }
-  .animate-stagger-6 { animation-delay: 0.6s; }
-  .animate-stagger-7 { animation-delay: 0.7s; }
-  .animate-stagger-8 { animation-delay: 0.8s; }
+  /* Stagger delays */
+  .animate-stagger-1 { animation-delay: 0.08s; }
+  .animate-stagger-2 { animation-delay: 0.16s; }
+  .animate-stagger-3 { animation-delay: 0.24s; }
+  .animate-stagger-4 { animation-delay: 0.32s; }
+  .animate-stagger-5 { animation-delay: 0.40s; }
+  .animate-stagger-6 { animation-delay: 0.48s; }
+  .animate-stagger-7 { animation-delay: 0.56s; }
+  .animate-stagger-8 { animation-delay: 0.64s; }
+  .animate-stagger-9 { animation-delay: 0.72s; }
+
+  /* Neon glow utilities */
+  .glow-purple { box-shadow: 0 0 16px hsl(293 80% 52% / 0.4), 0 0 40px hsl(293 80% 52% / 0.15); }
+  .glow-cyan   { box-shadow: 0 0 16px hsl(185 100% 50% / 0.4), 0 0 40px hsl(185 100% 50% / 0.15); }
+
+  /* Font families */
+  .font-display { font-family: 'Exo 2', sans-serif; }
+  .font-label   { font-family: 'Rajdhani', sans-serif; letter-spacing: 0.05em; }
+  .font-body    { font-family: 'DM Sans', sans-serif; }
+}
+
+/* ── Animation classes ── */
+.animate-fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease both;
+}
+
+.animate-glow-pulse {
+  animation: glow-ambient 3s ease-in-out infinite;
+}
+
+.animate-neon-purple {
+  animation: neon-pulse-purple 2.5s ease-in-out infinite;
+}
+
+.animate-neon-cyan {
+  animation: neon-pulse-cyan 3s ease-in-out infinite;
+}
+
+.animate-flicker {
+  animation: flicker 4s ease-in-out infinite;
 }

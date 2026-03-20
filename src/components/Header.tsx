@@ -68,7 +68,7 @@ async function removeSubscriptionFromAPI(userId: number, category: string, dateT
 }
 
 const NeonLogo = () => (
-  <svg width="220" height="52" viewBox="0 0 480 108" xmlns="http://www.w3.org/2000/svg">
+  <svg width="220" height="52" viewBox="0 0 480 104" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <filter id="logo-gp" x="-25%" y="-80%" width="150%" height="360%">
         <feGaussianBlur stdDeviation="3.5" result="b1"/>
@@ -210,33 +210,20 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
   return (
     <>
       <header ref={headerRef} className="sm:sticky sm:top-0 z-40 sm:glass-card sm:border-b sm:border-border/50">
-        <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-2 relative z-10">
+        <div className="container mx-auto flex items-center justify-between gap-2 px-4 py-2 relative z-10">
 
           {/* Logo: кот + neon надпись */}
-          <div className="flex items-center gap-0 shrink-0">
-            {/* Кот — PNG когда будет готов, пока round placeholder */}
+          <div className="flex items-center shrink-0">
+            {/* Кот PNG — без круглой рамки */}
             <img
-              src="/cat-logo1.png"
-              alt="MinskDvizh"
-              className="w-11 h-11 rounded-full object-cover"
-              style={{ border: '1.5px solid rgba(192,38,211,0.4)' }}
-              onError={(e) => {
-                // fallback если PNG ещё нет
-                const el = e.currentTarget;
-                el.style.display = 'none';
-                const fb = el.nextElementSibling as HTMLElement;
-                if (fb) fb.style.display = 'flex';
-              }}
+              src="/cat-logo.png"
+              alt="MinskDvizh cat"
+              className="w-11 h-11 object-contain relative z-10"
             />
-            {/* Fallback placeholder */}
-            <div
-              className="w-11 h-11 rounded-full items-center justify-center shrink-0"
-              style={{ display: 'none', background: 'rgba(192,38,211,0.15)', border: '1.5px solid rgba(192,38,211,0.4)', fontSize: '22px' }}
-            >
-              🐱
+            {/* Надпись наезжает на кота на 8px */}
+            <div style={{ marginLeft: '-8px' }}>
+              <NeonLogo />
             </div>
-
-            <NeonLogo />
           </div>
 
           {/* Desktop search */}
@@ -256,28 +243,25 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
             )}
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-2 shrink-0">
-            {/* Подписки (mobile) */}
-            <button
-              aria-label="subscriptions"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSubsOpen(prev => !prev);
-                setAddMode(false);
-              }}
-              className="sm:hidden flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-body font-medium transition-colors relative"
-              style={{ background: 'linear-gradient(135deg, #c026d3, #9333ea)', color: 'white', border: 'none' }}
-            >
-              <Bell className="h-3.5 w-3.5" />
-              <span>Подписки</span>
-              {subs.length > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                  {subs.length}
-                </span>
-              )}
-            </button>
-          </div>
+          {/* Подписки — иконка + текст на mobile, скрывается если нет места */}
+          <button
+            aria-label="subscriptions"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSubsOpen(prev => !prev);
+              setAddMode(false);
+            }}
+            className="sm:hidden flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-body font-medium transition-colors relative flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, #c026d3, #9333ea)', color: 'white', border: 'none' }}
+          >
+            <Bell className="h-3.5 w-3.5 flex-shrink-0" />
+            <span className="hidden xs:inline">Подписки</span>
+            {subs.length > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                {subs.length}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Градиентная линия под хедером */}

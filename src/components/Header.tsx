@@ -68,7 +68,7 @@ async function removeSubscriptionFromAPI(userId: number, category: string, dateT
 }
 
 const NeonLogo = () => (
-  <svg width="160" height="42" viewBox="0 0 480 130" xmlns="http://www.w3.org/2000/svg">
+  <svg width="220" height="52" viewBox="0 0 480 108" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <filter id="logo-gp" x="-25%" y="-80%" width="150%" height="360%">
         <feGaussianBlur stdDeviation="3.5" result="b1"/>
@@ -213,10 +213,10 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
         <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-2 relative z-10">
 
           {/* Logo: кот + neon надпись */}
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-0 shrink-0">
             {/* Кот — PNG когда будет готов, пока round placeholder */}
             <img
-              src="/cat-logo.png"
+              src="/cat-logo1.png"
               alt="MinskDvizh"
               className="w-11 h-11 rounded-full object-cover"
               style={{ border: '1.5px solid rgba(192,38,211,0.4)' }}

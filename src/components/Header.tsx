@@ -74,7 +74,7 @@ async function removeSubscriptionFromAPI(userId: number, category: string, dateT
 }
 
 const NeonLogo = () => (
-  <svg width="220" height="52" viewBox="0 0 480 104" xmlns="http://www.w3.org/2000/svg">
+  <svg width="210" height="46" viewBox="0 0 480 100" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <filter id="logo-gp" x="-25%" y="-80%" width="150%" height="360%">
         <feGaussianBlur stdDeviation="3.5" result="b1"/>
@@ -236,7 +236,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
   return (
     <>
       <header ref={headerRef} className="sm:sticky sm:top-0 z-40 sm:glass-card sm:border-b sm:border-border/50">
-        <div className="container mx-auto flex items-center justify-between gap-2 px-4 py-2 relative z-10">
+        <div className="container mx-auto flex items-center justify-between gap-2 px-4 py-0 relative z-10">
 
           {/* Logo */}
           <div className="flex items-center shrink-0">
@@ -269,7 +269,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
               setAddMode(false);
             }}
             className="sm:hidden flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-body font-medium transition-colors relative flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #c026d3, #9333ea)', color: 'white', border: 'none' }}
+            style={{ background: 'linear-gradient(135deg, #c026d3 0%, #7c3aed 50%, #00e5ff 100%)', color: 'white', border: 'none' }}
           >
             <Bell className="h-3.5 w-3.5 flex-shrink-0" />
             <span className="hidden xs:inline">Подписки</span>
@@ -288,15 +288,19 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
       {/* Subscriptions portal */}
       {subsOpen && createPortal(
         <>
+          <style>{`
+            @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+            @keyframes slideDown { from { opacity: 0; transform: translateY(-8px) } to { opacity: 1; transform: translateY(0) } }
+          `}</style>
           <div
-            className="fixed inset-0 bg-black/40 sm:hidden animate-in fade-in duration-150"
-            style={{ zIndex: 999999998 }}
+            className="fixed inset-0 bg-black/40 sm:hidden"
+            style={{ zIndex: 999999998, animation: 'fadeIn 0.15s ease-out' }}
             onClick={closePanel}
           />
           <div
             ref={panelRef}
-            className="fixed left-0 right-0 top-[57px] sm:hidden animate-in slide-in-from-top-2 fade-in duration-200"
-            style={{ zIndex: 999999999, maxHeight: 'calc(100vh - 57px)', overflowY: 'hidden', pointerEvents: 'none' }}
+            className="fixed left-0 right-0 top-[50px] sm:hidden"
+            style={{ zIndex: 999999999, maxHeight: 'calc(100vh - 50px)', overflowY: 'hidden', pointerEvents: 'none', animation: 'slideDown 0.22s cubic-bezier(0.16, 1, 0.3, 1)' }}
           >
             <div
               className="mx-3 overflow-y-auto rounded-xl border border-border/50"

@@ -233,16 +233,16 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
       />
 
       <section className="container mx-auto px-4 pb-24 sm:pb-12">
-        <div className="flex flex-col gap-2 mb-6">
+        <div className="flex flex-col gap-1 mb-3">
           {debouncedSearch.trim() && (
-            <p className="text-sm text-muted-foreground font-body">
-              Результаты по запросу: <span className="text-accent font-semibold">«{debouncedSearch}»</span>
+            <p className="text-xs text-muted-foreground font-body">
+              По запросу: <span className="text-accent font-semibold">«{debouncedSearch}»</span>
             </p>
           )}
           <div className="flex items-center justify-between">
-            <h3 className="text-2xl font-display font-bold">События</h3>
-            <span className="text-sm text-muted-foreground font-body">
-              Найдено: {total} событий
+            <h3 className="text-base font-display font-bold">События</h3>
+            <span className="text-xs text-muted-foreground font-body">
+              Найдено: {total}
             </span>
           </div>
         </div>

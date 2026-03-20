@@ -148,7 +148,7 @@ const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, 
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <a
-                  href="https://t.me/MinskDvizhBot"
+                  href="https://t.me/MinskDvizh_bot"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-body font-medium hover:bg-primary/90 transition-colors"

@@ -239,7 +239,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                 }}
               />
               <img
-                src="/cat-logo.png"
+                src="/cat-logo1.png"
                 alt="MinskDvizh"
                 width={36}
                 height={36}

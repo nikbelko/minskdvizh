@@ -19,44 +19,41 @@ interface MobileNavProps {
 }
 
 const tabs = [
-  { key: 'home' as const,       icon: Home,         label: 'Главная' },
-  { key: 'categories' as const, icon: Grid3X3,      label: 'Категории' },
-  { key: 'calendar' as const,   icon: CalendarDays, label: 'Календарь' },
-  { key: 'search' as const,     icon: Search,       label: 'Поиск' },
+  { key: 'home' as const, icon: Home, label: 'Главная' },
+  { key: 'categories' as const, icon: Grid3X3, label: 'Категории' },
+  { key: 'calendar' as const, icon: CalendarDays, label: 'Календарь' },
+  { key: 'search' as const, icon: Search, label: 'Поиск' },
 ];
 
-/* Reusable neon gradient line */
-const NeonLine = () => (
-  <div
-    aria-hidden
-    style={{
-      position: 'absolute',
-      top: 0, left: 0, right: 0,
-      height: 1,
-      background:
-        'linear-gradient(90deg, transparent 0%, hsl(293,69%,49%) 25%, hsl(185,100%,50%) 55%, hsl(293,69%,49%) 80%, transparent 100%)',
-      opacity: 0.55,
-      pointerEvents: 'none',
-    }}
-  />
-);
+const glassStyle = {
+  background: 'hsla(var(--glass-bg))',
+  borderColor: 'hsla(var(--glass-border))',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+};
 
-const MobileNav = ({
-  activeTab, onTabChange, activeCategory, onCategorySelect,
-  searchQuery, onSearchChange, calendarDate, onCalendarDate, categoryCounts,
-}: MobileNavProps) => {
+const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, searchQuery, onSearchChange, calendarDate, onCalendarDate, categoryCounts }: MobileNavProps) => {
   const [categoriesOpen, setCategoriesOpen] = useState(false);
-  const [searchOpen, setSearchOpen]     = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const closeAll = () => { setCategoriesOpen(false); setSearchOpen(false); setCalendarOpen(false); };
 
   const handleTabChange = (key: typeof tabs[number]['key']) => {
     haptic('light');
-    if      (key === 'categories') { setSearchOpen(false); setCalendarOpen(false); setCategoriesOpen(p => !p); }
-    else if (key === 'calendar')   { setCategoriesOpen(false); setSearchOpen(false); setCalendarOpen(p => !p); }
-    else if (key === 'search')     { setCategoriesOpen(false); setCalendarOpen(false); setSearchOpen(p => !p); }
-    else                           { closeAll(); onTabChange(key); }
+    if (key === 'categories') {
+      setSearchOpen(false); setCalendarOpen(false);
+      setCategoriesOpen(prev => !prev);
+    } else if (key === 'calendar') {
+      setCategoriesOpen(false); setSearchOpen(false);
+      setCalendarOpen(prev => !prev);
+    } else if (key === 'search') {
+      setCategoriesOpen(false); setCalendarOpen(false);
+      setSearchOpen(prev => !prev);
+    } else {
+      closeAll();
+      onTabChange(key);
+    }
   };
 
   const handleCategoryClick = (slug: CategorySlug) => {
@@ -67,19 +64,20 @@ const MobileNav = ({
 
   const anyOpen = categoriesOpen || searchOpen || calendarOpen;
 
+  // Блокируем скролл фона когда открыта любая панель
   useEffect(() => {
     if (anyOpen) {
       const scrollY = window.scrollY;
-      document.body.style.overflow  = 'hidden';
-      document.body.style.position  = 'fixed';
-      document.body.style.top       = `-${scrollY}px`;
-      document.body.style.width     = '100%';
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
       return () => {
-        document.body.style.overflow  = '';
-        document.body.style.position  = '';
-        document.body.style.width     = '';
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
         const top = document.body.style.top;
-        document.body.style.top       = '';
+        document.body.style.top = '';
         window.scrollTo(0, -parseInt(top || '0'));
       };
     }
@@ -87,30 +85,16 @@ const MobileNav = ({
 
   const isActive = (key: string) => {
     if (key === 'categories') return categoriesOpen;
-    if (key === 'calendar')   return calendarOpen;
-    if (key === 'search')     return searchOpen;
+    if (key === 'calendar') return calendarOpen;
+    if (key === 'search') return searchOpen;
     return activeTab === key;
-  };
-
-  const glassStyle = {
-    background: 'hsla(var(--glass-bg))',
-    borderColor: 'hsla(var(--glass-border))',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-  };
-
-  /* Sheet with neon top border */
-  const sheetStyle = {
-    ...glassStyle,
-    border: '1px solid hsla(var(--glass-border))',
-    borderTopColor: 'hsl(293,69%,49%,0.3)',
   };
 
   return (
     <>
       {/* Backdrop */}
       {anyOpen && (
-        <div
+        <div 
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm sm:hidden animate-in fade-in duration-200 touch-none"
           onClick={closeAll}
         />
@@ -119,7 +103,7 @@ const MobileNav = ({
       {/* Category sheet */}
       {categoriesOpen && (
         <div className="fixed bottom-[60px] left-0 right-0 z-50 sm:hidden animate-in slide-in-from-bottom-4 fade-in duration-200">
-          <div className="mx-2 rounded-xl p-4" style={sheetStyle}>
+          <div className="mx-2 rounded-xl border border-border/50 p-4" style={glassStyle}>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-display font-bold text-foreground">Категории</h3>
               {activeCategory && (
@@ -127,20 +111,18 @@ const MobileNav = ({
               )}
             </div>
             <div className="grid grid-cols-4 gap-2">
-              {categories
-                .filter(cat => !categoryCounts || (categoryCounts[cat.slug] ?? 0) > 0)
-                .map(cat => (
-                  <button
-                    key={cat.slug}
-                    onClick={() => handleCategoryClick(cat.slug)}
-                    className={`flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all ${
-                      activeCategory === cat.slug ? 'bg-primary/20 ring-1 ring-primary' : 'hover:bg-secondary/50'
-                    }`}
-                  >
-                    <CategoryIcon slug={cat.slug} size="sm" />
-                    <span className="text-[10px] font-body text-foreground truncate w-full text-center">{cat.name}</span>
-                  </button>
-                ))}
+              {categories.filter(cat => !categoryCounts || (categoryCounts[cat.slug] ?? 0) > 0).map((cat) => (
+                <button
+                  key={cat.slug}
+                  onClick={() => handleCategoryClick(cat.slug)}
+                  className={`flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all ${
+                    activeCategory === cat.slug ? 'bg-primary/20 ring-1 ring-primary' : 'hover:bg-secondary/50'
+                  }`}
+                >
+                  <CategoryIcon slug={cat.slug} size="sm" />
+                  <span className="text-[10px] font-body text-foreground truncate w-full text-center">{cat.name}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -149,7 +131,7 @@ const MobileNav = ({
       {/* Calendar sheet */}
       {calendarOpen && (
         <div className="fixed bottom-[60px] left-0 right-0 z-50 sm:hidden animate-in slide-in-from-bottom-4 fade-in duration-200">
-          <div className="mx-2 rounded-xl p-4" style={sheetStyle}>
+          <div className="mx-2 rounded-xl border border-border/50 p-4" style={glassStyle}>
             <CalendarView selectedDate={calendarDate} onSelectDate={onCalendarDate} embedded />
           </div>
         </div>
@@ -158,7 +140,7 @@ const MobileNav = ({
       {/* Search sheet */}
       {searchOpen && (
         <div className="fixed bottom-[60px] left-0 right-0 z-50 sm:hidden animate-in slide-in-from-bottom-4 fade-in duration-200">
-          <div className="mx-2 rounded-xl p-4" style={sheetStyle}>
+          <div className="mx-2 rounded-xl border border-border/50 p-4" style={glassStyle}>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-display font-bold text-foreground">Поиск событий</h3>
             </div>
@@ -185,59 +167,23 @@ const MobileNav = ({
         </div>
       )}
 
-      {/* ── Bottom navigation bar ── */}
+      {/* Bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 glass-card border-t border-border/50 sm:hidden">
-        {/* Neon gradient top line */}
-        <NeonLine />
-
-        <div
-          className="flex items-center justify-around py-2"
-          style={{ paddingBottom: 'max(0.5rem, var(--tg-safe-bottom))' }}
-        >
-          {tabs.map(({ key, icon: Icon, label }) => {
-            const active = isActive(key);
-            return (
-              <button
-                key={key}
-                onClick={() => handleTabChange(key)}
-                className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-all duration-200 active:scale-90 relative"
-                style={active ? {
-                  color: 'hsl(293,69%,65%)',
-                } : {}}
-              >
-                {/* Active indicator dot */}
-                {active && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: -1,
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      width: 20,
-                      height: 2,
-                      borderRadius: 2,
-                      background: 'linear-gradient(90deg, hsl(293,69%,49%), hsl(185,100%,50%))',
-                      boxShadow: '0 0 6px hsl(293,69%,49%,0.7)',
-                    }}
-                  />
-                )}
-                <Icon
-                  className={`h-5 w-5 transition-transform duration-200 ${active ? 'scale-110' : ''}`}
-                  style={active ? {
-                    filter: 'drop-shadow(0 0 4px hsl(293,69%,49%,0.55))',
-                  } : {}}
-                />
-                <span
-                  className="text-[10px] font-body font-medium"
-                  style={active ? {
-                    color: 'hsl(293,69%,65%)',
-                  } : {}}
-                >
-                  {label}
-                </span>
-              </button>
-            );
-          })}
+        <div className="flex items-center justify-around py-2" style={{ paddingBottom: 'max(0.5rem, var(--tg-safe-bottom))' }}>
+          {tabs.map(({ key, icon: Icon, label }) => (
+            <button
+              key={key}
+              onClick={() => handleTabChange(key)}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-all duration-200 active:scale-90 ${
+                isActive(key)
+                  ? 'text-primary scale-105'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/30'
+              }`}
+            >
+              <Icon className={`h-5 w-5 transition-transform duration-200 ${isActive(key) ? 'scale-110' : ''}`} />
+              <span className="text-[10px] font-body font-medium">{label}</span>
+            </button>
+          ))}
         </div>
       </nav>
     </>

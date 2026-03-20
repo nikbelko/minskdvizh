@@ -31,76 +31,89 @@ async function fetchSubscriptions(userId: number): Promise<SubItem[]> {
       name: categories.find(c => c.slug === s.category)?.name || s.category,
       date_type: s.date_type
     }));
-  } catch { return []; }
+  } catch (error) {
+    console.error('Ошибка загрузки подписок:', error);
+    return [];
+  }
 }
 
-async function addSubscriptionToAPI(userId: number, category: string, dateType = 'upcoming'): Promise<boolean> {
+async function addSubscriptionToAPI(userId: number, category: string, dateType: string = 'upcoming'): Promise<boolean> {
   try {
-    const r = await fetch(`${API_BASE}/api/subscriptions/add`, {
+    const response = await fetch(`${API_BASE}/api/subscriptions/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId, category, date_type: dateType }),
     });
-    return (await r.json()).ok === true;
-  } catch { return false; }
+    const data = await response.json();
+    return data.ok === true;
+  } catch (error) {
+    console.error('Ошибка добавления подписки:', error);
+    return false;
+  }
 }
 
-async function removeSubscriptionFromAPI(userId: number, category: string, dateType = 'upcoming'): Promise<boolean> {
+async function removeSubscriptionFromAPI(userId: number, category: string, dateType: string = 'upcoming'): Promise<boolean> {
   try {
-    const r = await fetch(`${API_BASE}/api/subscriptions/remove`, {
+    const response = await fetch(`${API_BASE}/api/subscriptions/remove`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId, category, date_type: dateType }),
     });
-    return (await r.json()).ok === true;
-  } catch { return false; }
+    const data = await response.json();
+    return data.ok === true;
+  } catch (error) {
+    console.error('Ошибка удаления подписки:', error);
+    return false;
+  }
 }
 
-/* ── Pulse SVG line under wordmark ── */
+// ── NEW: Pulse SVG under wordmark ────────────────────────────────────────────
 const PulseLine = () => (
   <svg
-    viewBox="0 0 72 10"
+    viewBox="0 0 68 9"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    style={{ width: 72, height: 10, display: 'block' }}
+    aria-hidden="true"
+    style={{ display: 'block', width: 68, height: 9 }}
   >
     <defs>
-      <linearGradient id="plGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%"   stopColor="hsl(293,69%,49%)" stopOpacity="0.25" />
-        <stop offset="35%"  stopColor="hsl(293,69%,49%)" stopOpacity="1" />
-        <stop offset="65%"  stopColor="hsl(185,100%,50%)" stopOpacity="1" />
-        <stop offset="100%" stopColor="hsl(185,100%,50%)" stopOpacity="0.25" />
+      <linearGradient id="hdr-pulse" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%"   stopColor="hsl(293,69%,49%)" stopOpacity="0.2" />
+        <stop offset="30%"  stopColor="hsl(293,69%,49%)" stopOpacity="1"   />
+        <stop offset="70%"  stopColor="hsl(185,100%,50%)" stopOpacity="1"  />
+        <stop offset="100%" stopColor="hsl(185,100%,50%)" stopOpacity="0.2"/>
       </linearGradient>
     </defs>
     <polyline
-      points="0,5 10,5 14,1.5 17,8.5 20,3 23,7 26,5 40,5 44,1 47,9 50,2.5 53,7.5 56,5 72,5"
-      stroke="url(#plGrad)"
-      strokeWidth="1.4"
+      points="0,4.5 9,4.5 12.5,1.5 15.5,7.5 18,2.5 21,6.5 24,4.5 38,4.5 41.5,1 44.5,8 47.5,2 50.5,7 53,4.5 68,4.5"
+      stroke="url(#hdr-pulse)"
+      strokeWidth="1.3"
       fill="none"
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ filter: 'drop-shadow(0 0 3px hsl(185,100%,50%,0.65))' }}
+      style={{ filter: 'drop-shadow(0 0 2.5px hsl(185,100%,50%,0.65))' }}
     />
   </svg>
 );
 
-/* ── Reusable neon gradient rule ── */
-const NeonLine = ({ top, bottom, opacity = 0.5 }: { top?: number; bottom?: number; opacity?: number }) => (
+// ── NEW: 1 px neon gradient rule for top / bottom of header ──────────────────
+const NeonRule = ({ position }: { position: 'top' | 'bottom' }) => (
   <div
     aria-hidden
     style={{
       position: 'absolute',
-      left: 0, right: 0,
-      top:    top    !== undefined ? top    : undefined,
-      bottom: bottom !== undefined ? bottom : undefined,
+      [position]: 0,
+      left: 0,
+      right: 0,
       height: 1,
       background:
-        'linear-gradient(90deg, transparent 0%, hsl(293,69%,49%) 25%, hsl(185,100%,50%) 55%, hsl(293,69%,49%) 80%, transparent 100%)',
-      opacity,
+        'linear-gradient(90deg, transparent 0%, hsl(293,69%,49%) 20%, hsl(185,100%,50%) 55%, hsl(293,69%,49%) 80%, transparent 100%)',
+      opacity: position === 'top' ? 0.6 : 0.35,
       pointerEvents: 'none',
     }}
   />
 );
+// ─────────────────────────────────────────────────────────────────────────────
 
 const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }: HeaderProps) => {
   const [subsOpen, setSubsOpen] = useState(false);
@@ -136,7 +149,10 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
   useEffect(() => {
     if (subsOpen && userId) {
       setLoading(true);
-      fetchSubscriptions(userId).then(data => { setSubs(data); setLoading(false); });
+      fetchSubscriptions(userId).then(data => {
+        setSubs(data);
+        setLoading(false);
+      });
     }
   }, [subsOpen, userId]);
 
@@ -144,29 +160,47 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
     const handleHeaderClick = (e: MouseEvent) => {
       if (headerRef.current && headerRef.current.contains(e.target as Node) && subsOpen) {
         const target = e.target as HTMLElement;
-        if (!target.closest('button[aria-label="subscriptions"]')) closePanel();
+        if (!target.closest('button[aria-label="subscriptions"]')) {
+          closePanel();
+        }
       }
     };
     document.addEventListener('click', handleHeaderClick);
     return () => document.removeEventListener('click', handleHeaderClick);
   }, [subsOpen]);
 
-  const handleClearSearch = () => { onSearchChange(''); haptic('selection'); };
-  const closePanel = () => { setSubsOpen(false); setAddMode(false); };
+  const handleClearSearch = () => {
+    onSearchChange('');
+    haptic('selection');
+  };
 
   const handleSubscribe = async (slug: string, name: string) => {
     if (!userId) { toast.error('Не удалось определить пользователя'); return; }
     if (subs.find(s => s.slug === slug)) { toast.info(`Вы уже подписаны на «${name}»`); return; }
-    const ok = await addSubscriptionToAPI(userId, slug);
-    if (ok) { setSubs(prev => [...prev, { slug, name }]); toast.success(`Подписка на «${name}» оформлена ✓`, { duration: 2000 }); setAddMode(false); }
-    else toast.error('Ошибка при оформлении подписки');
+    const success = await addSubscriptionToAPI(userId, slug);
+    if (success) {
+      setSubs(prev => [...prev, { slug, name }]);
+      toast.success(`Подписка на «${name}» оформлена ✓`, { duration: 2000 });
+      setAddMode(false);
+    } else {
+      toast.error('Ошибка при оформлении подписки');
+    }
   };
 
   const handleUnsubscribe = async (slug: string, name: string) => {
     if (!userId) { toast.error('Не удалось определить пользователя'); return; }
-    const ok = await removeSubscriptionFromAPI(userId, slug);
-    if (ok) { setSubs(prev => prev.filter(s => s.slug !== slug)); toast.success(`Отписались от «${name}»`, { duration: 2000 }); }
-    else toast.error('Ошибка при отписке');
+    const success = await removeSubscriptionFromAPI(userId, slug);
+    if (success) {
+      setSubs(prev => prev.filter(s => s.slug !== slug));
+      toast.success(`Отписались от «${name}»`, { duration: 2000 });
+    } else {
+      toast.error('Ошибка при отписке');
+    }
+  };
+
+  const closePanel = () => {
+    setSubsOpen(false);
+    setAddMode(false);
   };
 
   const glassStyle = {
@@ -182,57 +216,69 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
         ref={headerRef}
         className="sm:sticky sm:top-0 z-40 sm:glass-card sm:border-b sm:border-border/50 relative"
       >
-        {/* Neon top line */}
-        <NeonLine top={0} opacity={0.55} />
+        {/* ── NEW: neon top border ── */}
+        <NeonRule position="top" />
 
         <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3 relative z-10">
 
-          {/* ── Logo ── */}
+          {/* ── Logo (changed) ── */}
           <div className="flex items-center gap-2.5 shrink-0">
 
             {/* Cat avatar with purple glow halo */}
-            <div className="relative shrink-0" style={{ width: 38, height: 38 }}>
-              <div style={{
-                position: 'absolute',
-                inset: -4,
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, hsl(293,69%,49%,0.3) 0%, transparent 70%)',
-                filter: 'blur(4px)',
-                pointerEvents: 'none',
-              }} />
+            <div className="relative shrink-0" style={{ width: 36, height: 36 }}>
+              {/* glow behind avatar */}
+              <div
+                aria-hidden
+                style={{
+                  position: 'absolute',
+                  inset: -4,
+                  borderRadius: '50%',
+                  background: 'radial-gradient(circle, hsl(293,69%,49%,0.28) 0%, transparent 70%)',
+                  filter: 'blur(4px)',
+                  pointerEvents: 'none',
+                }}
+              />
               <img
                 src="/cat-logo.png"
-                alt="MinskDvizh cat"
+                alt="MinskDvizh"
+                width={36}
+                height={36}
                 style={{
-                  width: 38,
-                  height: 38,
+                  width: 36,
+                  height: 36,
                   borderRadius: '50%',
                   objectFit: 'cover',
-                  objectPosition: 'center 15%',
-                  border: '1.5px solid hsl(293,69%,49%,0.55)',
-                  boxShadow: '0 0 8px hsl(293,69%,49%,0.35), 0 0 18px hsl(293,69%,49%,0.12)',
+                  border: '1.5px solid hsl(293,69%,49%,0.5)',
+                  boxShadow:
+                    '0 0 8px hsl(293,69%,49%,0.3), 0 0 20px hsl(293,69%,49%,0.1)',
+                  display: 'block',
                   position: 'relative',
                   zIndex: 1,
-                  display: 'block',
                 }}
               />
             </div>
 
-            {/* Wordmark + pulse line */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {/* Wordmark + pulse line stacked */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <div style={{ lineHeight: 1 }}>
-                <span className="text-xl font-display font-bold tracking-tight text-primary">Minsk</span>
-                <span className="text-xl font-display font-bold tracking-tight text-foreground">Dvizh</span>
+                <span className="text-xl font-display font-bold tracking-tight text-primary">
+                  Minsk
+                </span>
+                <span className="text-xl font-display font-bold tracking-tight text-foreground">
+                  Dvizh
+                </span>
               </div>
               <PulseLine />
             </div>
 
+            {/* Greeting — desktop only, same as before */}
             <span className="hidden md:inline text-sm text-muted-foreground font-body ml-1">
               {tgUser ? `Привет, ${tgUser.first_name}! 👋` : 'Афиша Минска'}
             </span>
           </div>
+          {/* ── end Logo ── */}
 
-          {/* Desktop search */}
+          {/* Desktop search — unchanged */}
           <div className="relative max-w-md w-full hidden sm:block">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
@@ -249,11 +295,15 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
             )}
           </div>
 
-          {/* Actions */}
+          {/* Action buttons — unchanged */}
           <div className="flex items-center gap-2 shrink-0">
             <button
               aria-label="subscriptions"
-              onClick={(e) => { e.stopPropagation(); setSubsOpen(prev => !prev); setAddMode(false); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSubsOpen(prev => !prev);
+                setAddMode(false);
+              }}
               className={`sm:hidden flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-body font-medium transition-colors relative ${
                 subsOpen ? 'bg-primary text-primary-foreground' : 'bg-primary text-primary-foreground hover:bg-primary/90'
               }`}
@@ -261,10 +311,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
               <Bell className="h-3.5 w-3.5" />
               <span>Подписки</span>
               {subs.length > 0 && (
-                <span
-                  className="absolute -top-1.5 -right-1.5 w-4 h-4 flex items-center justify-center rounded-full text-[9px] font-bold text-white"
-                  style={{ background: 'hsl(185,100%,42%)', boxShadow: '0 0 6px hsl(185,100%,50%,0.55)' }}
-                >
+                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                   {subs.length}
                 </span>
               )}
@@ -282,11 +329,11 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
           </div>
         </div>
 
-        {/* Neon bottom line */}
-        <NeonLine bottom={0} opacity={0.38} />
+        {/* ── NEW: neon bottom border ── */}
+        <NeonRule position="bottom" />
       </header>
 
-      {/* ── Subscriptions portal ── */}
+      {/* Subscriptions portal — unchanged */}
       {subsOpen && createPortal(
         <>
           <div
@@ -309,22 +356,29 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                   <>
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-xs font-display font-bold text-foreground">🔔 Мои подписки</h3>
-                      <button onClick={() => setAddMode(true)} className="text-xs text-primary font-body font-medium hover:underline">+ Добавить</button>
+                      <button onClick={() => setAddMode(true)} className="text-xs text-primary font-body font-medium hover:underline">
+                        + Добавить
+                      </button>
                     </div>
+
                     {loading ? (
                       <div className="text-center py-4">
-                        <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                        <p className="text-xs text-muted-foreground mt-1">Загрузка...</p>
                       </div>
                     ) : subs.length === 0 ? (
                       <div className="text-center py-2">
                         <p className="text-xs text-muted-foreground font-body mb-2">Нет активных подписок</p>
-                        <button onClick={() => setAddMode(true)} className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-body font-medium">
+                        <button
+                          onClick={() => setAddMode(true)}
+                          className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-body font-medium"
+                        >
                           Подписаться на категорию
                         </button>
                       </div>
                     ) : (
                       <>
-                        <div className="space-y-1 max-h-[152px] overflow-y-auto pr-1 scrollbar-thin">
+                        <div className="space-y-1 max-h-[152px] overflow-y-auto pr-1 scrollbar-thin" style={{ scrollbarWidth: 'thin' }}>
                           {subs.map(sub => (
                             <div key={sub.slug} className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-secondary/30">
                               <div className="flex items-center gap-1.5">
@@ -335,13 +389,16 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                                 onClick={(e) => { e.stopPropagation(); handleUnsubscribe(sub.slug, sub.name); }}
                                 className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-red-400 transition-colors font-body shrink-0 ml-2"
                               >
-                                <BellOff className="h-3 w-3" /><span>Отписаться</span>
+                                <BellOff className="h-3 w-3" />
+                                <span>Отписаться</span>
                               </button>
                             </div>
                           ))}
                         </div>
                         {subs.length > 4 && (
-                          <div className="text-[10px] text-muted-foreground text-center mt-1.5 font-body border-t border-border/50 pt-1.5">↑ можно скроллить ↑</div>
+                          <div className="text-[10px] text-muted-foreground text-center mt-1.5 font-body border-t border-border/50 pt-1.5">
+                            ↑ можно скроллить ↑
+                          </div>
                         )}
                       </>
                     )}
@@ -350,9 +407,11 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                   <>
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-xs font-display font-bold text-foreground">Выберите категорию</h3>
-                      <button onClick={() => setAddMode(false)} className="text-xs text-muted-foreground hover:text-foreground font-body">← Назад</button>
+                      <button onClick={() => setAddMode(false)} className="text-xs text-muted-foreground hover:text-foreground font-body">
+                        ← Назад
+                      </button>
                     </div>
-                    <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                    <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                       {categories.map((cat) => {
                         const isSubscribed = subs.some(s => s.slug === cat.slug);
                         return (

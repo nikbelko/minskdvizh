@@ -19,25 +19,15 @@ interface HeroProps {
 }
 
 const pills: { key: QuickFilter; label: string }[] = [
-  { key: 'today',    label: 'Сегодня' },
+  { key: 'today', label: 'Сегодня' },
   { key: 'tomorrow', label: 'Завтра' },
-  { key: 'weekend',  label: 'Выходные' },
+  { key: 'weekend', label: 'Выходные' },
   { key: 'upcoming', label: 'Ближайшие' },
 ];
 
 const TG_BANNER_KEY = 'minskdvizh_tg_banner_dismissed';
 
-/* Shared active pill style: cyan glow */
-const activePillStyle: React.CSSProperties = {
-  background: 'linear-gradient(135deg, hsl(293,69%,49%), hsl(185,100%,45%))',
-  color: '#fff',
-  boxShadow: '0 0 12px hsl(185,100%,50%,0.35), 0 0 4px hsl(293,69%,49%,0.5)',
-  border: '1px solid hsl(185,100%,50%,0.4)',
-};
-
-const Hero = ({
-  activeFilter, onFilterChange, activeCategory, onCategoryChange, categoryCounts, totalFiltered = 0,
-}: HeroProps) => {
+const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, categoryCounts, totalFiltered = 0 }: HeroProps) => {
   const today = new Date();
   const dateStr = format(today, "d MMMM yyyy, EEEE", { locale: ru });
   const inTelegram = isTelegram();
@@ -45,8 +35,12 @@ const Hero = ({
     try { return sessionStorage.getItem(TG_BANNER_KEY) === 'true'; } catch { return false; }
   });
 
-  const handleFilterClick = (key: QuickFilter) => { haptic('light'); onFilterChange(key); };
-  const dismissTgBanner   = () => {
+  const handleFilterClick = (key: QuickFilter) => {
+    haptic('light');
+    onFilterChange(key);
+  };
+
+  const dismissTgBanner = () => {
     setTgBannerDismissed(true);
     try { sessionStorage.setItem(TG_BANNER_KEY, 'true'); } catch {}
   };
@@ -54,9 +48,8 @@ const Hero = ({
   return (
     <section className="relative sm:py-20 md:py-28 overflow-hidden city-grid sm:static sm:z-auto">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-[120px] animate-glow-pulse pointer-events-none hidden sm:block" />
-
+      
       <div className="container mx-auto px-4 relative z-10">
-        {/* Date — desktop */}
         <div className="opacity-0 animate-fade-up hidden sm:block">
           <p className="text-accent font-body font-medium text-sm tracking-widest uppercase mb-4">
             {dateStr}
@@ -66,34 +59,33 @@ const Hero = ({
         {/* Mobile: filter pills + categories */}
         <div className="sm:hidden py-3">
           <div className="flex gap-2">
-            {pills.map((pill) => {
-              const isActive = activeFilter === pill.key;
-              return (
-                <button
-                  key={pill.key}
-                  onClick={() => handleFilterClick(pill.key)}
-                  className="flex-1 py-2 rounded-full text-xs font-body font-medium whitespace-nowrap transition-all duration-300 text-center"
-                  style={isActive ? activePillStyle : undefined}
-                >
-                  {pill.label}
-                </button>
-              );
-            })}
+            {pills.map((pill) => (
+              <button
+                key={pill.key}
+                onClick={() => handleFilterClick(pill.key)}
+                className={`flex-1 py-2 rounded-full text-xs font-body font-medium whitespace-nowrap transition-all duration-300 text-center ${
+                  activeFilter === pill.key
+                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
+                    : 'glass-card text-foreground'
+                }`}
+              >
+                {pill.label}
+              </button>
+            ))}
           </div>
 
           {/* Mobile category tabs */}
           {onCategoryChange && (
-            <div className="flex gap-1 overflow-x-auto mt-3 -mx-1 px-1 no-scrollbar">
+            <div
+              className="flex gap-1 overflow-x-auto mt-3 -mx-1 px-1 no-scrollbar"
+            >
               <button
                 onClick={() => onCategoryChange(null)}
-                className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-body font-medium transition-all whitespace-nowrap"
-                style={activeCategory === null ? {
-                  background: 'hsl(185,100%,50%,0.12)',
-                  color: 'hsl(185,100%,55%)',
-                  borderBottom: '2px solid hsl(185,100%,50%)',
-                  border: '1px solid hsl(185,100%,50%,0.25)',
-                  borderBottomColor: 'hsl(185,100%,50%)',
-                } : { color: 'hsl(var(--muted-foreground))' }}
+                className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-body font-medium transition-all whitespace-nowrap ${
+                  activeCategory === null
+                    ? 'bg-primary/15 text-primary border-b-2 border-primary'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                }`}
               >
                 Все ({Object.values(categoryCounts ?? {}).reduce((s, n) => s + n, 0)})
               </button>
@@ -104,14 +96,11 @@ const Hero = ({
                   <button
                     key={cat.slug}
                     onClick={() => onCategoryChange(isActive ? null : cat.slug)}
-                    className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-body font-medium transition-all whitespace-nowrap"
-                    style={isActive ? {
-                      background: 'hsl(293,69%,49%,0.12)',
-                      color: 'hsl(293,69%,72%)',
-                      border: '1px solid hsl(293,69%,49%,0.3)',
-                      borderBottomColor: 'hsl(293,69%,49%)',
-                      borderBottomWidth: '2px',
-                    } : { color: 'hsl(var(--muted-foreground))' }}
+                    className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-body font-medium transition-all whitespace-nowrap ${
+                      isActive
+                        ? 'bg-primary/15 text-primary border-b-2 border-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                    }`}
                   >
                     <span className="inline-flex items-center gap-1">
                       <CategoryIcon slug={cat.slug} size="sm" />
@@ -124,37 +113,38 @@ const Hero = ({
           )}
         </div>
 
-        {/* Desktop headline */}
+        {/* Desktop: original layout */}
         <h2 className="hidden sm:block opacity-0 animate-fade-up animate-stagger-1 text-5xl md:text-7xl lg:text-8xl font-display font-bold leading-[1.1] mb-8">
           <span className="text-foreground">Что сегодня</span>
           <br />
           <span className="text-primary">в Минске?</span>
         </h2>
 
-        {/* Desktop filter pills */}
         <div className="hidden sm:flex opacity-0 animate-fade-up animate-stagger-2 flex-wrap gap-3">
-          {pills.map((pill) => {
-            const isActive = activeFilter === pill.key;
-            return (
-              <button
-                key={pill.key}
-                onClick={() => handleFilterClick(pill.key)}
-                className="px-5 py-2.5 rounded-full text-sm font-body font-medium transition-all duration-300 glass-card"
-                style={isActive ? activePillStyle : { border: '1px solid hsla(var(--glass-border))' }}
-              >
-                {pill.label}
-              </button>
-            );
-          })}
+          {pills.map((pill) => (
+            <button
+              key={pill.key}
+              onClick={() => handleFilterClick(pill.key)}
+              className={`px-5 py-2.5 rounded-full text-sm font-body font-medium transition-all duration-300 ${
+                activeFilter === pill.key
+                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+                  : 'glass-card text-foreground hover:border-primary/40'
+              }`}
+            >
+              {pill.label}
+            </button>
+          ))}
         </div>
 
-        {/* Telegram banner */}
+        {/* Telegram environment banner */}
         {!inTelegram && !tgBannerDismissed && (
           <div className="hidden sm:block opacity-0 animate-fade-up animate-stagger-3 mt-6">
             <div className="glass-card p-3 flex items-center justify-between gap-3 max-w-lg">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-lg shrink-0">🤖</span>
-                <p className="text-sm font-body text-foreground/80 truncate">Также доступно в Telegram</p>
+                <p className="text-sm font-body text-foreground/80 truncate">
+                  Также доступно в Telegram
+                </p>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <a
@@ -165,7 +155,10 @@ const Hero = ({
                 >
                   Открыть
                 </a>
-                <button onClick={dismissTgBanner} className="p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors">
+                <button
+                  onClick={dismissTgBanner}
+                  className="p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                >
                   <X className="h-3.5 w-3.5" />
                 </button>
               </div>

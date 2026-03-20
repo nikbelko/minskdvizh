@@ -4,9 +4,12 @@ import EventGroupCard from './EventGroupCard';
 import CategoryTabs from './CategoryTabs';
 import { EventSkeletons } from './SkeletonCard';
 import type { QuickFilter } from './Hero';
-import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RefreshCw, Zap, X } from 'lucide-react';
 import { useEvents, useCategoryCounts } from '@/hooks/use-events';
 import { haptic, showBackButton, hideBackButton } from '@/lib/telegram';
+import { getTelegramUser } from '@/lib/telegram';
+import { addFlashSubscription, fetchFlashSubscriptions } from '@/services/api';
+import { toast } from 'sonner';
 
 interface EventsListProps {
   activeCategory: CategorySlug | null;
@@ -20,9 +23,71 @@ interface EventsListProps {
 
 const EVENTS_PER_PAGE = 10;
 
-const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSearch, calendarDate, onTotalChange }: EventsListProps) => {
+// Flash subscription banner shown after search
+interface FlashBannerProps {
+  query: string;
+  onSubscribe: () => void;
+  onDismiss: () => void;
+  loading: boolean;
+  alreadySubscribed: boolean;
+}
+
+const FlashBanner = ({ query, onSubscribe, onDismiss, loading, alreadySubscribed }: FlashBannerProps) => (
+  <div
+    className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 mb-4 animate-in slide-in-from-top-2 fade-in duration-300"
+    style={{
+      background: 'linear-gradient(135deg, rgba(251,191,36,0.08) 0%, rgba(251,191,36,0.04) 100%)',
+      border: '1px solid rgba(251,191,36,0.25)',
+    }}
+  >
+    <div className="flex items-center gap-2.5 min-w-0">
+      <Zap className="h-4 w-4 text-amber-400 shrink-0" />
+      <div className="min-w-0">
+        <p className="text-sm font-body font-semibold text-foreground leading-tight">
+          {alreadySubscribed ? '⚡ Уже подписаны' : '⚡ Флеш-подписка'}
+        </p>
+        <p className="text-xs text-muted-foreground font-body leading-tight mt-0.5 truncate">
+          {alreadySubscribed
+            ? `Вы получите уведомление о новых «${query}»`
+            : `Уведомить о новых событиях по «${query}»?`}
+        </p>
+      </div>
+    </div>
+    <div className="flex items-center gap-1.5 shrink-0">
+      {!alreadySubscribed && (
+        <button
+          onClick={onSubscribe}
+          disabled={loading}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-body font-semibold text-black transition-all hover:opacity-90 active:scale-95 disabled:opacity-60"
+          style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)' }}
+        >
+          {loading ? (
+            <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-black border-t-transparent" />
+          ) : (
+            <Zap className="h-3 w-3" />
+          )}
+          Подписаться
+        </button>
+      )}
+      <button
+        onClick={onDismiss}
+        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+      >
+        <X className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  </div>
+);
+
+const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery, debouncedSearch, calendarDate, onTotalChange }: EventsListProps) => {
   const [page, setPage] = useState(1);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // Flash subscription state
+  const [flashBannerVisible, setFlashBannerVisible] = useState(false);
+  const [flashLoading, setFlashLoading] = useState(false);
+  const [flashSubscribed, setFlashSubscribed] = useState(false);
+  const [dismissedQueries, setDismissedQueries] = useState<Set<string>>(new Set());
 
   const { data: counts } = useCategoryCounts(quickFilter, calendarDate);
 
@@ -35,16 +100,70 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
     perPage: EVENTS_PER_PAGE,
   });
 
-  // Reset page on filter change & create animation key
-  const animationKey = useMemo(() => `${activeCategory}-${quickFilter}-${debouncedSearch}-${calendarDate?.toISOString()}-${page}`, [activeCategory, quickFilter, debouncedSearch, calendarDate, page]);
+  // Reset page on filter change
+  const animationKey = useMemo(
+    () => `${activeCategory}-${quickFilter}-${debouncedSearch}-${calendarDate?.toISOString()}-${page}`,
+    [activeCategory, quickFilter, debouncedSearch, calendarDate, page]
+  );
   useEffect(() => { setPage(1); }, [activeCategory, quickFilter, debouncedSearch, calendarDate]);
 
-  // Telegram back button for filters
+  // Show flash banner when search query is active and not dismissed
+  useEffect(() => {
+    const q = debouncedSearch.trim();
+    if (q.length >= 2 && !dismissedQueries.has(q)) {
+      setFlashBannerVisible(true);
+      setFlashSubscribed(false);
+      // Check if already subscribed
+      const tgUser = getTelegramUser();
+      if (tgUser?.id) {
+        fetchFlashSubscriptions(tgUser.id).then(subs => {
+          const already = subs.some(s => s.query.toLowerCase() === q.toLowerCase());
+          setFlashSubscribed(already);
+        }).catch(() => {});
+      }
+    } else {
+      setFlashBannerVisible(false);
+    }
+  }, [debouncedSearch]);
+
+  const handleFlashSubscribe = async () => {
+    const q = debouncedSearch.trim();
+    const tgUser = getTelegramUser();
+
+    if (!tgUser?.id) {
+      toast.error('Флеш-подписки доступны только через Telegram-бот @Minskdvizh_bot');
+      return;
+    }
+
+    haptic('medium');
+    setFlashLoading(true);
+    try {
+      const result = await addFlashSubscription(tgUser.id, q);
+      if (result.alreadyExists) {
+        setFlashSubscribed(true);
+        toast.info(`Вы уже подписаны на «${q}»`);
+      } else {
+        setFlashSubscribed(true);
+        toast.success(`⚡ Подписка оформлена! Уведомим о новых «${q}»`, { duration: 3000 });
+      }
+    } catch {
+      toast.error('Не удалось оформить подписку. Попробуйте позже.');
+    } finally {
+      setFlashLoading(false);
+    }
+  };
+
+  const handleFlashDismiss = () => {
+    const q = debouncedSearch.trim();
+    setDismissedQueries(prev => new Set([...prev, q]));
+    setFlashBannerVisible(false);
+    haptic('selection');
+  };
+
+  // Telegram back button
   useEffect(() => {
     if (activeCategory || debouncedSearch.trim() || calendarDate) {
-      showBackButton(() => {
-        onCategoryChange(null);
-      });
+      showBackButton(() => { onCategoryChange(null); });
     } else {
       hideBackButton();
     }
@@ -61,9 +180,7 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
   const total = data?.total ?? 0;
   const totalPages = data?.totalPages ?? 1;
 
-  useEffect(() => {
-    onTotalChange?.(total);
-  }, [total, onTotalChange]);
+  useEffect(() => { onTotalChange?.(total); }, [total, onTotalChange]);
 
   const getEmptyState = () => {
     if (debouncedSearch.trim()) {
@@ -79,36 +196,25 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
         </div>
       );
     }
-
     if (quickFilter === 'today') {
       return (
         <div className="glass-card p-12 text-center">
           <p className="text-4xl mb-4">😴</p>
-          <p className="text-foreground font-body font-semibold mb-2">
-            Сегодня тихо. Зато завтра...
-          </p>
-          <p className="text-muted-foreground font-body text-sm">
-            Переключитесь на «Завтра» или «Ближайшие»
-          </p>
+          <p className="text-foreground font-body font-semibold mb-2">Сегодня тихо. Зато завтра...</p>
+          <p className="text-muted-foreground font-body text-sm">Переключитесь на «Завтра» или «Ближайшие»</p>
         </div>
       );
     }
-
     if (activeCategory) {
       const cat = getCategoryBySlug(activeCategory);
       return (
         <div className="glass-card p-12 text-center">
           <p className="text-4xl mb-4">{cat.emoji}</p>
-          <p className="text-foreground font-body font-semibold mb-2">
-            Пока нет событий в этой категории
-          </p>
-          <p className="text-muted-foreground font-body text-sm">
-            Попробуйте другой период или категорию
-          </p>
+          <p className="text-foreground font-body font-semibold mb-2">Пока нет событий в этой категории</p>
+          <p className="text-muted-foreground font-body text-sm">Попробуйте другой период или категорию</p>
         </div>
       );
     }
-
     return (
       <div className="glass-card p-12 text-center">
         <p className="text-4xl mb-4">📭</p>
@@ -141,14 +247,23 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, debouncedSe
           </div>
         </div>
 
+        {/* Flash subscription banner */}
+        {flashBannerVisible && debouncedSearch.trim().length >= 2 && (
+          <FlashBanner
+            query={debouncedSearch.trim()}
+            onSubscribe={handleFlashSubscribe}
+            onDismiss={handleFlashDismiss}
+            loading={flashLoading}
+            alreadySubscribed={flashSubscribed}
+          />
+        )}
+
         {isLoading && <EventSkeletons count={3} />}
 
         {isError && !isLoading && (
           <div className="glass-card p-12 text-center">
             <p className="text-4xl mb-4">😕</p>
-            <p className="text-foreground font-body font-semibold mb-3">
-              Не удалось загрузить события
-            </p>
+            <p className="text-foreground font-body font-semibold mb-3">Не удалось загрузить события</p>
             <button
               onClick={() => refetch()}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-body font-medium hover:bg-primary/90 transition-colors"

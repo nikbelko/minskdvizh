@@ -25,6 +25,46 @@ export interface ApiEvent {
 
 export type CategoryCounts = Record<CategorySlug, number>;
 
+// ── Flash subscriptions ────────────────────────────────────────────────────
+
+export interface FlashSubscription {
+  id: number;
+  query: string;
+  created_at: string;
+}
+
+export async function fetchFlashSubscriptions(userId: number): Promise<FlashSubscription[]> {
+  const url = new URL('/api/flash-subscriptions', API_BASE);
+  url.searchParams.set('user_id', String(userId));
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  const data = await res.json();
+  return data.flash_subscriptions ?? [];
+}
+
+export async function addFlashSubscription(userId: number, query: string): Promise<{ ok: boolean; alreadyExists: boolean }> {
+  const res = await fetch(`${API_BASE}/api/flash-subscriptions/add`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId, query }),
+  });
+  if (res.status === 409) return { ok: false, alreadyExists: true };
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return { ok: true, alreadyExists: false };
+}
+
+export async function removeFlashSubscription(userId: number, flashId: number): Promise<boolean> {
+  const res = await fetch(`${API_BASE}/api/flash-subscriptions/remove`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId, flash_id: flashId }),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return true;
+}
+
+// ── Events ─────────────────────────────────────────────────────────────────
+
 function toEventItem(e: ApiEvent): EventItem {
   return {
     id: String(e.id),
@@ -101,7 +141,6 @@ export async function fetchCategoryCounts(filter?: 'today' | 'tomorrow' | 'weeke
     return apiFetch<CategoryCounts>('/api/categories/counts');
   }
 
-  // Fetch total per category in parallel (per_page=1 to minimize payload)
   const slugs = categories.map(c => c.slug);
   const results = await Promise.all(
     slugs.map(slug => {

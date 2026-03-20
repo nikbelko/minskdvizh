@@ -1,10 +1,16 @@
-import { Search, X, Bell, BellOff } from 'lucide-react';
+import { Search, X, Bell, BellOff, Zap } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { getTelegramUser, haptic } from '@/lib/telegram';
 import { toast } from 'sonner';
 import { categories } from '@/data/events';
 import CategoryIcon from './CategoryIcon';
+import {
+  fetchFlashSubscriptions,
+  addFlashSubscription,
+  removeFlashSubscription,
+  type FlashSubscription,
+} from '@/services/api';
 
 interface HeaderProps {
   searchQuery: string;
@@ -119,12 +125,14 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
   const [subsOpen, setSubsOpen] = useState(false);
   const [addMode, setAddMode] = useState(false);
   const [subs, setSubs] = useState<SubItem[]>([]);
+  const [flashSubs, setFlashSubs] = useState<FlashSubscription[]>([]);
   const [loading, setLoading] = useState(false);
   const tgUser = getTelegramUser();
   const userId = tgUser?.id;
   const panelRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
 
+  // Scroll lock when panel open
   useEffect(() => {
     if (subsOpen) {
       const scrollY = window.scrollY;
@@ -146,13 +154,18 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
     }
   }, [subsOpen]);
 
+  // Load subscriptions when panel opens
   useEffect(() => {
     if (subsOpen && userId) {
       setLoading(true);
-      fetchSubscriptions(userId).then(data => {
-        setSubs(data);
+      Promise.all([
+        fetchSubscriptions(userId),
+        fetchFlashSubscriptions(userId),
+      ]).then(([regularSubs, flashSubsData]) => {
+        setSubs(regularSubs);
+        setFlashSubs(flashSubsData);
         setLoading(false);
-      });
+      }).catch(() => setLoading(false));
     }
   }, [subsOpen, userId]);
 
@@ -198,7 +211,20 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
     }
   };
 
+  const handleFlashUnsubscribe = async (flashId: number, query: string) => {
+    if (!userId) { toast.error('Не удалось определить пользователя'); return; }
+    try {
+      await removeFlashSubscription(userId, flashId);
+      setFlashSubs(prev => prev.filter(f => f.id !== flashId));
+      toast.success(`Флеш-подписка «${query}» отменена`, { duration: 2000 });
+    } catch {
+      toast.error('Ошибка при отписке');
+    }
+  };
+
   const closePanel = () => { setSubsOpen(false); setAddMode(false); };
+
+  const totalSubsCount = subs.length + flashSubs.length;
 
   const glassStyle = {
     background: 'hsla(var(--glass-bg))',
@@ -212,18 +238,9 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
       <header ref={headerRef} className="sm:sticky sm:top-0 z-40 sm:glass-card sm:border-b sm:border-border/50">
         <div className="container mx-auto flex items-center justify-between gap-2 px-4 py-2 relative z-10">
 
-          {/* Logo: кот + neon надпись */}
+          {/* Logo */}
           <div className="flex items-center shrink-0">
-            {/* Кот PNG — без круглой рамки */}
-            <img
-              src="/cat-logo.png"
-              alt="MinskDvizh cat"
-              className="w-11 h-11 object-contain relative z-10"
-            />
-            {/* Надпись наезжает на кота на 8px */}
-            <div style={{ marginLeft: '-8px' }}>
-              <NeonLogo />
-            </div>
+            <NeonLogo />
           </div>
 
           {/* Desktop search */}
@@ -243,7 +260,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
             )}
           </div>
 
-          {/* Подписки — иконка + текст на mobile, скрывается если нет места */}
+          {/* Subscriptions button */}
           <button
             aria-label="subscriptions"
             onClick={(e) => {
@@ -256,19 +273,19 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
           >
             <Bell className="h-3.5 w-3.5 flex-shrink-0" />
             <span className="hidden xs:inline">Подписки</span>
-            {subs.length > 0 && (
+            {totalSubsCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                {subs.length}
+                {totalSubsCount}
               </span>
             )}
           </button>
         </div>
 
-        {/* Градиентная линия под хедером */}
+        {/* Gradient underline */}
         <div style={{ height: '1px', background: 'linear-gradient(90deg, rgba(192,38,211,0) 0%, rgba(192,38,211,0.8) 30%, rgba(0,229,255,0.8) 70%, rgba(0,229,255,0) 100%)' }} />
       </header>
 
-      {/* Портал подписок */}
+      {/* Subscriptions portal */}
       {subsOpen && createPortal(
         <>
           <div
@@ -293,12 +310,13 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                       <h3 className="text-xs font-display font-bold text-foreground">🔔 Мои подписки</h3>
                       <button onClick={() => setAddMode(true)} className="text-xs text-primary font-body font-medium hover:underline">+ Добавить</button>
                     </div>
+
                     {loading ? (
                       <div className="text-center py-4">
                         <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
                         <p className="text-xs text-muted-foreground mt-1">Загрузка...</p>
                       </div>
-                    ) : subs.length === 0 ? (
+                    ) : subs.length === 0 && flashSubs.length === 0 ? (
                       <div className="text-center py-2">
                         <p className="text-xs text-muted-foreground font-body mb-2">Нет активных подписок</p>
                         <button onClick={() => setAddMode(true)} className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-body font-medium">
@@ -307,24 +325,64 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                       </div>
                     ) : (
                       <>
-                        <div className="space-y-1 max-h-[152px] overflow-y-auto pr-1 scrollbar-thin">
-                          {subs.map(sub => (
-                            <div key={sub.slug} className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-secondary/30">
-                              <div className="flex items-center gap-1.5">
-                                <CategoryIcon slug={sub.slug as any} size="sm" />
-                                <span className="text-xs font-body text-foreground">{sub.name}</span>
-                              </div>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleUnsubscribe(sub.slug, sub.name); }}
-                                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-red-400 transition-colors font-body shrink-0 ml-2"
-                              >
-                                <BellOff className="h-3 w-3" />
-                                <span>Отписаться</span>
-                              </button>
+                        {/* Regular subscriptions */}
+                        {subs.length > 0 && (
+                          <div className="space-y-1 mb-2">
+                            <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wide px-1 mb-1">Категории</p>
+                            <div className="space-y-1 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin">
+                              {subs.map(sub => (
+                                <div key={sub.slug} className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-secondary/30">
+                                  <div className="flex items-center gap-1.5">
+                                    <CategoryIcon slug={sub.slug as any} size="sm" />
+                                    <span className="text-xs font-body text-foreground">{sub.name}</span>
+                                  </div>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleUnsubscribe(sub.slug, sub.name); }}
+                                    className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-red-400 transition-colors font-body shrink-0 ml-2"
+                                  >
+                                    <BellOff className="h-3 w-3" />
+                                    <span>Отписаться</span>
+                                  </button>
+                                </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                        {subs.length > 4 && (
+                          </div>
+                        )}
+
+                        {/* Flash subscriptions */}
+                        {flashSubs.length > 0 && (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 px-1 mb-1">
+                              <Zap className="h-3 w-3 text-amber-400" />
+                              <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wide">Флеш-подписки</p>
+                            </div>
+                            <div className="space-y-1 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin">
+                              {flashSubs.map(f => (
+                                <div
+                                  key={f.id}
+                                  className="flex items-center justify-between px-2.5 py-1.5 rounded-lg"
+                                  style={{ background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.18)' }}
+                                >
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <Zap className="h-3 w-3 text-amber-400 shrink-0" />
+                                    <span className="text-xs font-body text-foreground truncate">«{f.query}»</span>
+                                  </div>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleFlashUnsubscribe(f.id, f.query); }}
+                                    className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-red-400 transition-colors font-body shrink-0 ml-2"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                            <p className="text-[10px] text-amber-400/70 font-body px-1 pt-0.5">
+                              Уведомление придёт в бот при появлении новых событий
+                            </p>
+                          </div>
+                        )}
+
+                        {(subs.length > 4 || flashSubs.length > 4) && (
                           <div className="text-[10px] text-muted-foreground text-center mt-1.5 font-body border-t border-border/50 pt-1.5">↑ можно скроллить ↑</div>
                         )}
                       </>

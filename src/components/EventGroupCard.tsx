@@ -2,7 +2,7 @@ import { type GroupedEvent, getCategoryBySlug } from '@/data/events';
 import { ArrowRight, Share2, ChevronDown, ChevronUp } from 'lucide-react';
 import CategoryIcon from './CategoryIcon';
 import { toast } from 'sonner';
-import { haptic, openLink, showMainButton, hideMainButton } from '@/lib/telegram';
+import { haptic, openLink } from '@/lib/telegram';
 import { useState } from 'react';
 
 interface EventGroupCardProps {
@@ -50,17 +50,17 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
   };
 
   const handleSourceClick = (e: React.MouseEvent) => {
-    if (group.sourceUrl) { e.preventDefault(); haptic('medium'); openLink(group.sourceUrl); }
+    if (group.sourceUrl) {
+      e.preventDefault();
+      haptic('medium');
+      openLink(group.sourceUrl);
+    }
   };
-  const handleSourceHover = () => {
-    if (group.sourceUrl) showMainButton('🔗 Открыть на сайте', () => openLink(group.sourceUrl!));
-  };
-  const handleSourceLeave = () => { hideMainButton(); };
 
   return (
     <div className={`glass-card border-l-4 ${cat.borderClass} p-4 hover:border-l-primary transition-all duration-300 group/card`}>
 
-      {/* Title row: full width, icon+share top-right */}
+      {/* Title row */}
       <div className="flex items-start justify-between gap-2 mb-3">
         <h4 className="text-foreground font-body font-bold text-base group-hover/card:text-primary transition-colors flex-1 min-w-0 pr-1">
           {group.title}
@@ -75,7 +75,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
         </div>
       </div>
 
-      {/* Cinema — full width for showtimes */}
+      {/* Cinema */}
       {group.category === 'cinema' && group.cinemaDate && (
         <div className="space-y-2">
           <span className="amber-pill text-xs font-bold">📅 {formatDateShort(group.cinemaDate)}</span>
@@ -124,11 +124,11 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
         </div>
       )}
 
-      {/* Source link */}
+      {/* Source link — только клик, без hover MainButton */}
       {group.sourceUrl && (
         <div className="flex justify-end mt-2">
           <a href={group.sourceUrl} target="_blank" rel="noopener noreferrer"
-            onClick={handleSourceClick} onMouseEnter={handleSourceHover} onMouseLeave={handleSourceLeave}
+            onClick={handleSourceClick}
             className="flex items-center gap-1 text-xs text-primary font-body font-medium opacity-0 group-hover/card:opacity-100 transition-opacity">
             Подробнее <ArrowRight className="h-3 w-3" />
           </a>

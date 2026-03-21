@@ -75,8 +75,8 @@ async function removeSubscriptionFromAPI(userId: number, category: string, dateT
 
 const NeonLogo = () => (
   <svg
-    width="210" height="44"
-    viewBox="0 0 480 95"
+    width="210" height="55"
+    viewBox="0 0 480 130"
     xmlns="http://www.w3.org/2000/svg"
     style={{ overflow: 'visible' }}
   >
@@ -103,12 +103,12 @@ const NeonLogo = () => (
         <feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
     </defs>
-    <text x="34" y="80"
+    <text x="34" y="72"
       fontSize="70" fontWeight="700" letterSpacing="-2"
       fontFamily="'Trebuchet MS', Arial, sans-serif"
       fill="none" stroke="#c026d3" strokeWidth="2.2"
       filter="url(#logo-gp)">Minsk</text>
-    <text x="218" y="80"
+    <text x="218" y="72"
       fontSize="70" fontWeight="700" letterSpacing="-2"
       fontFamily="'Trebuchet MS', Arial, sans-serif"
       fill="none" stroke="#00e5ff" strokeWidth="2.2"
@@ -241,10 +241,10 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
   return (
     <>
       <header ref={headerRef} className="sm:sticky sm:top-0 z-40 sm:glass-card sm:border-b sm:border-border/50" style={{ overflow: 'visible' }}>
-        <div className="container mx-auto flex items-center justify-between gap-2 px-4 py-0 relative" style={{ zIndex: 10, overflow: 'visible' }}>
+        <div className="container mx-auto flex items-center justify-between gap-2 px-4 py-0 pb-2 relative" style={{ zIndex: 10, overflow: 'visible' }}>
 
           {/* Logo */}
-          <div className="flex items-center shrink-0" style={{ overflow: 'visible', marginBottom: '-14px', position: 'relative', zIndex: 2 }}>
+          <div className="flex items-center shrink-0" style={{ overflow: 'visible', position: 'relative', zIndex: 2 }}>
             <NeonLogo />
           </div>
 

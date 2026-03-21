@@ -74,7 +74,12 @@ async function removeSubscriptionFromAPI(userId: number, category: string, dateT
 }
 
 const NeonLogo = () => (
-  <svg width="210" height="46" viewBox="0 0 480 100" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    width="210" height="44"
+    viewBox="0 0 480 95"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ overflow: 'visible' }}
+  >
     <defs>
       <filter id="logo-gp" x="-25%" y="-80%" width="150%" height="360%">
         <feGaussianBlur stdDeviation="3.5" result="b1"/>
@@ -235,11 +240,11 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
 
   return (
     <>
-      <header ref={headerRef} className="sm:sticky sm:top-0 z-40 sm:glass-card sm:border-b sm:border-border/50">
-        <div className="container mx-auto flex items-center justify-between gap-2 px-4 py-0 relative z-10">
+      <header ref={headerRef} className="sm:sticky sm:top-0 z-40 sm:glass-card sm:border-b sm:border-border/50" style={{ overflow: 'visible' }}>
+        <div className="container mx-auto flex items-center justify-between gap-2 px-4 py-0 relative" style={{ zIndex: 10, overflow: 'visible' }}>
 
           {/* Logo */}
-          <div className="flex items-center shrink-0">
+          <div className="flex items-center shrink-0" style={{ overflow: 'visible', marginBottom: '-14px', position: 'relative', zIndex: 2 }}>
             <NeonLogo />
           </div>
 
@@ -282,7 +287,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
         </div>
 
         {/* Gradient underline */}
-        <div style={{ height: '1px', background: 'linear-gradient(90deg, rgba(192,38,211,0) 0%, rgba(192,38,211,0.8) 30%, rgba(0,229,255,0.8) 70%, rgba(0,229,255,0) 100%)' }} />
+        <div style={{ height: '1px', background: 'linear-gradient(90deg, rgba(192,38,211,0) 0%, rgba(192,38,211,0.8) 30%, rgba(0,229,255,0.8) 70%, rgba(0,229,255,0) 100%)', position: 'relative', zIndex: 1 }} />
       </header>
 
       {/* Subscriptions portal */}

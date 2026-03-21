@@ -209,16 +209,16 @@ export default function SubmitEventModal() {
             }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0">
-              <h2 className="text-base font-display font-bold text-foreground flex items-center gap-2">
-                <Plus className="h-4 w-4 text-primary" />
+            <div className="flex items-center justify-between px-4 py-2 border-b border-white/10 shrink-0">
+              <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-1.5">
+                <Plus className="h-3.5 w-3.5 text-primary" />
                 Добавить событие
               </h2>
               <button
                 onClick={() => setOpen(false)}
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
+                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </button>
             </div>
 
@@ -483,7 +483,7 @@ export default function SubmitEventModal() {
             </div>
 
             {/* Footer */}
-            <div className="px-5 py-4 border-t border-white/10 shrink-0">
+            <div className="sticky bottom-0 px-5 py-4 border-t border-white/10 shrink-0 bg-inherit mt-auto">
               <button
                 onClick={handleSubmit}
                 disabled={submitting}

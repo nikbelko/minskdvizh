@@ -198,11 +198,11 @@ export default function SubmitEventModal() {
 
       {/* Modal */}
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 pointer-events-none">
+        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-0 sm:p-4 pointer-events-none">
           <div
             ref={modalRef}
             onClick={e => e.stopPropagation()}
-            className="pointer-events-auto w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl border border-white/10 flex flex-col max-h-[90vh] animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-300"
+            className="pointer-events-auto w-full sm:max-w-lg rounded-b-2xl sm:rounded-2xl border border-white/10 flex flex-col max-h-[90vh] animate-in slide-in-from-top-4 sm:zoom-in-95 duration-300"
             style={{
               background: 'linear-gradient(180deg, hsla(270,20%,10%,0.97) 0%, hsla(270,15%,8%,0.99) 100%)',
               backdropFilter: 'blur(24px)',

@@ -1,4 +1,4 @@
-export type CategorySlug = 'cinema' | 'concert' | 'theater' | 'exhibition' | 'kids' | 'sport' | 'party' | 'free' | 'excursion' | 'market' | 'masterclass' | 'boardgames' | 'broadcast' | 'education' | 'other';
+export type CategorySlug = 'cinema' | 'concert' | 'theater' | 'exhibition' | 'kids' | 'sport' | 'party' | 'free' | 'excursion' | 'market' | 'masterclass' | 'boardgames' | 'broadcast' | 'education' | 'quiz'| 'other';
 
 export interface Category {
   slug: CategorySlug;
@@ -50,6 +50,7 @@ export const categories: Category[] = [
   { slug: 'boardgames',  emoji: '🎲', name: 'Настолки',     borderClass: 'category-border-kids' },
   { slug: 'broadcast',   emoji: '📺', name: 'Трансляции',   borderClass: 'category-border-sport' },
   { slug: 'education',   emoji: '📚', name: 'Обучение',     borderClass: 'category-border-theater' },
+  { slug: 'quiz',        emoji: '❓', name: 'Квизы',        borderClass: 'category-border-kids' },
   { slug: 'other',       emoji: '📌', name: 'Другое',       borderClass: 'category-border-exhibition' },
 ];
 

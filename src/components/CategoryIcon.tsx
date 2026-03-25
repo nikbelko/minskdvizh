@@ -1,4 +1,4 @@
-import { Film, Music, Drama, Frame, Baby, Trophy, Sparkles, Gift, Map, ShoppingBag, Palette, Dices, Tv, BookOpen, Pin } from 'lucide-react';
+import { Film, Music, Drama, Frame, Baby, Trophy, Sparkles, Gift, Map, ShoppingBag, Palette, Dices, Tv, BookOpen, HelpCircle, Pin } from 'lucide-react';
 import type { CategorySlug } from '@/data/events';
 
 const iconConfig: Record<CategorySlug, { icon: React.ElementType; color: string; border: string; glow: string }> = {
@@ -16,6 +16,7 @@ const iconConfig: Record<CategorySlug, { icon: React.ElementType; color: string;
   boardgames:  { icon: Dices,       color: 'text-indigo-400',  border: 'border-indigo-400/25',  glow: 'shadow-indigo-500/10' },
   broadcast:   { icon: Tv,          color: 'text-sky-400',     border: 'border-sky-400/25',     glow: 'shadow-sky-500/10' },
   education:   { icon: BookOpen,    color: 'text-purple-400',  border: 'border-purple-400/25',  glow: 'shadow-purple-500/10' },
+  quiz:        { icon: HelpCircle,  color: 'text-amber-400',   border: 'border-amber-400/25',   glow: 'shadow-amber-500/10' },
   other:       { icon: Pin,         color: 'text-slate-400',   border: 'border-slate-400/25',   glow: 'shadow-slate-500/10' },
 };
 

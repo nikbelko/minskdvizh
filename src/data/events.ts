@@ -12,6 +12,7 @@ export interface EventItem {
   title: string;
   date: string;
   time?: string;
+  end_time?: string;
   venue: string;
   price?: string;
   category: CategorySlug;
@@ -31,7 +32,7 @@ export interface GroupedEvent {
   cinemaShowtimes?: { venue: string; times: string[] }[];
   // Other
   venue?: string;
-  dateTimeGroups?: { time: string; dateRanges: string[] }[];
+  dateTimeGroups?: {time: string; end_time?: string; dateRanges: string[] }[];
   _sort: string;
 }
 
@@ -135,7 +136,7 @@ function groupOtherEvents(events: EventItem[]): GroupedEvent[] {
   const grouped: Record<string, {
     title: string; place: string; price: string;
     category: CategorySlug; sourceUrl: string;
-    dates: { date: string; time: string }[];
+    dates: { date: string; time: string; end_time: string }[];
   }> = {};
   const titleToKey: Record<string, string> = {};
 
@@ -164,22 +165,35 @@ function groupOtherEvents(events: EventItem[]): GroupedEvent[] {
       if (!grouped[key].price && e.price) grouped[key].price = e.price;
       if (!grouped[key].sourceUrl && e.sourceUrl) grouped[key].sourceUrl = e.sourceUrl;
     }
-    grouped[key].dates.push({ date: e.date, time: e.time || '' });
+    grouped[key].dates.push({ date: e.date, time: e.time || '', end_time: e.end_time || '' });
   }
 
   return Object.values(grouped).map(g => {
     // Group dates by time
-    const byTime: Record<string, string[]> = {};
+    
+const byTime: Record<string, { dates: string[]; end_time?: string }> = {};
     for (const d of g.dates) {
-      const t = d.time || '';
-      if (!byTime[t]) byTime[t] = [];
-      byTime[t].push(d.date);
+      const timeKey = d.end_time ? `${d.time}|${d.end_time}` : (d.time || '');
+      if (!byTime[timeKey]) {
+        byTime[timeKey] = { dates: [], end_time: d.end_time };
+      }
+      byTime[timeKey].dates.push(d.date);
     }
 
-    const dateTimeGroups = Object.entries(byTime).map(([time, dates]) => ({
-      time,
-      dateRanges: makeDateRanges(dates),
-    }));
+    const dateTimeGroups = Object.entries(byTime).map(([timeKey, { dates, end_time }]) => {
+      const time = timeKey.includes('|') ? timeKey.split('|')[0] : timeKey;
+      return {
+        time,
+        end_time: end_time || undefined,
+        dateRanges: makeDateRanges(dates),
+      };
+    }).sort((a, b) => {
+      // Сортировка: сначала события без времени
+      if (!a.time && !b.time) return 0;
+      if (!a.time) return -1;
+      if (!b.time) return 1;
+      return a.time.localeCompare(b.time);
+    });
 
     const earliestDate = g.dates.reduce((min, d) => d.date < min ? d.date : min, '9999');
 

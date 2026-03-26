@@ -116,7 +116,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
                   ) : (
                     <span className="text-muted-foreground text-xs">📅 Дата уточняется</span>
                   )}
-                  {dtg.time && <span className="text-muted-foreground">⏰ {dtg.time}</span>}
+                  {dtg.time && (<span className="text-muted-foreground">⏰ {dtg.end_time ? `${dtg.time}–${dtg.end_time}` : dtg.time}</span>)}
                 </div>
               ))}
             </div>

@@ -15,6 +15,7 @@ export interface ApiEvent {
   details?: string;
   event_date: string;
   show_time?: string;
+  end_time?: string;
   place: string;
   location?: string;
   price?: string;
@@ -71,6 +72,7 @@ function toEventItem(e: ApiEvent): EventItem {
     title: e.title || '',
     date: e.event_date || '',
     time: e.show_time || undefined,
+    end_time: e.end_time || undefined,
     venue: e.place || '',
     price: e.price || undefined,
     category: e.category,

@@ -108,9 +108,9 @@ export default function SubmitEventModal() {
           ...form,
           details: form.format,
           event_date_to: form.date_mode === 'range' ? form.event_date_to : undefined,
-          show_time: form.show_time
-            ? (form.show_time_end ? `${form.show_time}-${form.show_time_end}` : form.show_time)
-            : undefined,
+          show_time: form.show_time || undefined,
+          end_time: form.show_time_end || undefined,
+          place: form.place,
           address: form.address || undefined,
           price: form.price || undefined,
           description: form.description || undefined,

@@ -305,6 +305,7 @@ export default function SubmitEventModal() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [showTimeSet, setShowTimeSet] = useState(false);
+  const [isFree, setIsFree] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -334,7 +335,7 @@ export default function SubmitEventModal() {
   }, [open]);
 
   useEffect(() => {
-    if (!open) { setShowTimeSet(false); setTab('single'); }
+    if (!open) { setShowTimeSet(false); setTab('single'); setIsFree(false); }
   }, [open]);
 
   const handleClose = () => {
@@ -385,7 +386,7 @@ export default function SubmitEventModal() {
           end_time: form.show_time_end || undefined,
           place: form.place,
           address: form.address || undefined,
-          price: form.price || undefined,
+          price: isFree ? 'Бесплатно' : (form.price || undefined),
           description: form.description || undefined,
           source_url: form.source_url || undefined,
           is_promo: form.is_promo,
@@ -462,44 +463,45 @@ export default function SubmitEventModal() {
               maxHeight: '100dvh',
             }}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
-              <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-1.5">
-                <Plus className="h-3.5 w-3.5 text-primary" />
-                Добавить событие
-              </h2>
-              <button
-                onClick={handleClose}
-                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex gap-1 px-4 pt-3 shrink-0">
-              <button
-                onClick={() => { haptic('light'); setTab('single'); }}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-body font-medium transition-all ${
-                  tab === 'single'
-                    ? 'bg-primary/20 text-primary border border-primary/40'
-                    : 'text-muted-foreground border border-white/10 hover:text-foreground'
-                }`}
-              >
-                <Plus className="h-3 w-3" />
-                Одно событие
-              </button>
-              <button
-                onClick={() => { haptic('light'); setTab('batch'); }}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-body font-medium transition-all ${
-                  tab === 'batch'
-                    ? 'bg-primary/20 text-primary border border-primary/40'
-                    : 'text-muted-foreground border border-white/10 hover:text-foreground'
-                }`}
-              >
-                <Upload className="h-3 w-3" />
-                Список событий
-              </button>
+            {/* Header + Tabs */}
+            <div className="flex flex-col border-b border-white/10 shrink-0" style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
+              {/* Title row */}
+              <div className="flex items-center justify-between px-4 pb-2">
+                <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-1.5">
+                  <Plus className="h-3.5 w-3.5 text-primary" />
+                  Добавить событие
+                </h2>
+                <button
+                  onClick={handleClose}
+                  className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              {/* Tabs row */}
+              <div className="flex px-4 pb-0">
+                <button
+                  onClick={() => { haptic('light'); setTab('single'); }}
+                  className={`flex flex-1 items-center justify-center gap-1.5 py-2 text-xs font-body font-medium border-b-2 transition-all ${
+                    tab === 'single'
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Plus className="h-3 w-3" />
+                  Одно событие
+                </button>
+                <button
+                  onClick={() => { haptic('light'); setTab('batch'); }}
+                  className={`flex flex-1 items-center justify-center gap-1.5 py-2 text-xs font-body font-medium border-b-2 transition-all ${
+                    tab === 'batch'
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Upload className="h-3 w-3" />
+                  Список событий
+                </button>
             </div>
 
             {/* Tab: Batch */}
@@ -634,8 +636,40 @@ export default function SubmitEventModal() {
 
                   <div>
                     <label className={labelClass}>Цена</label>
-                    <input type="text" placeholder="от 20 BYN / Бесплатно" value={form.price}
-                      onChange={e => set('price', e.target.value)} className={inputClass()} />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="от 20 BYN"
+                        value={form.price}
+                        onChange={e => set('price', e.target.value)}
+                        disabled={isFree}
+                        className={`${inputClass()} flex-1 disabled:opacity-40 disabled:cursor-not-allowed`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          haptic('light');
+                          setIsFree(v => !v);
+                          if (!isFree) set('price', '');
+                        }}
+                        className={`flex items-center gap-1.5 px-3 py-2.5 rounded-lg border text-xs font-body font-medium whitespace-nowrap transition-all shrink-0 ${
+                          isFree
+                            ? 'border-emerald-500/60 bg-emerald-500/15 text-emerald-400'
+                            : 'border-white/10 bg-white/5 text-muted-foreground hover:border-white/20 hover:text-foreground'
+                        }`}
+                      >
+                        <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 transition-all ${
+                          isFree ? 'bg-emerald-500 border-emerald-500' : 'border-white/30'
+                        }`}>
+                          {isFree && (
+                            <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 10" fill="none">
+                              <path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          )}
+                        </span>
+                        Бесплатно
+                      </button>
+                    </div>
                   </div>
 
                   <div>

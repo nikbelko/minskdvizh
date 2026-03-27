@@ -261,7 +261,7 @@ function BatchTab({ onClose }: { onClose: () => void }) {
       )}
 
       {/* Footer */}
-      <div className="sticky bottom-0 pt-2 border-t border-white/10 bg-inherit">
+      <div className="sticky bottom-0 border-t border-white/10 bg-inherit" style={{ paddingTop: "0.75rem", paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
         {!result ? (
           <div className="flex gap-2">
             <button
@@ -443,25 +443,27 @@ export default function SubmitEventModal() {
       {/* Backdrop */}
       {open && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 hidden sm:block"
           onClick={handleClose}
         />
       )}
 
       {/* Modal */}
       {open && (
-        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-0 sm:p-4 pointer-events-none">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 pointer-events-none">
           <div
             ref={modalRef}
             onClick={e => e.stopPropagation()}
-            className="pointer-events-auto w-full sm:max-w-lg rounded-b-2xl sm:rounded-2xl border border-white/10 flex flex-col max-h-[90vh] animate-in slide-in-from-top-4 sm:zoom-in-95 duration-300"
+            className="pointer-events-auto w-full sm:max-w-lg sm:rounded-2xl border-t sm:border border-white/10 flex flex-col animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300"
             style={{
               background: 'linear-gradient(180deg, hsla(270,20%,10%,0.97) 0%, hsla(270,15%,8%,0.99) 100%)',
               backdropFilter: 'blur(24px)',
+              height: '100dvh',
+              maxHeight: '100dvh',
             }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-2 border-b border-white/10 shrink-0">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
               <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-1.5">
                 <Plus className="h-3.5 w-3.5 text-primary" />
                 Добавить событие
@@ -689,7 +691,7 @@ export default function SubmitEventModal() {
                 </div>
 
                 {/* Footer */}
-                <div className="sticky bottom-0 px-5 py-4 border-t border-white/10 shrink-0 bg-inherit mt-auto">
+                <div className="sticky bottom-0 px-5 border-t border-white/10 shrink-0 bg-inherit mt-auto" style={{ paddingTop: "1rem", paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
                   <button
                     onClick={handleSubmit}
                     disabled={submitting}

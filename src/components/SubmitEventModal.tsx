@@ -7,8 +7,6 @@ import { categories, type CategorySlug } from '@/data/events';
 
 const API_BASE = 'https://minskdvizh.up.railway.app';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface FormData {
   title: string;
   format: string;
@@ -52,8 +50,6 @@ interface UploadResponse {
   results: UploadResult[];
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
 const today = new Date().toISOString().split('T')[0];
 
 const EMPTY_FORM: FormData = {
@@ -63,7 +59,7 @@ const EMPTY_FORM: FormData = {
   is_promo: false,
 };
 
-// ─── Batch upload tab ─────────────────────────────────────────────────────────
+// ─── Batch Tab ────────────────────────────────────────────────────────────────
 
 function BatchTab({ onClose }: { onClose: () => void }) {
   const [file, setFile] = useState<File | null>(null);
@@ -103,26 +99,16 @@ function BatchTab({ onClose }: { onClose: () => void }) {
       const formData = new FormData();
       formData.append('file', file);
       const params = new URLSearchParams();
-      if (tgUser?.id)         params.set('tg_user_id',    String(tgUser.id));
-      if (tgUser?.username)   params.set('tg_username',   tgUser.username);
+      if (tgUser?.id) params.set('tg_user_id', String(tgUser.id));
+      if (tgUser?.username) params.set('tg_username', tgUser.username);
       if (tgUser?.first_name) params.set('tg_first_name', tgUser.first_name);
-
-      const res = await fetch(`${API_BASE}/api/events/batch?${params}`, {
-        method: 'POST',
-        body: formData,
-      });
+      const res = await fetch(`${API_BASE}/api/events/batch?${params}`, { method: 'POST', body: formData });
       const data: UploadResponse = await res.json();
-      if (!res.ok) {
-        toast.error((data as any).detail || 'Ошибка загрузки');
-        return;
-      }
+      if (!res.ok) { toast.error((data as any).detail || 'Ошибка загрузки'); return; }
       setResult(data);
       haptic(data.accepted > 0 ? 'success' : 'error');
-      if (data.accepted > 0) {
-        toast.success(`Принято ${data.accepted} событий на модерацию!`);
-      } else {
-        toast.error('Ни одно событие не принято');
-      }
+      if (data.accepted > 0) toast.success(`Принято ${data.accepted} событий на модерацию!`);
+      else toast.error('Ни одно событие не принято');
     } catch {
       toast.error('Ошибка соединения с сервером');
     } finally {
@@ -138,45 +124,31 @@ function BatchTab({ onClose }: { onClose: () => void }) {
   const inputClass = 'w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm font-body text-foreground placeholder:text-muted-foreground focus:outline-none';
 
   return (
-    <div className="px-5 py-4 space-y-4">
-
-      {/* Шаг 1 */}
+    <div className="px-5 py-4 flex flex-col gap-4">
       {!result && (
-        <div className="rounded-xl p-3 space-y-2"
-          style={{ background: 'rgba(192,38,211,0.07)', border: '1px solid rgba(192,38,211,0.2)' }}>
+        <div className="rounded-xl p-3 space-y-2" style={{ background: 'rgba(192,38,211,0.07)', border: '1px solid rgba(192,38,211,0.2)' }}>
           <p className="text-xs font-body font-medium text-foreground">1. Скачайте шаблон и заполните его</p>
           <div className="flex gap-2">
-            <button
-              onClick={() => downloadTemplate('xlsx')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-body font-medium transition-all"
-              style={{ background: 'rgba(192,38,211,0.15)', border: '1px solid rgba(192,38,211,0.35)', color: '#c026d3' }}
-            >
-              <Download className="h-3 w-3" />
-              Excel (.xlsx)
+            <button onClick={() => downloadTemplate('xlsx')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-body font-medium"
+              style={{ background: 'rgba(192,38,211,0.15)', border: '1px solid rgba(192,38,211,0.35)', color: '#c026d3' }}>
+              <Download className="h-3 w-3" /> Excel (.xlsx)
             </button>
-            <button
-              onClick={() => downloadTemplate('csv')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-body transition-all text-muted-foreground hover:text-foreground"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
-            >
-              <Download className="h-3 w-3" />
-              CSV
+            <button onClick={() => downloadTemplate('csv')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-body text-muted-foreground"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <Download className="h-3 w-3" /> CSV
             </button>
           </div>
-          <p className="text-[10px] text-muted-foreground">
-            Обязательные поля: title, details, category, event_date, show_time, place
-          </p>
+          <p className="text-[10px] text-muted-foreground">Обязательные поля: title, details, category, event_date, show_time, place</p>
         </div>
       )}
 
-      {/* Шаг 2: drop zone */}
       {!result && (
         <div>
           <p className="text-xs font-body font-medium text-foreground mb-2">2. Загрузите заполненный файл</p>
           <div
-            className={`rounded-xl border-2 border-dashed transition-all cursor-pointer ${
-              dragging ? 'border-primary bg-primary/10' : file ? 'border-primary/50 bg-primary/5' : 'border-white/10 hover:border-white/20'
-            }`}
+            className={`rounded-xl border-2 border-dashed transition-all cursor-pointer ${dragging ? 'border-primary bg-primary/10' : file ? 'border-primary/50 bg-primary/5' : 'border-white/10 hover:border-white/20'}`}
             onClick={() => fileInputRef.current?.click()}
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}
@@ -187,57 +159,40 @@ function BatchTab({ onClose }: { onClose: () => void }) {
                 <>
                   <FileSpreadsheet className="h-8 w-8 text-primary mb-2" />
                   <p className="text-sm font-body font-medium text-foreground">{file.name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {(file.size / 1024).toFixed(0)} КБ · нажмите чтобы заменить
-                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{(file.size / 1024).toFixed(0)} КБ · нажмите чтобы заменить</p>
                 </>
               ) : (
                 <>
                   <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                  <p className="text-sm font-body text-muted-foreground">
-                    Перетащите файл или <span className="text-primary">выберите</span>
-                  </p>
+                  <p className="text-sm font-body text-muted-foreground">Перетащите файл или <span className="text-primary">выберите</span></p>
                   <p className="text-xs text-muted-foreground/60 mt-1">.xlsx, .xls, .csv · макс. 5 МБ · до 100 событий</p>
                 </>
               )}
             </div>
           </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".xlsx,.xls,.csv"
-            className="hidden"
-            onChange={(e) => handleFileSelect(e.target.files?.[0] || null)}
-          />
+          <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden"
+            onChange={(e) => handleFileSelect(e.target.files?.[0] || null)} />
         </div>
       )}
 
-      {/* Результат */}
       {result && (
         <div className="space-y-3">
           <div className="rounded-xl p-3 flex items-center gap-3"
-            style={{
-              background: result.accepted > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-              border: `1px solid ${result.accepted > 0 ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`,
-            }}>
+            style={{ background: result.accepted > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${result.accepted > 0 ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}` }}>
             {result.accepted > 0
               ? <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0" />
               : <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />}
             <div>
-              <p className="text-sm font-body font-medium text-foreground">
-                {result.accepted > 0 ? 'Загрузка завершена' : 'Ни одно событие не принято'}
-              </p>
+              <p className="text-sm font-body font-medium text-foreground">{result.accepted > 0 ? 'Загрузка завершена' : 'Ни одно событие не принято'}</p>
               <p className="text-xs text-muted-foreground">
                 Всего: {result.total} · Принято: <span className="text-emerald-400 font-medium">{result.accepted}</span> · Пропущено: <span className="text-red-400 font-medium">{result.errors}</span>
               </p>
             </div>
           </div>
-
           {result.results.length > 0 && (
             <div className="space-y-1 max-h-[180px] overflow-y-auto">
               {result.results.map((r) => (
-                <div key={r.row}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-body"
+                <div key={r.row} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-body"
                   style={{ background: r.status === 'accepted' ? 'rgba(16,185,129,0.07)' : 'rgba(239,68,68,0.07)' }}>
                   {r.status === 'accepted'
                     ? <CheckCircle className="h-3 w-3 text-emerald-400 flex-shrink-0" />
@@ -249,45 +204,32 @@ function BatchTab({ onClose }: { onClose: () => void }) {
               ))}
             </div>
           )}
-
-          <button
-            onClick={() => { setFile(null); setResult(null); }}
+          <button onClick={() => { setFile(null); setResult(null); }}
             className="w-full py-2 rounded-lg text-xs font-body text-muted-foreground hover:text-foreground transition-colors"
-            style={{ border: '1px solid rgba(255,255,255,0.1)' }}
-          >
+            style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
             Загрузить другой файл
           </button>
         </div>
       )}
 
-      {/* Footer */}
-      <div className="sticky bottom-0 border-t border-white/10 bg-inherit" style={{ paddingTop: "0.75rem", paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
+      <div className="mt-auto border-t border-white/10" style={{ paddingTop: '0.75rem', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
         {!result ? (
           <div className="flex gap-2">
-            <button
-              onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl text-sm font-body text-muted-foreground hover:text-foreground transition-colors"
-              style={{ border: '1px solid rgba(255,255,255,0.1)' }}
-            >
+            <button onClick={onClose}
+              className="flex-1 py-2.5 rounded-xl text-sm font-body text-muted-foreground transition-colors"
+              style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
               Отмена
             </button>
-            <button
-              onClick={handleUpload}
-              disabled={!file || uploading}
+            <button onClick={handleUpload} disabled={!file || uploading}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-body font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ background: 'linear-gradient(135deg, #c026d3, #9333ea)', color: 'white', border: 'none' }}
-            >
-              {uploading
-                ? <><Loader2 className="h-4 w-4 animate-spin" /> Загружаю...</>
-                : <><Upload className="h-4 w-4" /> Отправить на модерацию</>}
+              style={{ background: 'linear-gradient(135deg, #c026d3, #9333ea)', color: 'white' }}>
+              {uploading ? <><Loader2 className="h-4 w-4 animate-spin" /> Загружаю...</> : <><Upload className="h-4 w-4" /> Отправить на модерацию</>}
             </button>
           </div>
         ) : (
-          <button
-            onClick={onClose}
-            className="w-full py-2.5 rounded-xl text-sm font-body font-medium text-white transition-all"
-            style={{ background: 'linear-gradient(135deg, #c026d3, #9333ea)' }}
-          >
+          <button onClick={onClose}
+            className="w-full py-2.5 rounded-xl text-sm font-body font-medium text-white"
+            style={{ background: 'linear-gradient(135deg, #c026d3, #9333ea)' }}>
             Закрыть
           </button>
         )}
@@ -296,7 +238,7 @@ function BatchTab({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function SubmitEventModal() {
   const [open, setOpen] = useState(false);
@@ -310,9 +252,9 @@ export default function SubmitEventModal() {
 
   useEffect(() => {
     if (!open) return;
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
   }, [open]);
 
   useEffect(() => {
@@ -346,26 +288,17 @@ export default function SubmitEventModal() {
 
   const validate = (): boolean => {
     const e: FormErrors = {};
-    if (!form.title.trim() || form.title.trim().length < 3)
-      e.title = 'Введите название (мин. 3 символа)';
-    if (!form.format.trim() || form.format.trim().length < 3)
-      e.format = 'Введите формат (мин. 3 символа)';
-    if (!form.category)
-      e.category = 'Выберите категорию';
-    if (!form.event_date)
-      e.event_date = 'Выберите дату';
-    else if (form.event_date < today)
-      e.event_date = 'Дата не может быть в прошлом';
+    if (!form.title.trim() || form.title.trim().length < 3) e.title = 'Введите название (мин. 3 символа)';
+    if (!form.format.trim() || form.format.trim().length < 3) e.format = 'Введите формат (мин. 3 символа)';
+    if (!form.category) e.category = 'Выберите категорию';
+    if (!form.event_date) e.event_date = 'Выберите дату';
+    else if (form.event_date < today) e.event_date = 'Дата не может быть в прошлом';
     if (form.date_mode === 'range') {
-      if (!form.event_date_to)
-        e.event_date_to = 'Выберите дату окончания';
-      else if (form.event_date_to <= form.event_date)
-        e.event_date_to = 'Дата окончания должна быть позже начала';
+      if (!form.event_date_to) e.event_date_to = 'Выберите дату окончания';
+      else if (form.event_date_to <= form.event_date) e.event_date_to = 'Дата окончания должна быть позже начала';
     }
-    if (!form.place.trim() || form.place.trim().length < 3)
-      e.place = 'Введите название площадки (мин. 3 символа)';
-    if (form.source_url && !form.source_url.startsWith('http'))
-      e.source_url = 'Введите корректную ссылку (начиная с http)';
+    if (!form.place.trim() || form.place.trim().length < 3) e.place = 'Введите название площадки (мин. 3 символа)';
+    if (form.source_url && !form.source_url.startsWith('http')) e.source_url = 'Введите корректную ссылку (начиная с http)';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -384,9 +317,8 @@ export default function SubmitEventModal() {
           event_date_to: form.date_mode === 'range' ? form.event_date_to : undefined,
           show_time: form.show_time || undefined,
           end_time: form.show_time_end || undefined,
-          place: form.place,
-          address: form.address || undefined,
           price: isFree ? 'Бесплатно' : (form.price || undefined),
+          address: form.address || undefined,
           description: form.description || undefined,
           source_url: form.source_url || undefined,
           is_promo: form.is_promo,
@@ -417,7 +349,7 @@ export default function SubmitEventModal() {
 
   const handleShowTimeChange = (value: string) => {
     set('show_time', value);
-    if (value) { setShowTimeSet(true); }
+    if (value) setShowTimeSet(true);
     else { setShowTimeSet(false); set('show_time_end', ''); }
   };
 
@@ -441,7 +373,7 @@ export default function SubmitEventModal() {
         <span>Добавить</span>
       </button>
 
-      {/* Backdrop */}
+      {/* Backdrop — desktop only */}
       {open && (
         <div
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 hidden sm:block"
@@ -465,27 +397,20 @@ export default function SubmitEventModal() {
           >
             {/* Header + Tabs */}
             <div className="flex flex-col border-b border-white/10 shrink-0" style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
-              {/* Title row */}
               <div className="flex items-center justify-between px-4 pb-2">
                 <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-1.5">
                   <Plus className="h-3.5 w-3.5 text-primary" />
                   Добавить событие
                 </h2>
-                <button
-                  onClick={handleClose}
-                  className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
-                >
+                <button onClick={handleClose} className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors">
                   <X className="h-3.5 w-3.5" />
                 </button>
               </div>
-              {/* Tabs row */}
-              <div className="flex px-4 pb-0">
+              <div className="flex px-4">
                 <button
                   onClick={() => { haptic('light'); setTab('single'); }}
                   className={`flex flex-1 items-center justify-center gap-1.5 py-2 text-xs font-body font-medium border-b-2 transition-all ${
-                    tab === 'single'
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                    tab === 'single' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   <Plus className="h-3 w-3" />
@@ -494,14 +419,13 @@ export default function SubmitEventModal() {
                 <button
                   onClick={() => { haptic('light'); setTab('batch'); }}
                   className={`flex flex-1 items-center justify-center gap-1.5 py-2 text-xs font-body font-medium border-b-2 transition-all ${
-                    tab === 'batch'
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                    tab === 'batch' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   <Upload className="h-3 w-3" />
                   Список событий
                 </button>
+              </div>
             </div>
 
             {/* Tab: Batch */}
@@ -511,7 +435,7 @@ export default function SubmitEventModal() {
               </div>
             )}
 
-            {/* Tab: Single event form */}
+            {/* Tab: Single */}
             {tab === 'single' && (
               <>
                 <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
@@ -557,22 +481,18 @@ export default function SubmitEventModal() {
                         <button key={mode} type="button"
                           onClick={() => { haptic('light'); set('date_mode', mode); }}
                           className={`flex-1 py-1.5 rounded-lg border text-xs font-body transition-all ${
-                            form.date_mode === mode
-                              ? 'border-primary bg-primary/20 text-primary'
-                              : 'border-white/10 bg-white/5 text-muted-foreground'
+                            form.date_mode === mode ? 'border-primary bg-primary/20 text-primary' : 'border-white/10 bg-white/5 text-muted-foreground'
                           }`}
                         >
                           {mode === 'single' ? '📅 Одна дата' : '📆 Период'}
                         </button>
                       ))}
                     </div>
-
                     {form.date_mode === 'single' ? (
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <input type="date" min={today} value={form.event_date}
-                            onChange={e => set('event_date', e.target.value)}
-                            className={inputClass(errors.event_date)} />
+                            onChange={e => set('event_date', e.target.value)} className={inputClass(errors.event_date)} />
                           {errors.event_date && <p className="text-xs text-red-400 mt-1">{errors.event_date}</p>}
                         </div>
                         <div className="grid grid-cols-2 gap-1.5">
@@ -647,23 +567,15 @@ export default function SubmitEventModal() {
                       />
                       <button
                         type="button"
-                        onClick={() => {
-                          haptic('light');
-                          setIsFree(v => !v);
-                          if (!isFree) set('price', '');
-                        }}
-                        className={`flex items-center gap-1.5 px-3 py-2.5 rounded-lg border text-xs font-body font-medium whitespace-nowrap transition-all shrink-0 ${
-                          isFree
-                            ? 'border-emerald-500/60 bg-emerald-500/15 text-emerald-400'
-                            : 'border-white/10 bg-white/5 text-muted-foreground hover:border-white/20 hover:text-foreground'
+                        onClick={() => { haptic('light'); if (!isFree) set('price', ''); setIsFree(v => !v); }}
+                        className={`flex items-center gap-1.5 px-3 py-2.5 rounded-lg border text-xs font-body font-medium whitespace-nowrap shrink-0 transition-all ${
+                          isFree ? 'border-emerald-500/60 bg-emerald-500/15 text-emerald-400' : 'border-white/10 bg-white/5 text-muted-foreground hover:border-white/20 hover:text-foreground'
                         }`}
                       >
-                        <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 transition-all ${
-                          isFree ? 'bg-emerald-500 border-emerald-500' : 'border-white/30'
-                        }`}>
+                        <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 transition-all ${isFree ? 'bg-emerald-500 border-emerald-500' : 'border-white/30'}`}>
                           {isFree && (
                             <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 10" fill="none">
-                              <path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           )}
                         </span>
@@ -690,7 +602,6 @@ export default function SubmitEventModal() {
                     {errors.source_url && <p className="text-xs text-red-400 mt-1">{errors.source_url}</p>}
                   </div>
 
-                  {/* Промо */}
                   <div>
                     <button type="button"
                       onClick={() => { haptic('light'); set('is_promo', !form.is_promo); }}
@@ -711,9 +622,7 @@ export default function SubmitEventModal() {
                       </div>
                       <div className="relative shrink-0 rounded-full transition-colors duration-200"
                         style={{ width: 40, height: 22, background: form.is_promo ? '#a855f7' : 'rgba(255,255,255,0.2)' }}>
-                        <span className={`absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-transform duration-200 ${
-                          form.is_promo ? 'translate-x-[18px]' : 'translate-x-0'
-                        }`} />
+                        <span className={`absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-transform duration-200 ${form.is_promo ? 'translate-x-[18px]' : 'translate-x-0'}`} />
                       </div>
                     </button>
                     {form.is_promo && (
@@ -724,17 +633,12 @@ export default function SubmitEventModal() {
                   </div>
                 </div>
 
-                {/* Footer */}
-                <div className="sticky bottom-0 px-5 border-t border-white/10 shrink-0 bg-inherit mt-auto" style={{ paddingTop: "1rem", paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
-                  <button
-                    onClick={handleSubmit}
-                    disabled={submitting}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-body font-semibold text-sm text-white disabled:opacity-60 disabled:cursor-not-allowed transition-all hover:opacity-90 active:scale-98"
-                    style={{ background: 'linear-gradient(135deg, #c026d3, #9333ea)' }}
-                  >
-                    {submitting
-                      ? <><Loader2 className="h-4 w-4 animate-spin" /> Отправляем...</>
-                      : 'Отправить на модерацию →'}
+                <div className="px-5 border-t border-white/10 shrink-0"
+                  style={{ paddingTop: '1rem', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+                  <button onClick={handleSubmit} disabled={submitting}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-body font-semibold text-sm text-white disabled:opacity-60 disabled:cursor-not-allowed transition-all hover:opacity-90"
+                    style={{ background: 'linear-gradient(135deg, #c026d3, #9333ea)' }}>
+                    {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Отправляем...</> : 'Отправить на модерацию →'}
                   </button>
                   <p className="text-center text-xs text-muted-foreground font-body mt-2">* — обязательные поля</p>
                 </div>

@@ -1,5 +1,5 @@
 import { type GroupedEvent, getCategoryBySlug } from '@/data/events';
-import { ArrowRight, Share2, ChevronDown, ChevronUp, MapPin, Clock, Banknote } from 'lucide-react';
+import { ArrowRight, Share2, ChevronDown, ChevronUp, MapPin, Clock, Banknote, CalendarDays } from 'lucide-react';
 import CategoryIcon from './CategoryIcon';
 import { toast } from 'sonner';
 import { haptic, openLink } from '@/lib/telegram';
@@ -61,7 +61,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
     <div className={`glass-card border-l-4 ${cat.borderClass} p-4 hover:border-l-primary transition-all duration-300 group/card`}>
 
       {/* Title row */}
-      <div className="flex items-start justify-between gap-2 mb-1.5">
+      <div className="flex items-start justify-between gap-2 mb-0.5">
         <h4 className="text-foreground font-body font-bold text-base group-hover/card:text-primary transition-colors flex-1 min-w-0 pr-1">
           {group.title}
         </h4>
@@ -77,7 +77,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
 
       {/* Description — compact, 2 lines max */}
       {group.description && (
-        <p className="text-xs text-muted-foreground font-body leading-relaxed mb-2 line-clamp-2">
+        <p className="text-xs text-muted-foreground font-body leading-snug mb-1.5 line-clamp-2">
           {group.description}
         </p>
       )}
@@ -85,7 +85,10 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
       {/* Cinema */}
       {group.category === 'cinema' && group.cinemaDate && (
         <div className="space-y-1.5 mt-1">
-          <span className="amber-pill text-xs font-bold">📅 {formatDateShort(group.cinemaDate)}</span>
+          <span className="amber-pill inline-flex items-center gap-1 text-xs font-bold">
+            <CalendarDays className="h-3 w-3 shrink-0" />
+            {formatDateShort(group.cinemaDate)}
+          </span>
           {cinemaCount > 1 && (
             <button onClick={() => { haptic('light'); setShowTimes(p => !p); }}
               className="flex items-center gap-1.5 text-xs text-primary font-body font-medium mt-0.5 hover:opacity-80 transition-opacity">
@@ -96,9 +99,10 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
           {showTimes && (
             <div className="space-y-1 mt-1 pl-2 border-l-2 border-primary/30">
               {group.cinemaShowtimes?.map((st) => (
-                <div key={st.venue} className="text-sm font-body leading-snug">
-                  <span className="text-foreground/80">📍 {st.venue}:</span>
-                  <span className="text-accent ml-1">{st.times.join(', ')}</span>
+                <div key={st.venue} className="flex items-center gap-1.5 text-sm font-body leading-snug">
+                  <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
+                  <span className="text-foreground/80">{st.venue}:</span>
+                  <span className="text-accent">{st.times.join(', ')}</span>
                 </div>
               ))}
             </div>
@@ -135,10 +139,16 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
                 <div key={i} className="flex flex-wrap items-center gap-1.5 text-sm">
                   {dtg.dateRanges?.length ? (
                     dtg.dateRanges.map((range, j) => (
-                      <span key={j} className="amber-pill text-xs font-bold">📅 {range}</span>
+                      <span key={j} className="amber-pill inline-flex items-center gap-1 text-xs font-bold">
+                        <CalendarDays className="h-3 w-3 shrink-0" />
+                        {range}
+                      </span>
                     ))
                   ) : (
-                    <span className="text-muted-foreground text-xs">📅 Дата уточняется</span>
+                    <span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
+                      <CalendarDays className="h-3 w-3 shrink-0" />
+                      Дата уточняется
+                    </span>
                   )}
                   {dtg.time && (
                     <div className="flex items-center gap-1 text-muted-foreground">

@@ -14,6 +14,7 @@ export interface EventItem {
   time?: string;
   end_time?: string;
   venue: string;
+  location?: string;
   price?: string;
   category: CategorySlug;
   description?: string;
@@ -27,6 +28,9 @@ export interface GroupedEvent {
   category: CategorySlug;
   price?: string;
   sourceUrl?: string;
+  description?: string;
+  location?: string;
+  sourceName?: string;
   // Cinema
   cinemaDate?: string;
   cinemaShowtimes?: { venue: string; times: string[] }[];
@@ -94,6 +98,8 @@ function groupCinemaEvents(events: EventItem[]): GroupedEvent[] {
   const grouped: Record<string, Record<string, Record<string, string[]>>> = {};
   const sourceUrls: Record<string, string> = {};
   const prices: Record<string, string> = {};
+  const descriptions: Record<string, string> = {};
+  const sourceNames: Record<string, string> = {};
 
   for (const e of events) {
     if (!grouped[e.title]) grouped[e.title] = {};
@@ -105,6 +111,8 @@ function groupCinemaEvents(events: EventItem[]): GroupedEvent[] {
     const k = `${e.title}__${e.date}`;
     if (!sourceUrls[k] && e.sourceUrl) sourceUrls[k] = e.sourceUrl;
     if (!prices[k] && e.price) prices[k] = e.price;
+    if (!descriptions[k] && e.description) descriptions[k] = e.description;
+    if (!sourceNames[k] && e.sourceName) sourceNames[k] = e.sourceName;
   }
 
   const result: GroupedEvent[] = [];
@@ -121,6 +129,8 @@ function groupCinemaEvents(events: EventItem[]): GroupedEvent[] {
         category: 'cinema',
         price: prices[k],
         sourceUrl: sourceUrls[k],
+        description: descriptions[k],
+        sourceName: sourceNames[k],
         cinemaDate: date,
         cinemaShowtimes: showtimes,
         _sort: date,
@@ -136,6 +146,7 @@ function groupOtherEvents(events: EventItem[]): GroupedEvent[] {
   const grouped: Record<string, {
     title: string; place: string; price: string;
     category: CategorySlug; sourceUrl: string;
+    description: string; location: string; sourceName: string;
     dates: { date: string; time: string; end_time: string }[];
   }> = {};
   const titleToKey: Record<string, string> = {};
@@ -157,6 +168,9 @@ function groupOtherEvents(events: EventItem[]): GroupedEvent[] {
         price: e.price || '',
         category: e.category,
         sourceUrl: e.sourceUrl || '',
+        description: e.description || '',
+        location: e.location || '',
+        sourceName: e.sourceName || '',
         dates: [],
       };
       if (e.venue) titleToKey[e.title] = key;
@@ -164,6 +178,9 @@ function groupOtherEvents(events: EventItem[]): GroupedEvent[] {
       if (!grouped[key].place && e.venue) grouped[key].place = e.venue;
       if (!grouped[key].price && e.price) grouped[key].price = e.price;
       if (!grouped[key].sourceUrl && e.sourceUrl) grouped[key].sourceUrl = e.sourceUrl;
+      if (!grouped[key].description && e.description) grouped[key].description = e.description;
+      if (!grouped[key].location && e.location) grouped[key].location = e.location;
+      if (!grouped[key].sourceName && e.sourceName) grouped[key].sourceName = e.sourceName;
     }
     grouped[key].dates.push({ date: e.date, time: e.time || '', end_time: e.end_time || '' });
   }
@@ -203,6 +220,9 @@ const byTime: Record<string, { dates: string[]; end_time?: string }> = {};
       category: g.category as CategorySlug,
       price: g.price || undefined,
       sourceUrl: g.sourceUrl || undefined,
+      description: g.description || undefined,
+      location: g.location || undefined,
+      sourceName: g.sourceName || undefined,
       venue: g.place || undefined,
       dateTimeGroups,
       _sort: earliestDate,

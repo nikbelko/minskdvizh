@@ -112,6 +112,7 @@ const Index = () => {
         debouncedSearch={debouncedSearch}
         calendarDate={calendarDate}
         onTotalChange={setTotalFiltered}
+        onSearchClear={() => setSearchQuery('')}
       />
       <Footer />
       <MobileNav 

@@ -19,6 +19,7 @@ interface EventsListProps {
   debouncedSearch: string;
   calendarDate: Date | null;
   onTotalChange?: (total: number) => void;
+  onSearchClear?: () => void;
 }
 
 const EVENTS_PER_PAGE = 10;
@@ -79,7 +80,7 @@ const FlashBanner = ({ query, onSubscribe, onDismiss, loading, alreadySubscribed
   </div>
 );
 
-const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery, debouncedSearch, calendarDate, onTotalChange }: EventsListProps) => {
+const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery, debouncedSearch, calendarDate, onTotalChange, onSearchClear }: EventsListProps) => {
   const [page, setPage] = useState(1);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -241,9 +242,18 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
           )}
           <div className="flex items-center justify-between">
             <h3 className="text-base font-display font-bold">События</h3>
-            <span className="text-xs text-muted-foreground font-body">
-              Найдено: {total}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground font-body">Найдено: {total}</span>
+              {debouncedSearch.trim() && onSearchClear && (
+                <button
+                  onClick={() => { onSearchClear(); haptic('selection'); }}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors font-body"
+                  title="Очистить поиск"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

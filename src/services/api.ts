@@ -74,6 +74,7 @@ function toEventItem(e: ApiEvent): EventItem {
     time: e.show_time || undefined,
     end_time: e.end_time || undefined,
     venue: e.place || '',
+    location: e.location || undefined,
     price: e.price || undefined,
     category: e.category,
     description: e.details || undefined,

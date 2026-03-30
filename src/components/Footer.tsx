@@ -30,7 +30,7 @@ const AboutDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) 
           <p className="text-xs">Каждую ночь в 06:00 по Минску</p>
         </div>
         <div className="pt-2 border-t border-border/50 space-y-2">
-          <p className="text-foreground font-medium">Связь</p>
+          <p className="text-foreground font-medium">Связь и поддержка</p>
           <a
             href="https://t.me/MinskDvizh_bot"
             target="_blank"
@@ -40,15 +40,20 @@ const AboutDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) 
             <Send className="h-3.5 w-3.5" />
             @MinskDvizh_bot — Telegram бот
           </a>
-          <a
-            href="https://t.me/i354444"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-primary hover:underline text-xs"
-          >
-            <Send className="h-3.5 w-3.5" />
-            @i354444 — сотрудничество и предложения
-          </a>
+          <p className="text-xs">
+            Нашли ошибку или хотите добавить источник? Напишите нам в бот.
+          </p>
+          <p className="text-xs">
+            Для сотрудничества:{' '}
+            <a
+              href="https://t.me/i354444"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              @i354444
+            </a>
+          </p>
         </div>
         <div className="pt-2 border-t border-border/50">
           <p className="text-foreground font-medium mb-1 flex items-center gap-1.5">

@@ -1,73 +1,80 @@
-# Welcome to your Lovable project
+# MinskDvizh — Frontend
 
-## Project info
+Веб-интерфейс афиши Минска. Работает как самостоятельный сайт и как Telegram WebApp внутри [@MinskDvizh_bot](https://t.me/MinskDvizh_bot).
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Стек
 
-## How can I edit this code?
+- **React 18** + **TypeScript**
+- **Vite** — сборка и dev-сервер
+- **Tailwind CSS** — стили
+- **shadcn/ui** — UI-компоненты (Radix UI)
+- **TanStack React Query** — fetching и кэширование
+- **React Router DOM** — SPA-роутинг
+- **Sonner** — toast-уведомления
+- **lucide-react** — иконки
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Локальный запуск
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+npm install
+npm run dev       # dev-сервер на http://localhost:5173
+npm run build     # production-сборка в dist/
+npm run preview   # предпросмотр dist/
+npm run lint      # ESLint
 ```
 
-**Edit a file directly in GitHub**
+## Связь с API
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Все запросы идут на бэкенд Railway:
 
-**Use GitHub Codespaces**
+```
+https://minskdvizh.up.railway.app
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Переменная `API_BASE` задана в `src/services/api.ts`. При необходимости переключиться на локальный бэкенд — поменять там.
 
-## What technologies are used for this project?
+## Структура
 
-This project is built with:
+```
+src/
+├── components/
+│   ├── EventGroupCard.tsx   # Карточка события (иконки, description, venue)
+│   ├── EventsList.tsx       # Список событий, пагинация, flash-подписки
+│   ├── Header.tsx           # Лого, поиск (desktop), панель подписок
+│   ├── MobileNav.tsx        # Bottom nav: поиск, категории, календарь
+│   ├── Hero.tsx             # Quick-фильтры (сегодня / завтра / выходные / все)
+│   ├── CategoryGrid.tsx     # Сетка категорий с бейджами
+│   ├── CalendarView.tsx     # Выбор даты
+│   ├── Footer.tsx           # Футер + Dialog «О проекте»
+│   ├── SubmitEventModal.tsx # Форма предложить событие
+│   └── ui/                  # shadcn/ui компоненты
+├── data/
+│   └── events.ts            # Типы EventItem, GroupedEvent, группировка, пагинация
+├── hooks/
+│   ├── use-events.ts        # React Query хуки (useEvents, useCategoryCounts)
+│   ├── use-debounce.ts
+│   ├── use-mobile.tsx
+│   └── useTelegramTheme.ts
+├── services/
+│   └── api.ts               # Fetch-функции, toEventItem маппинг
+├── lib/
+│   └── telegram.ts          # Telegram WebApp API (haptic, openLink, user)
+└── pages/
+    └── Index.tsx            # Главная страница, стейт-менеджмент
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Telegram WebApp
 
-## How can I deploy this project?
+В контексте Telegram бота фронт открывается как WebApp. Инициализация — `src/lib/telegram.ts`:
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+- `getTelegramUser()` — ID и имя пользователя из `tg.initDataUnsafe`
+- `openLink(url)` — открывает ссылку через `tg.openLink()` (не `window.open`)
+- `haptic(style)` — тактильная отдача
 
-## Can I connect a custom domain to my Lovable project?
+Если `window.Telegram` недоступен (обычный браузер) — всё gracefully деградирует.
 
-Yes, you can!
+## Деплой
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Деплой на Railway через Docker. При пуше в `main` Railway автоматически собирает и деплоит.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Фронт также совместим с Vercel (статическая Vite-сборка), нужен `vercel.json` с SPA rewrite rules и обновление `WEB_APP_URL` в боте.

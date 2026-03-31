@@ -96,27 +96,27 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
   };
 
   return (
-    <div className={`glass-card border-l-4 ${cat.borderClass} p-4 hover:border-l-primary transition-all duration-300 group/card`}>
+    <div className={`glass-card border-l-4 ${cat.borderClass} p-4 hover:border-l-primary transition-all duration-300 group/card relative`}>
 
-      {/* Title + right column (category icon + action buttons) */}
-      <div className="flex items-start gap-2 mb-0.5">
-        <h4 className="text-foreground font-body font-bold text-base group-hover/card:text-primary transition-colors flex-1 min-w-0">
-          {group.title}
-        </h4>
-        <div className="flex flex-col items-center gap-0.5 shrink-0">
-          <CategoryIcon slug={group.category} size="sm" />
-          <button onClick={handleCalendarExport}
-            className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/card:opacity-100"
-            title="Добавить в календарь">
-            <CalendarPlus className="h-3.5 w-3.5" />
-          </button>
-          <button onClick={handleShare}
-            className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/card:opacity-100"
-            title="Поделиться">
-            <Share2 className="h-3.5 w-3.5" />
-          </button>
-        </div>
+      {/* Icons column — absolutely positioned, не влияет на текстовый поток */}
+      <div className="absolute top-4 right-4 flex flex-col items-center gap-0.5">
+        <CategoryIcon slug={group.category} size="sm" />
+        <button onClick={handleCalendarExport}
+          className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/card:opacity-100"
+          title="Добавить в календарь">
+          <CalendarPlus className="h-3.5 w-3.5" />
+        </button>
+        <button onClick={handleShare}
+          className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/card:opacity-100"
+          title="Поделиться">
+          <Share2 className="h-3.5 w-3.5" />
+        </button>
       </div>
+
+      {/* Title — с отступом справа чтобы не перекрывался с иконками */}
+      <h4 className="text-foreground font-body font-bold text-base group-hover/card:text-primary transition-colors pr-10 mb-0.5">
+        {group.title}
+      </h4>
 
       {/* Description — compact, 2 lines max */}
       {group.description && (

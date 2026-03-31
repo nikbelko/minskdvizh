@@ -284,10 +284,10 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
               </span>
             )}
           </button>
+          {/* Gradient line — absolute внутри хедера, лого (z-2) перекрывает её */}
+          <div className="sm:hidden absolute bottom-0 left-0 right-0" style={{ height: '1px', background: 'linear-gradient(90deg, rgba(192,38,211,0) 0%, rgba(192,38,211,0.8) 30%, rgba(0,229,255,0.8) 70%, rgba(0,229,255,0) 100%)', zIndex: 1 }} />
         </div>
 
-        {/* Gradient underline */}
-        <div style={{ height: '1px', background: 'linear-gradient(90deg, rgba(192,38,211,0) 0%, rgba(192,38,211,0.8) 30%, rgba(0,229,255,0.8) 70%, rgba(0,229,255,0) 100%)', position: 'relative', zIndex: 1 }} />
       </header>
 
       {/* Subscriptions portal */}

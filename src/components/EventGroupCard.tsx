@@ -113,8 +113,10 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
         </button>
       </div>
 
-      {/* Title — с отступом справа чтобы не перекрывался с иконками */}
-      <h4 className="text-foreground font-body font-bold text-base group-hover/card:text-primary transition-colors pr-10 mb-0.5">
+      {/* Весь контент с отступом справа — не перекрывается с absolute иконками */}
+      <div className="pr-10">
+
+      <h4 className="text-foreground font-body font-bold text-base group-hover/card:text-primary transition-colors mb-0.5">
         {group.title}
       </h4>
 
@@ -142,10 +144,12 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
           {showTimes && (
             <div className="space-y-1 mt-1 pl-2 border-l-2 border-primary/30">
               {group.cinemaShowtimes?.map((st) => (
-                <div key={st.venue} className="flex items-center gap-1.5 text-sm font-body leading-snug">
-                  <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
-                  <span className="text-foreground/80">{st.venue}:</span>
-                  <span className="text-accent">{st.times.join(', ')}</span>
+                <div key={st.venue} className="flex items-baseline gap-1.5 text-sm font-body leading-snug">
+                  <MapPin className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
+                  <span>
+                    <span className="text-foreground/80">{st.venue}: </span>
+                    <span className="text-accent">{st.times.join(', ')}</span>
+                  </span>
                 </div>
               ))}
             </div>
@@ -225,6 +229,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
         </div>
       )}
 
+      </div>{/* /pr-10 */}
     </div>
   );
 };

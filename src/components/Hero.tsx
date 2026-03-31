@@ -57,7 +57,7 @@ const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, 
         </div>
 
         {/* Mobile: filter pills + categories */}
-        <div className="sm:hidden pt-1.5 pb-2">
+        <div className="sm:hidden py-3">
           <div className="flex gap-2">
             {pills.map((pill) => (
               <button

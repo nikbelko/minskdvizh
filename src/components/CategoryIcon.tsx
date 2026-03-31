@@ -22,11 +22,12 @@ const iconConfig: Record<CategorySlug, { icon: React.ElementType; color: string;
 
 interface CategoryIconProps {
   slug: CategorySlug;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'card' | 'md' | 'lg';
 }
 
 const sizeMap = {
-  sm: { container: 'w-12 h-12 rounded-xl', icon: 24 },
+  sm: { container: 'w-8 h-8 rounded-lg', icon: 16 },
+  card: { container: 'w-10 h-10 rounded-xl', icon: 20 },
   md: { container: 'w-11 h-11 rounded-xl', icon: 22 },
   lg: { container: 'w-14 h-14 rounded-2xl', icon: 28 },
 };

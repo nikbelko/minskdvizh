@@ -100,7 +100,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
 
       {/* Icons column — absolutely positioned, не влияет на текстовый поток */}
       <div className="absolute top-4 right-4 flex flex-col items-center gap-0.5">
-        <CategoryIcon slug={group.category} size="sm" />
+        <CategoryIcon slug={group.category} size="card" />
         <button onClick={handleCalendarExport}
           className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/card:opacity-100"
           title="Добавить в календарь">
@@ -154,22 +154,12 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
               ))}
             </div>
           )}
-          {/* Price + Подробнее в одну строку */}
-          <div className="flex items-center justify-between mt-0.5">
-            {group.price ? (
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-body">
-                <Banknote className="h-3.5 w-3.5 shrink-0" />
-                <span>{group.price}</span>
-              </div>
-            ) : <span />}
-            {group.sourceUrl && (
-              <a href={group.sourceUrl} target="_blank" rel="noopener noreferrer"
-                onClick={handleSourceClick}
-                className="flex items-center gap-1 text-xs text-primary font-body font-medium opacity-0 group-hover/card:opacity-100 transition-opacity ml-auto">
-                Подробнее <ArrowRight className="h-3 w-3" />
-              </a>
-            )}
-          </div>
+          {group.price && (
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-body mt-0.5">
+              <Banknote className="h-3.5 w-3.5 shrink-0" />
+              <span>{group.price}</span>
+            </div>
+          )}
         </div>
       )}
 
@@ -218,26 +208,25 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
             </div>
           )}
 
-          {/* Price + Подробнее в одну строку */}
-          <div className="flex items-center justify-between mt-0.5">
-            {group.price ? (
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-body">
-                <Banknote className="h-3.5 w-3.5 shrink-0" />
-                <span>{group.price}</span>
-              </div>
-            ) : <span />}
-            {group.sourceUrl && (
-              <a href={group.sourceUrl} target="_blank" rel="noopener noreferrer"
-                onClick={handleSourceClick}
-                className="flex items-center gap-1 text-xs text-primary font-body font-medium opacity-0 group-hover/card:opacity-100 transition-opacity ml-auto">
-                Подробнее <ArrowRight className="h-3 w-3" />
-              </a>
-            )}
-          </div>
+          {group.price && (
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-body">
+              <Banknote className="h-3.5 w-3.5 shrink-0" />
+              <span>{group.price}</span>
+            </div>
+          )}
         </div>
       )}
 
       </div>{/* /pr-10 */}
+
+      {/* Подробнее — absolute, по правому краю под иконками */}
+      {group.sourceUrl && (
+        <a href={group.sourceUrl} target="_blank" rel="noopener noreferrer"
+          onClick={handleSourceClick}
+          className="absolute bottom-3 right-4 flex items-center gap-1 text-xs text-primary font-body font-medium opacity-0 group-hover/card:opacity-100 transition-opacity">
+          Подробнее <ArrowRight className="h-3 w-3" />
+        </a>
+      )}
     </div>
   );
 };

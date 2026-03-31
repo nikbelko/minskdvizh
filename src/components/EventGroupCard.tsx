@@ -16,7 +16,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
 
   const formatDateShort = (dateStr: string) => {
     const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' }).toUpperCase().replace('.', '');
+    return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
   const handleCalendarExport = () => {
@@ -154,12 +154,22 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
               ))}
             </div>
           )}
-          {group.price && (
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-body">
-              <Banknote className="h-3.5 w-3.5 shrink-0" />
-              <span>{group.price}</span>
-            </div>
-          )}
+          {/* Price + Подробнее в одну строку */}
+          <div className="flex items-center justify-between mt-0.5">
+            {group.price ? (
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-body">
+                <Banknote className="h-3.5 w-3.5 shrink-0" />
+                <span>{group.price}</span>
+              </div>
+            ) : <span />}
+            {group.sourceUrl && (
+              <a href={group.sourceUrl} target="_blank" rel="noopener noreferrer"
+                onClick={handleSourceClick}
+                className="flex items-center gap-1 text-xs text-primary font-body font-medium opacity-0 group-hover/card:opacity-100 transition-opacity ml-auto">
+                Подробнее <ArrowRight className="h-3 w-3" />
+              </a>
+            )}
+          </div>
         </div>
       )}
 
@@ -208,24 +218,22 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
             </div>
           )}
 
-          {/* Price */}
-          {group.price && (
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-body">
-              <Banknote className="h-3.5 w-3.5 shrink-0" />
-              <span>{group.price}</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Source link */}
-      {group.sourceUrl && (
-        <div className="flex justify-end mt-2">
-          <a href={group.sourceUrl} target="_blank" rel="noopener noreferrer"
-            onClick={handleSourceClick}
-            className="flex items-center gap-1 text-xs text-primary font-body font-medium opacity-0 group-hover/card:opacity-100 transition-opacity">
-            Подробнее <ArrowRight className="h-3 w-3" />
-          </a>
+          {/* Price + Подробнее в одну строку */}
+          <div className="flex items-center justify-between mt-0.5">
+            {group.price ? (
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-body">
+                <Banknote className="h-3.5 w-3.5 shrink-0" />
+                <span>{group.price}</span>
+              </div>
+            ) : <span />}
+            {group.sourceUrl && (
+              <a href={group.sourceUrl} target="_blank" rel="noopener noreferrer"
+                onClick={handleSourceClick}
+                className="flex items-center gap-1 text-xs text-primary font-body font-medium opacity-0 group-hover/card:opacity-100 transition-opacity ml-auto">
+                Подробнее <ArrowRight className="h-3 w-3" />
+              </a>
+            )}
+          </div>
         </div>
       )}
 

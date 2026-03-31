@@ -26,7 +26,7 @@ interface CategoryIconProps {
 }
 
 const sizeMap = {
-  sm: { container: 'w-8 h-8 rounded-lg', icon: 16 },
+  sm: { container: 'w-12 h-12 rounded-xl', icon: 24 },
   md: { container: 'w-11 h-11 rounded-xl', icon: 22 },
   lg: { container: 'w-14 h-14 rounded-2xl', icon: 28 },
 };

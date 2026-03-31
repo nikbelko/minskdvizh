@@ -1,5 +1,5 @@
 import { type GroupedEvent, getCategoryBySlug } from '@/data/events';
-import { ArrowRight, Share2, ChevronDown, ChevronUp, MapPin, Clock, Banknote, CalendarDays } from 'lucide-react';
+import { ArrowRight, Share2, ChevronDown, ChevronUp, MapPin, Clock, Banknote, CalendarDays, CalendarPlus } from 'lucide-react';
 import CategoryIcon from './CategoryIcon';
 import { toast } from 'sonner';
 import { haptic, openLink } from '@/lib/telegram';
@@ -17,6 +17,83 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
   const formatDateShort = (dateStr: string) => {
     const d = new Date(dateStr + 'T00:00:00');
     return d.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' }).toUpperCase().replace('.', '');
+  };
+
+  const handleCalendarExport = () => {
+    haptic('light');
+    const title = group.title;
+    const description = group.description || '';
+    const venue = group.venue || '';
+
+    let dtstart = '';
+    let dtend = '';
+
+    if (group.category === 'cinema' && group.cinemaDate) {
+      const base = group.cinemaDate.replace(/-/g, '');
+      const firstTime = group.cinemaShowtimes?.[0]?.times?.[0];
+      if (firstTime) {
+        const [h, m] = firstTime.split(':');
+        dtstart = `${base}T${h.padStart(2, '0')}${(m || '00').padStart(2, '0')}00`;
+        dtend = dtstart;
+      } else {
+        dtstart = base;
+        dtend = base;
+      }
+    } else {
+      // _sort contains the earliest ISO date (YYYY-MM-DD) for non-cinema events
+      const isoDate = group._sort;
+      if (isoDate && isoDate !== '9999') {
+        const base = isoDate.replace(/-/g, '');
+        const dtg = group.dateTimeGroups?.[0];
+        if (dtg?.time) {
+          const [h, m] = dtg.time.split(':');
+          dtstart = `${base}T${h.padStart(2, '0')}${(m || '00').padStart(2, '0')}00`;
+          if (dtg.end_time) {
+            const [eh, em] = dtg.end_time.split(':');
+            dtend = `${base}T${eh.padStart(2, '0')}${(em || '00').padStart(2, '0')}00`;
+          } else {
+            dtend = dtstart;
+          }
+        } else {
+          dtstart = base;
+          dtend = base;
+        }
+      }
+    }
+
+    if (!dtstart) {
+      toast.error('Дата недоступна');
+      return;
+    }
+
+    const uid = `minskdvizh-${group.title.replace(/\s+/g, '-')}-${dtstart}@minskdvizh`;
+    const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//MinskDvizh//MinskDvizh//RU',
+      'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT',
+      `UID:${uid}`,
+      `DTSTAMP:${now}`,
+      `DTSTART:${dtstart}`,
+      `DTEND:${dtend}`,
+      `SUMMARY:${title.replace(/,/g, '\\,')}`,
+      description ? `DESCRIPTION:${description.replace(/,/g, '\\,').replace(/\n/g, '\\n')}` : '',
+      venue ? `LOCATION:${venue.replace(/,/g, '\\,')}` : '',
+      group.sourceUrl ? `URL:${group.sourceUrl}` : '',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].filter(Boolean).join('\r\n');
+
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title.replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '_')}.ics`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Добавлено в календарь');
   };
 
   const handleShare = async () => {
@@ -66,6 +143,11 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
           {group.title}
         </h4>
         <div className="flex items-center gap-1.5 shrink-0">
+          <button onClick={handleCalendarExport}
+            className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/card:opacity-100"
+            title="Добавить в календарь">
+            <CalendarPlus className="h-4 w-4" />
+          </button>
           <button onClick={handleShare}
             className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/card:opacity-100"
             title="Поделиться">

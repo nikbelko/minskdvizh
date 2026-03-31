@@ -100,21 +100,23 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
 
       {/* Title row */}
       <div className="flex items-start justify-between gap-2 mb-0.5">
-        <h4 className="text-foreground font-body font-bold text-base group-hover/card:text-primary transition-colors flex-1 min-w-0 pr-1">
+        <h4 className="text-foreground font-body font-bold text-base group-hover/card:text-primary transition-colors flex-1 min-w-0">
           {group.title}
         </h4>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <button onClick={handleCalendarExport}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/card:opacity-100"
-            title="Добавить в календарь">
-            <CalendarPlus className="h-4 w-4" />
-          </button>
-          <button onClick={handleShare}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/card:opacity-100"
-            title="Поделиться">
-            <Share2 className="h-4 w-4" />
-          </button>
+        <div className="flex flex-col items-center gap-1 shrink-0">
           <CategoryIcon slug={group.category} size="sm" />
+          <div className="flex items-center gap-0.5 opacity-0 group-hover/card:opacity-100 transition-all">
+            <button onClick={handleCalendarExport}
+              className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+              title="Добавить в календарь">
+              <CalendarPlus className="h-3.5 w-3.5" />
+            </button>
+            <button onClick={handleShare}
+              className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+              title="Поделиться">
+              <Share2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       </div>
 

@@ -96,17 +96,20 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
   };
 
   return (
-    <div className={`glass-card border-l-4 ${cat.borderClass} p-4 hover:border-l-primary transition-all duration-300 group/card relative`}>
+    <div
+      className={`glass-card border-l-4 ${cat.borderClass} p-4 hover:border-l-primary transition-all duration-300 group/card relative ${cinemaCount > 1 ? 'cursor-pointer' : ''}`}
+      onClick={cinemaCount > 1 && !showTimes ? () => { haptic('light'); setShowTimes(true); } : undefined}
+    >
 
       {/* Icons — absolutely positioned. Категория сверху, кнопки в ряд под ней */}
       <div className="absolute top-4 right-4 flex flex-col items-center gap-0.5">
         <CategoryIcon slug={group.category} size="card" />
-        <button onClick={handleCalendarExport}
+        <button onClick={(e) => { e.stopPropagation(); handleCalendarExport(); }}
           className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/card:opacity-100"
           title="Добавить в календарь">
           <CalendarPlus className="h-3.5 w-3.5" />
         </button>
-        <button onClick={handleShare}
+        <button onClick={(e) => { e.stopPropagation(); handleShare(); }}
           className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/card:opacity-100"
           title="Поделиться">
           <Share2 className="h-3.5 w-3.5" />
@@ -135,7 +138,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
             {formatDateShort(group.cinemaDate)}
           </span>
           {cinemaCount > 1 && (
-            <button onClick={() => { haptic('light'); setShowTimes(p => !p); }}
+            <button onClick={(e) => { e.stopPropagation(); haptic('light'); setShowTimes(p => !p); }}
               className="flex items-center gap-1.5 text-xs text-primary font-body font-medium mt-0.5 hover:opacity-80 transition-opacity">
               {showTimes ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
               {showTimes ? 'Скрыть сеансы' : `Сеансы (${cinemaCount} ${cinemaCount <= 4 ? 'кинотеатра' : 'кинотеатров'})`}

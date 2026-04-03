@@ -490,17 +490,15 @@ export default function SubmitEventModal() {
                       ))}
                     </div>
                     {form.date_mode === 'single' ? (
-                      <div className="grid grid-cols-4 gap-1.5">
-                        <div className="col-span-2 min-w-0">
+                      <div className="space-y-1.5">
+                        <div>
                           <input type="date" min={today} value={form.event_date}
                             onChange={e => set('event_date', e.target.value)} className={inputClass(errors.event_date)} />
                           {errors.event_date && <p className="text-xs text-red-400 mt-1">{errors.event_date}</p>}
                         </div>
-                        <div className="min-w-0">
+                        <div className="grid grid-cols-2 gap-1.5">
                           <input type="time" value={form.show_time}
                             onChange={e => handleShowTimeChange(e.target.value)} className={inputClass()} />
-                        </div>
-                        <div className="min-w-0">
                           <input type="time" value={form.show_time_end}
                             onChange={e => set('show_time_end', e.target.value)}
                             disabled={timeEndDisabled}

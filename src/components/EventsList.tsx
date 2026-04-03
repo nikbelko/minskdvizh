@@ -20,6 +20,7 @@ interface EventsListProps {
   calendarDate: Date | null;
   onTotalChange?: (total: number) => void;
   onSearchClear?: () => void;
+  onCalendarClear?: () => void;
 }
 
 const EVENTS_PER_PAGE = 10;
@@ -44,8 +45,8 @@ const FlashBanner = ({ query, onSubscribe, onDismiss, loading, alreadySubscribed
     <div className="flex items-center gap-2.5 min-w-0">
       <Zap className="h-4 w-4 text-amber-400 shrink-0" />
       <div className="min-w-0">
-        <p className="text-sm font-body font-semibold text-foreground leading-tight">
-          {alreadySubscribed ? '⚡ Уже подписаны' : '⚡ Флеш-подписка'}
+        <p className="text-xs font-body font-semibold text-foreground leading-tight">
+          {alreadySubscribed ? 'Уже подписаны' : 'Флеш-подписка'}
         </p>
         <p className="text-xs text-muted-foreground font-body leading-tight mt-0.5 truncate">
           {alreadySubscribed
@@ -80,7 +81,7 @@ const FlashBanner = ({ query, onSubscribe, onDismiss, loading, alreadySubscribed
   </div>
 );
 
-const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery, debouncedSearch, calendarDate, onTotalChange, onSearchClear }: EventsListProps) => {
+const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery, debouncedSearch, calendarDate, onTotalChange, onSearchClear, onCalendarClear }: EventsListProps) => {
   const [page, setPage] = useState(1);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -233,13 +234,8 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
         totalFiltered={total}
       />
 
-      <section className="container mx-auto px-4 pb-24 sm:pb-12">
+      <section className="container mx-auto px-4 pb-6 sm:pb-6">
         <div className="flex flex-col gap-1 mb-3">
-          {debouncedSearch.trim() && (
-            <p className="text-xs text-muted-foreground font-body">
-              По запросу: <span className="text-accent font-semibold">«{debouncedSearch}»</span>
-            </p>
-          )}
           <div className="flex items-center justify-between">
             <h3 className="text-base font-display font-bold">События</h3>
             <div className="flex items-center gap-2">
@@ -247,10 +243,20 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
               {debouncedSearch.trim() && onSearchClear && (
                 <button
                   onClick={() => { onSearchClear(); haptic('selection'); }}
-                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors font-body"
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-body border border-border/50 rounded-md px-1.5 py-0.5"
                   title="Очистить поиск"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  «{debouncedSearch}» <X className="h-3 w-3" />
+                </button>
+              )}
+              {calendarDate && onCalendarClear && (
+                <button
+                  onClick={() => { onCalendarClear(); haptic('selection'); }}
+                  className="flex items-center gap-1.5 text-xs text-accent font-body font-medium border border-accent/30 rounded-md px-1.5 py-0.5 hover:border-accent/60 transition-colors"
+                  title="Сбросить дату"
+                >
+                  {calendarDate.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                  <X className="h-3 w-3" />
                 </button>
               )}
             </div>

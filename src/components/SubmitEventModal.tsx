@@ -353,8 +353,9 @@ export default function SubmitEventModal() {
     else { setShowTimeSet(false); set('show_time_end', ''); }
   };
 
+  // font-size: 16px предотвращает авто-зум на iOS/Telegram WebApp при фокусе на input
   const inputClass = (error?: string) =>
-    `w-full rounded-lg border px-3 py-2.5 text-sm font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition-all bg-white/5 ${
+    `w-full rounded-lg border px-3 py-2.5 text-sm font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition-all bg-white/5 [font-size:16px] ${
       error ? 'border-red-500/70 focus:ring-red-500/30' : 'border-white/10 focus:ring-primary/40 focus:border-primary/50'
     }`;
 

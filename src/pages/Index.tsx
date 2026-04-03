@@ -113,6 +113,7 @@ const Index = () => {
         calendarDate={calendarDate}
         onTotalChange={setTotalFiltered}
         onSearchClear={() => setSearchQuery('')}
+        onCalendarClear={() => { setCalendarDate(null); setCalendarOpen(false); }}
       />
       <Footer />
       <MobileNav 

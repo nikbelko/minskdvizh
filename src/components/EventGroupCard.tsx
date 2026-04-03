@@ -98,7 +98,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
   return (
     <div className={`glass-card border-l-4 ${cat.borderClass} p-4 hover:border-l-primary transition-all duration-300 group/card relative`}>
 
-      {/* Icons column — absolutely positioned, не влияет на текстовый поток */}
+      {/* Icons — absolutely positioned. Категория сверху, кнопки в ряд под ней */}
       <div className="absolute top-4 right-4 flex flex-col items-center gap-0.5">
         <CategoryIcon slug={group.category} size="card" />
         <button onClick={handleCalendarExport}

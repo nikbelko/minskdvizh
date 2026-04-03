@@ -158,7 +158,7 @@ const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, s
                   }
                 }}
                 autoFocus
-                style={{ fontSize: '16px' }}
+
                 className="w-full rounded-lg border border-border bg-secondary/50 py-2.5 pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all font-body"
               />
               {searchQuery && (

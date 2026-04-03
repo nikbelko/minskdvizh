@@ -121,7 +121,7 @@ function BatchTab({ onClose }: { onClose: () => void }) {
     window.open(`${API_BASE}/api/events/batch/template?format=${fmt}`, '_blank');
   };
 
-  const inputClass = 'w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm font-body text-foreground placeholder:text-muted-foreground focus:outline-none';
+  const inputClass = 'w-full rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs font-body text-foreground placeholder:text-muted-foreground focus:outline-none';
 
   return (
     <div className="px-5 py-4 flex flex-col gap-4">
@@ -353,13 +353,13 @@ export default function SubmitEventModal() {
     else { setShowTimeSet(false); set('show_time_end', ''); }
   };
 
-  // font-size: 16px предотвращает авто-зум на iOS/Telegram WebApp при фокусе на input
+  // iOS zoom при фокусе предотвращён через maximum-scale=1 в viewport (index.html)
   const inputClass = (error?: string) =>
-    `w-full rounded-lg border px-3 py-2.5 text-sm font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition-all bg-white/5 [font-size:16px] ${
+    `w-full rounded-lg border px-2.5 py-1.5 text-xs font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 transition-all bg-white/5 ${
       error ? 'border-red-500/70 focus:ring-red-500/30' : 'border-white/10 focus:ring-primary/40 focus:border-primary/50'
     }`;
 
-  const labelClass = 'block text-xs font-body font-medium text-muted-foreground mb-1.5';
+  const labelClass = 'block text-xs font-body font-medium text-muted-foreground mb-1';
   const timeEndDisabled = !showTimeSet && !form.show_time;
 
   return (
@@ -439,7 +439,7 @@ export default function SubmitEventModal() {
             {/* Tab: Single */}
             {tab === 'single' && (
               <>
-                <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
+                <div className="overflow-y-auto flex-1 px-5 py-3 space-y-3">
 
                   <div>
                     <label className={labelClass}>Название <span className="text-red-400">*</span></label>
@@ -490,24 +490,22 @@ export default function SubmitEventModal() {
                       ))}
                     </div>
                     {form.date_mode === 'single' ? (
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        <div className="col-span-2">
                           <input type="date" min={today} value={form.event_date}
                             onChange={e => set('event_date', e.target.value)} className={inputClass(errors.event_date)} />
                           {errors.event_date && <p className="text-xs text-red-400 mt-1">{errors.event_date}</p>}
                         </div>
-                        <div className="grid grid-cols-2 gap-1.5">
-                          <input type="time" value={form.show_time}
-                            onChange={e => handleShowTimeChange(e.target.value)} className={inputClass()} />
-                          <input type="time" value={form.show_time_end}
-                            onChange={e => set('show_time_end', e.target.value)}
-                            disabled={timeEndDisabled}
-                            className={`${inputClass()} disabled:opacity-40 disabled:cursor-not-allowed`} />
-                        </div>
+                        <input type="time" value={form.show_time}
+                          onChange={e => handleShowTimeChange(e.target.value)} className={inputClass()} />
+                        <input type="time" value={form.show_time_end}
+                          onChange={e => set('show_time_end', e.target.value)}
+                          disabled={timeEndDisabled}
+                          className={`${inputClass()} disabled:opacity-40 disabled:cursor-not-allowed`} />
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-1.5">
                           <div>
                             <label className="text-xs text-muted-foreground/70 mb-1 block">С</label>
                             <input type="date" min={today} value={form.event_date}
@@ -521,7 +519,7 @@ export default function SubmitEventModal() {
                             {errors.event_date_to && <p className="text-xs text-red-400 mt-1">{errors.event_date_to}</p>}
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-1.5">
                           <div>
                             <label className="text-xs text-muted-foreground/70 mb-1 block">Время начала</label>
                             <input type="time" value={form.show_time}

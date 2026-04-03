@@ -23,6 +23,7 @@ const AboutDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) 
         <DialogHeader>
           <DialogTitle className="font-display text-lg">О проекте</DialogTitle>
         </DialogHeader>
+        <div className="overflow-y-auto max-h-[70vh] pr-1">
         <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
           <p>
             <span className="text-foreground font-semibold">MinskDvizh</span> — агрегатор событий Минска.
@@ -94,6 +95,7 @@ const AboutDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) 
               Поддержать
             </a>
           </div>
+        </div>
         </div>
       </DialogContent>
     </Dialog>

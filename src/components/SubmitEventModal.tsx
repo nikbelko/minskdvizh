@@ -355,7 +355,7 @@ export default function SubmitEventModal() {
 
   // iOS zoom при фокусе предотвращён через maximum-scale=1 в viewport (index.html)
   const inputClass = (error?: string) =>
-    `w-full rounded-lg border px-2.5 py-1.5 text-xs font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 transition-all bg-white/5 ${
+    `w-full rounded-lg border px-2.5 py-1.5 text-xs font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 transition-all bg-white/5 select-text ${
       error ? 'border-red-500/70 focus:ring-red-500/30' : 'border-white/10 focus:ring-primary/40 focus:border-primary/50'
     }`;
 
@@ -439,7 +439,7 @@ export default function SubmitEventModal() {
             {/* Tab: Single */}
             {tab === 'single' && (
               <>
-                <div className="overflow-y-auto flex-1 px-5 py-3 space-y-3">
+                <div className="overflow-y-auto flex-1 px-5 py-3 space-y-3 select-none">
 
                   <div>
                     <label className={labelClass}>Название <span className="text-red-400">*</span></label>
@@ -491,17 +491,21 @@ export default function SubmitEventModal() {
                     </div>
                     {form.date_mode === 'single' ? (
                       <div className="grid grid-cols-4 gap-1.5">
-                        <div className="col-span-2">
+                        <div className="col-span-2 min-w-0">
                           <input type="date" min={today} value={form.event_date}
                             onChange={e => set('event_date', e.target.value)} className={inputClass(errors.event_date)} />
                           {errors.event_date && <p className="text-xs text-red-400 mt-1">{errors.event_date}</p>}
                         </div>
-                        <input type="time" value={form.show_time}
-                          onChange={e => handleShowTimeChange(e.target.value)} className={inputClass()} />
-                        <input type="time" value={form.show_time_end}
-                          onChange={e => set('show_time_end', e.target.value)}
-                          disabled={timeEndDisabled}
-                          className={`${inputClass()} disabled:opacity-40 disabled:cursor-not-allowed`} />
+                        <div className="min-w-0">
+                          <input type="time" value={form.show_time}
+                            onChange={e => handleShowTimeChange(e.target.value)} className={inputClass()} />
+                        </div>
+                        <div className="min-w-0">
+                          <input type="time" value={form.show_time_end}
+                            onChange={e => set('show_time_end', e.target.value)}
+                            disabled={timeEndDisabled}
+                            className={`${inputClass()} disabled:opacity-40 disabled:cursor-not-allowed`} />
+                        </div>
                       </div>
                     ) : (
                       <div className="space-y-2">

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { type CategorySlug, categories, getCategoryBySlug } from '@/data/events';
 import EventGroupCard from './EventGroupCard';
-import CategoryTabs from './CategoryTabs';
+
 import { EventSkeletons } from './SkeletonCard';
 import type { QuickFilter } from './Hero';
 import { ChevronLeft, ChevronRight, RefreshCw, Zap, X } from 'lucide-react';
@@ -227,13 +227,6 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
 
   return (
     <div ref={listRef}>
-      <CategoryTabs
-        activeCategory={activeCategory}
-        onCategoryChange={onCategoryChange}
-        counts={counts}
-        totalFiltered={total}
-      />
-
       <section className="container mx-auto px-4 pb-6 sm:pb-6">
         <div className="flex flex-col gap-1 mb-3">
           <div className="flex items-center justify-between">

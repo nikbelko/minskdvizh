@@ -1,14 +1,14 @@
 import { useState, useCallback } from 'react';
 import Header from '@/components/Header';
 import Hero, { type QuickFilter } from '@/components/Hero';
-import CategoryGrid from '@/components/CategoryGrid';
+
 import EventsList from '@/components/EventsList';
 import CalendarView from '@/components/CalendarView';
-import SubscriptionBanner from '@/components/SubscriptionBanner';
 import MobileNav from '@/components/MobileNav';
 import Footer from '@/components/Footer';
 import type { CategorySlug } from '@/data/events';
 import SubmitEventModal from '@/components/SubmitEventModal';
+import TelegramFloatWidget from '@/components/TelegramFloatWidget';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useCategoryCounts } from '@/hooks/use-events';
 
@@ -72,8 +72,8 @@ const Index = () => {
           </div>
         </div>
       </div>
-      {/* Desktop: separate header */}
-      <div className="hidden sm:block">
+      {/* Desktop: separate header (fixed, spacer holds height) */}
+      <div className="hidden sm:block sm:h-[57px]">
         <Header
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -83,7 +83,7 @@ const Index = () => {
       </div>
       {/* Desktop calendar */}
       {calendarOpen && (
-        <div className="sticky top-[57px] z-30 hidden sm:block">
+        <div className="sticky top-[57px] z-30 hidden sm:block" style={{ top: '57px' }}>
           <CalendarView
             selectedDate={calendarDate}
             onSelectDate={handleCalendarDate}
@@ -101,9 +101,6 @@ const Index = () => {
           totalFiltered={totalFiltered}
         />
       </div>
-      <SubscriptionBanner />
-      <CategoryGrid activeCategory={activeCategory} onCategoryClick={handleCategoryClick} />
-
       <EventsList
         activeCategory={activeCategory}
         onCategoryChange={handleCategoryClick}
@@ -127,6 +124,7 @@ const Index = () => {
         onCalendarDate={handleCalendarDate}
       />
       <SubmitEventModal />
+      <TelegramFloatWidget />
     </div>
   );
 };

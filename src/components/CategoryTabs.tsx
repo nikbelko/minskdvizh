@@ -11,7 +11,7 @@ interface CategoryTabsProps {
 
 const CategoryTabs = ({ activeCategory, onCategoryChange, counts, totalFiltered }: CategoryTabsProps) => {
   return (
-    <div className="hidden sm:block container mx-auto px-4 mb-6">
+    <div className="hidden sm:block container mx-auto px-4 mt-6 mb-6">
       <div
         className="flex gap-1 overflow-x-auto pb-2 -mx-1 px-1"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}

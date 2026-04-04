@@ -1,11 +1,10 @@
-import { useState } from 'react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { X } from 'lucide-react';
-import { haptic, isTelegram } from '@/lib/telegram';
+import { haptic } from '@/lib/telegram';
 import { categories, type CategorySlug } from '@/data/events';
 import type { CategoryCounts } from '@/services/api';
 import CategoryIcon from './CategoryIcon';
+import CategoryTabs from './CategoryTabs';
 
 type QuickFilter = 'today' | 'tomorrow' | 'weekend' | 'upcoming';
 
@@ -25,24 +24,13 @@ const pills: { key: QuickFilter; label: string }[] = [
   { key: 'upcoming', label: 'Ближайшие' },
 ];
 
-const TG_BANNER_KEY = 'minskdvizh_tg_banner_dismissed';
-
 const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, categoryCounts, totalFiltered = 0 }: HeroProps) => {
   const today = new Date();
   const dateStr = format(today, "d MMMM yyyy, EEEE", { locale: ru });
-  const inTelegram = isTelegram();
-  const [tgBannerDismissed, setTgBannerDismissed] = useState(() => {
-    try { return sessionStorage.getItem(TG_BANNER_KEY) === 'true'; } catch { return false; }
-  });
 
   const handleFilterClick = (key: QuickFilter) => {
     haptic('light');
     onFilterChange(key);
-  };
-
-  const dismissTgBanner = () => {
-    setTgBannerDismissed(true);
-    try { sessionStorage.setItem(TG_BANNER_KEY, 'true'); } catch {}
   };
 
   return (
@@ -114,11 +102,18 @@ const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, 
         </div>
 
         {/* Desktop: original layout */}
-        <h2 className="hidden sm:block opacity-0 animate-fade-up animate-stagger-1 text-5xl md:text-7xl lg:text-8xl font-display font-bold leading-[1.1] mb-8">
-          <span className="text-foreground">Что сегодня</span>
-          <br />
-          <span className="text-primary">в Минске?</span>
-        </h2>
+        <div className="hidden sm:flex items-center gap-6 mb-8">
+          <h2 className="opacity-0 animate-fade-up animate-stagger-1 text-5xl md:text-7xl lg:text-8xl font-display font-bold leading-[1.1]">
+            <span className="text-foreground">Что сегодня</span>
+            <br />
+            <span className="text-primary">в Минске?</span>
+          </h2>
+          <img
+            src="/cat-logo.png"
+            alt="MinskDvizh cat"
+            className="opacity-0 animate-fade-up animate-stagger-1 w-32 md:w-40 lg:w-48 shrink-0 drop-shadow-[0_0_24px_rgba(192,38,211,0.4)]"
+          />
+        </div>
 
         <div className="hidden sm:flex opacity-0 animate-fade-up animate-stagger-2 flex-wrap gap-3">
           {pills.map((pill) => (
@@ -136,36 +131,15 @@ const Hero = ({ activeFilter, onFilterChange, activeCategory, onCategoryChange, 
           ))}
         </div>
 
-        {/* Telegram environment banner */}
-        {!inTelegram && !tgBannerDismissed && (
-          <div className="hidden sm:block opacity-0 animate-fade-up animate-stagger-3 mt-6">
-            <div className="glass-card p-3 flex items-center justify-between gap-3 max-w-lg">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-lg shrink-0">🤖</span>
-                <p className="text-sm font-body text-foreground/80 truncate">
-                  Также доступно в Telegram
-                </p>
-              </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <a
-                  href="https://t.me/MinskDvizh_bot"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-body font-medium hover:bg-primary/90 transition-colors"
-                >
-                  Открыть
-                </a>
-                <button
-                  onClick={dismissTgBanner}
-                  className="p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Category tabs — desktop, below date filters */}
+      <CategoryTabs
+        activeCategory={activeCategory ?? null}
+        onCategoryChange={onCategoryChange ?? (() => {})}
+        counts={categoryCounts}
+        totalFiltered={totalFiltered}
+      />
     </section>
   );
 };

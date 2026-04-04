@@ -240,7 +240,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
 
   return (
     <>
-      <header ref={headerRef} className="sm:sticky sm:top-0 z-40 sm:glass-card sm:border-b sm:border-border/50" style={{ overflow: 'visible' }}>
+      <header ref={headerRef} className="sm:fixed sm:top-0 sm:left-0 sm:right-0 z-40 sm:glass-card sm:border-b sm:border-border/50" style={{ overflow: 'visible' }}>
         <div className="container mx-auto flex items-center justify-between gap-2 px-4 py-0 pb-1 relative" style={{ zIndex: 10, overflow: 'visible' }}>
 
           {/* Logo */}

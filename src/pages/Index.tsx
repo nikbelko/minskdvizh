@@ -15,7 +15,7 @@ import { useCategoryCounts } from '@/hooks/use-events';
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
-  const [quickFilter, setQuickFilter] = useState<QuickFilter>('upcoming');
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>('today');
   const [activeCategory, setActiveCategory] = useState<CategorySlug | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [calendarDate, setCalendarDate] = useState<Date | null>(null);

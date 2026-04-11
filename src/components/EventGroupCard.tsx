@@ -185,7 +185,28 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
           {/* Dates + times */}
           {group.dateTimeGroups && group.dateTimeGroups.length > 0 && (
             <div className="flex flex-wrap gap-x-3 gap-y-1 mt-0.5">
-              {group.dateTimeGroups.map((dtg, i) => (
+              {group.category === 'kids' ? (() => {
+                const byDate = new Map<string, string[]>();
+                group.dateTimeGroups!.forEach(dtg => {
+                  const date = dtg.dateRanges?.[0] ?? 'Дата уточняется';
+                  if (!byDate.has(date)) byDate.set(date, []);
+                  if (dtg.time) byDate.get(date)!.push(dtg.time);
+                });
+                return Array.from(byDate.entries()).map(([date, times]) => (
+                  <div key={date} className="flex flex-wrap items-center gap-1.5 text-sm">
+                    <span className="amber-pill inline-flex items-center gap-1 text-xs font-bold">
+                      <CalendarDays className="h-3 w-3 shrink-0" />
+                      {date}
+                    </span>
+                    {times.length > 0 && (
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Clock className="h-3 w-3 shrink-0" />
+                        <span className="text-xs">{times.join(', ')}</span>
+                      </div>
+                    )}
+                  </div>
+                ));
+              })() : group.dateTimeGroups.map((dtg, i) => (
                 <div key={i} className="flex flex-wrap items-center gap-1.5 text-sm">
                   {dtg.dateRanges?.length ? (
                     dtg.dateRanges.map((range, j) => (

@@ -19,6 +19,7 @@ const CATEGORY_NAMES: Record<string, string> = {
   theater: '🎭 Театр',
   exhibition: '🖼️ Выставки',
   kids: '🧸 Детям',
+  fest: '🎪 Фесты',
   sport: '⚽ Спорт',
   party: '🎉 Вечеринки',
   free: '🆓 Бесплатно',

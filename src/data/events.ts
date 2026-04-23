@@ -1,4 +1,4 @@
-export type CategorySlug = 'cinema' | 'concert' | 'theater' | 'exhibition' | 'kids' | 'sport' | 'party' | 'free' | 'excursion' | 'market' | 'masterclass' | 'boardgames' | 'broadcast' | 'education' | 'quiz'| 'other';
+export type CategorySlug = 'cinema' | 'concert' | 'theater' | 'exhibition' | 'kids' | 'fest' | 'sport' | 'party' | 'free' | 'quests' | 'excursion' | 'market' | 'masterclass' | 'boardgames' | 'broadcast' | 'education' | 'quiz' | 'other';
 
 export interface Category {
   slug: CategorySlug;
@@ -46,10 +46,11 @@ export const categories: Category[] = [
   { slug: 'theater',     emoji: '🎭', name: 'Театр',        borderClass: 'category-border-theater' },
   { slug: 'exhibition',  emoji: '🖼️', name: 'Выставки',     borderClass: 'category-border-exhibition' },
   { slug: 'kids',        emoji: '🧸', name: 'Детям',        borderClass: 'category-border-kids' },
+  { slug: 'fest',        emoji: '🎪', name: 'Фесты',        borderClass: 'category-border-party' },
   { slug: 'sport',       emoji: '⚽', name: 'Спорт',        borderClass: 'category-border-sport' },
   { slug: 'party',       emoji: '🌟', name: 'Движ',         borderClass: 'category-border-party' },
   { slug: 'free',        emoji: '🆓', name: 'Бесплатно',    borderClass: 'category-border-free' },
-  { slug: 'excursion',   emoji: '🗺️', name: 'Экскурсии',    borderClass: 'category-border-party' },
+{ slug: 'excursion',   emoji: '🗺️', name: 'Экскурсии',    borderClass: 'category-border-party' },
   { slug: 'market',      emoji: '🛍️', name: 'Маркеты',      borderClass: 'category-border-free' },
   { slug: 'masterclass', emoji: '🎨', name: 'Мастер-класс', borderClass: 'category-border-concert' },
   { slug: 'boardgames',  emoji: '🎲', name: 'Настолки',     borderClass: 'category-border-kids' },

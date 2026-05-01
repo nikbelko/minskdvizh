@@ -23,7 +23,7 @@ interface EventsListProps {
   onCalendarClear?: () => void;
 }
 
-const EVENTS_PER_PAGE = 10;
+const EVENTS_PER_PAGE = 20;
 
 // Flash subscription banner shown after search
 interface FlashBannerProps {

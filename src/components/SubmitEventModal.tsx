@@ -456,6 +456,9 @@ export default function SubmitEventModal() {
       title: form.title,
       details: form.format,
       category: form.category,
+      event_date: entries[0]?.from || '',
+      event_date_to: entries.length === 1 ? entries[0]?.to : undefined,
+      event_dates: entries.map((entry) => (entry.to ? `${entry.from}|${entry.to}` : entry.from)),
       show_time: form.show_time || undefined,
       end_time: form.show_time_end || undefined,
       place: form.place,
@@ -470,38 +473,24 @@ export default function SubmitEventModal() {
       tg_first_name: window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name ?? null,
     };
 
-    let accepted = 0;
-    const errors409: string[] = [];
-
     try {
-      for (const entry of entries) {
-        const res = await fetch(`${API_BASE}/api/events/submit`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...payload, event_date: entry.from, event_date_to: entry.to }),
-        });
-        if (res.ok) {
-          accepted++;
-        } else if (res.status === 409) {
-          const d = await res.json().catch(() => ({}));
-          errors409.push(d?.detail || entry.from);
-        } else {
-          const d = await res.json().catch(() => ({}));
-          toast.error(d?.detail || 'Не удалось отправить. Попробуйте ещё раз.', { duration: 4000 });
-          return;
-        }
+      const res = await fetch(`${API_BASE}/api/events/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        toast.error(d?.detail || 'Не удалось отправить. Попробуйте ещё раз.', { duration: 4000 });
+        return;
       }
 
-      if (accepted > 0) {
-        handleClose();
-        const msg = entries.length > 1
-          ? `✅ Отправлено ${accepted} из ${entries.length} записей на модерацию`
-          : '✅ Событие отправлено на модерацию!';
-        toast.success(msg);
-        if (errors409.length) toast.warning(`Уже существует: ${errors409.join('; ')}`, { duration: 5000 });
-      } else {
-        toast.error(errors409.length ? `Дубликат: ${errors409.join('; ')}` : 'Не удалось отправить', { duration: 5000 });
-      }
+      handleClose();
+      const msg = entries.length > 1
+        ? '✅ Событие с несколькими датами отправлено на модерацию!'
+        : '✅ Событие отправлено на модерацию!';
+      toast.success(msg);
     } catch {
       toast.error('Не удалось отправить. Попробуйте ещё раз.');
     } finally {

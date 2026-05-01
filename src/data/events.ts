@@ -126,8 +126,14 @@ function groupCinemaEvents(events: EventItem[]): GroupedEvent[] {
       const k = `${title}__${date}`;
       const showtimes = Object.entries(cinemas).map(([venue, times]) => ({
         venue,
-        times: [...times].sort(),
+        times: [...times].sort((a, b) => sortTimeValue(a).localeCompare(sortTimeValue(b))),
       }));
+      // Find earliest time across all venues
+      const allTimes = showtimes.flatMap(s => s.times);
+      const earliestTime = allTimes.length > 0 
+        ? allTimes.sort((a, b) => sortTimeValue(a).localeCompare(sortTimeValue(b)))[0]
+        : undefined;
+      const firstShowtime = earliestTime ? sortTimeValue(earliestTime) : '99:99';
       result.push({
         key: `cinema:${title}:${date}`,
         title,
@@ -138,7 +144,7 @@ function groupCinemaEvents(events: EventItem[]): GroupedEvent[] {
         sourceName: sourceNames[k],
         cinemaDate: date,
         cinemaShowtimes: showtimes,
-        _sort: date,
+        _sort: `${date}|${firstShowtime}`,
       });
     }
   }

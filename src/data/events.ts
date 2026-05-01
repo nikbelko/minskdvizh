@@ -64,6 +64,10 @@ export function getCategoryBySlug(slug: CategorySlug): Category {
   return categories.find(c => c.slug === slug)!;
 }
 
+function sortTimeValue(time?: string): string {
+  return time || '99:99';
+}
+
 // ── Date range helpers ──
 
 function makeDateRanges(dates: string[]): string[] {
@@ -205,15 +209,10 @@ const byTime: Record<string, { dates: string[]; end_time?: string }> = {};
         end_time: end_time || undefined,
         dateRanges: makeDateRanges(dates),
       };
-    }).sort((a, b) => {
-      // Сортировка: сначала события без времени
-      if (!a.time && !b.time) return 0;
-      if (!a.time) return -1;
-      if (!b.time) return 1;
-      return a.time.localeCompare(b.time);
-    });
+    }).sort((a, b) => sortTimeValue(a.time).localeCompare(sortTimeValue(b.time)));
 
     const earliestDate = g.dates.reduce((min, d) => d.date < min ? d.date : min, '9999');
+    const firstTime = dateTimeGroups[0]?.time ? sortTimeValue(dateTimeGroups[0].time) : '99:99';
 
     return {
       key: `other:${g.title}:${g.place}`,
@@ -226,7 +225,7 @@ const byTime: Record<string, { dates: string[]; end_time?: string }> = {};
       sourceName: g.sourceName || undefined,
       venue: g.place || undefined,
       dateTimeGroups,
-      _sort: earliestDate,
+      _sort: `${earliestDate}|${firstTime}`,
     };
   }).sort((a, b) => a._sort.localeCompare(b._sort));
 }

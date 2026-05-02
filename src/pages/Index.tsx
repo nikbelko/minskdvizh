@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 import Header from '@/components/Header';
 import Hero, { type QuickFilter } from '@/components/Hero';
-
+import { Link } from 'react-router-dom';
+import { BarChart3 } from 'lucide-react';
 import EventsList from '@/components/EventsList';
 import CalendarView from '@/components/CalendarView';
 import MobileNav from '@/components/MobileNav';
@@ -11,8 +12,11 @@ import SubmitEventModal from '@/components/SubmitEventModal';
 import TelegramFloatWidget from '@/components/TelegramFloatWidget';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useCategoryCounts } from '@/hooks/use-events';
+import { getTelegramUser, haptic } from '@/lib/telegram';
 
 const Index = () => {
+  const tgUser = getTelegramUser();
+  const isAdmin = tgUser?.id === 502917728;
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('today');
@@ -125,6 +129,16 @@ const Index = () => {
       />
       <SubmitEventModal />
       <TelegramFloatWidget />
+      {isAdmin && (
+        <Link
+          to="/admin"
+          onClick={() => haptic('selection')}
+          className="fixed left-4 bottom-24 sm:bottom-6 z-40 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background/90 backdrop-blur px-3 py-2 text-xs font-body font-medium text-foreground shadow-lg"
+        >
+          <BarChart3 className="h-4 w-4 text-primary" />
+          Admin
+        </Link>
+      )}
     </div>
   );
 };

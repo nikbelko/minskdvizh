@@ -34,6 +34,69 @@ export interface FlashSubscription {
   created_at: string;
 }
 
+export interface AdminOverview {
+  total_users: number;
+  days_alive: number;
+  total_actions: number;
+  actions_today: number;
+  dau: number;
+  wau: number;
+  mau: number;
+  new_today: number;
+  new_30d: number;
+  webapp_total: number;
+  webapp_dau: number;
+  webapp_wau: number;
+  webapp_mau: number;
+  events_count: number;
+  subscribers_count: number;
+  subscriptions_total: number;
+  flash_total: number;
+  flash_users: number;
+  flash_new_today: number;
+  flash_new_30d: number;
+  flash_notified_users_30d: number;
+  pending_count: number;
+  approved_total: number;
+  rejected_total: number;
+  submitted_period: number;
+}
+
+export interface AdminDailyPoint {
+  day: string;
+  actions: number;
+  users: number;
+  new_users: number;
+  webapp_users: number;
+  submissions: number;
+}
+
+export interface AdminMonthlyPoint {
+  month: string;
+  actions: number;
+  users: number;
+  new_users: number;
+  webapp_users: number;
+}
+
+export interface CountRow {
+  count: number;
+  [key: string]: string | number;
+}
+
+export interface AdminDashboard {
+  generated_at: string;
+  period_days: number;
+  overview: AdminOverview;
+  daily_chart: AdminDailyPoint[];
+  monthly_chart: AdminMonthlyPoint[];
+  top_actions: { action: string; count: number }[];
+  events_by_source: { source_name: string; count: number }[];
+  events_by_category: { category: string; count: number }[];
+  subscriptions_by_category: { category: string; count: number }[];
+  funnel: Record<string, number>;
+}
+
 export async function fetchFlashSubscriptions(userId: number): Promise<FlashSubscription[]> {
   const url = new URL('/api/flash-subscriptions', API_BASE);
   url.searchParams.set('user_id', String(userId));
@@ -175,4 +238,12 @@ export async function fetchLastUpdated(): Promise<string> {
   } catch {
     return 'ежедневно в 06:00';
   }
+}
+
+export async function fetchAdminDashboard(userId: number, days = 30): Promise<AdminDashboard> {
+  return apiFetch<AdminDashboard>('/api/admin/dashboard', {
+    user_id: String(userId),
+    days: String(days),
+    exclude_admin: 'true',
+  });
 }

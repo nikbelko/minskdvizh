@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import AdminDashboard from "./pages/AdminDashboard";
 import { tgReady } from '@/lib/telegram';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 
@@ -31,6 +32,7 @@ const AppInner = () => {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
+      <Route path="/admin" element={<AdminDashboard />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

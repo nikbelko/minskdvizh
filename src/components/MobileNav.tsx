@@ -151,6 +151,7 @@ const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, s
                 placeholder="Концерт, театр, выставка..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
+                onFocus={() => searchQuery && onSearchChange('')}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     (e.target as HTMLInputElement).blur();

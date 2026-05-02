@@ -43,6 +43,7 @@ export interface AdminOverview {
   wau: number;
   mau: number;
   new_today: number;
+  new_7d: number;
   new_30d: number;
   webapp_total: number;
   webapp_dau: number;
@@ -60,21 +61,25 @@ export interface AdminOverview {
   approved_total: number;
   rejected_total: number;
   submitted_period: number;
+  submitted_period_no_admin: number;
 }
 
 export interface AdminDailyPoint {
   day: string;
   actions: number;
   users: number;
+  dau: number;
   new_users: number;
   webapp_users: number;
   submissions: number;
+  submissions_no_admin: number;
 }
 
 export interface AdminMonthlyPoint {
   month: string;
   actions: number;
   users: number;
+  mau: number;
   new_users: number;
   webapp_users: number;
 }
@@ -87,6 +92,14 @@ export interface CountRow {
 export interface AdminDashboard {
   generated_at: string;
   period_days: number;
+  today_summary: {
+    total_users: number;
+    total_users_delta: number;
+    unique_users_today: number;
+    unique_users_delta: number;
+    actions_today: number;
+    actions_delta: number;
+  };
   overview: AdminOverview;
   daily_chart: AdminDailyPoint[];
   monthly_chart: AdminMonthlyPoint[];
@@ -240,10 +253,10 @@ export async function fetchLastUpdated(): Promise<string> {
   }
 }
 
-export async function fetchAdminDashboard(userId: number, days = 30): Promise<AdminDashboard> {
+export async function fetchAdminDashboard(userId: number, days = 30, excludeAdmin = true): Promise<AdminDashboard> {
   return apiFetch<AdminDashboard>('/api/admin/dashboard', {
     user_id: String(userId),
     days: String(days),
-    exclude_admin: 'true',
+    exclude_admin: excludeAdmin ? 'true' : 'false',
   });
 }

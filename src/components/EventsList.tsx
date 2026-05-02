@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { type CategorySlug, categories, getCategoryBySlug } from '@/data/events';
+import { type CategorySlug, getCategoryBySlug } from '@/data/events';
 import EventGroupCard from './EventGroupCard';
 
 import { EventSkeletons } from './SkeletonCard';
 import type { QuickFilter } from './Hero';
-import { ChevronLeft, ChevronRight, RefreshCw, Zap, X } from 'lucide-react';
+import { RefreshCw, Zap, X } from 'lucide-react';
 import { useEvents, useCategoryCounts } from '@/hooks/use-events';
 import { haptic, showBackButton, hideBackButton } from '@/lib/telegram';
 import { getTelegramUser } from '@/lib/telegram';
@@ -82,8 +82,8 @@ const FlashBanner = ({ query, onSubscribe, onDismiss, loading, alreadySubscribed
 );
 
 const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery, debouncedSearch, calendarDate, onTotalChange, onSearchClear, onCalendarClear }: EventsListProps) => {
-  const [page, setPage] = useState(1);
-  const listRef = useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = useState(EVENTS_PER_PAGE);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Flash subscription state
   const [flashBannerVisible, setFlashBannerVisible] = useState(false);
@@ -98,16 +98,14 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
     category: activeCategory,
     search: debouncedSearch || undefined,
     calendarDate,
-    page,
-    perPage: EVENTS_PER_PAGE,
   });
 
-  // Reset page on filter change
+  // Reset visible items on filter change
   const animationKey = useMemo(
-    () => `${activeCategory}-${quickFilter}-${debouncedSearch}-${calendarDate?.toISOString()}-${page}`,
-    [activeCategory, quickFilter, debouncedSearch, calendarDate, page]
+    () => `${activeCategory}-${quickFilter}-${debouncedSearch}-${calendarDate?.toISOString()}`,
+    [activeCategory, quickFilter, debouncedSearch, calendarDate]
   );
-  useEffect(() => { setPage(1); }, [activeCategory, quickFilter, debouncedSearch, calendarDate]);
+  useEffect(() => { setVisibleCount(EVENTS_PER_PAGE); }, [activeCategory, quickFilter, debouncedSearch, calendarDate]);
 
   // Show flash banner when search query is active and not dismissed
   useEffect(() => {
@@ -172,15 +170,38 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
     return () => { hideBackButton(); };
   }, [activeCategory, debouncedSearch, calendarDate, onCategoryChange]);
 
-  const changePage = useCallback((newPage: number) => {
-    haptic('soft');
-    setPage(newPage);
-    listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, []);
-
   const grouped = data?.grouped ?? [];
+  const visibleGroups = grouped.slice(0, visibleCount);
   const total = data?.total ?? 0;
-  const totalPages = data?.totalPages ?? 1;
+  const hasMore = visibleCount < total;
+
+  const loadMore = useCallback(() => {
+    setVisibleCount((current) => {
+      if (current >= total) return current;
+      haptic('soft');
+      return Math.min(current + EVENTS_PER_PAGE, total);
+    });
+  }, [total]);
+
+  useEffect(() => {
+    if (!hasMore || !sentinelRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          loadMore();
+        }
+      },
+      {
+        root: null,
+        rootMargin: '240px 0px',
+        threshold: 0,
+      }
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loadMore]);
 
   useEffect(() => { onTotalChange?.(total); }, [total, onTotalChange]);
 
@@ -226,7 +247,7 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
   };
 
   return (
-    <div ref={listRef}>
+    <div>
       <section className="container mx-auto px-4 pb-6 sm:pb-6">
         <div className="flex flex-col gap-1 mb-3">
           <div className="flex items-center justify-between">
@@ -287,7 +308,7 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
 
         {!isLoading && !isError && grouped.length > 0 && (
           <div className="grid gap-4" key={animationKey}>
-            {grouped.map((group, i) => (
+            {visibleGroups.map((group, i) => (
               <div
                 key={group.key}
                 className="opacity-0 animate-fade-up"
@@ -304,25 +325,17 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
           </div>
         )}
 
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-4 mt-8">
-            <button
-              onClick={() => changePage(Math.max(1, page - 1))}
-              disabled={page <= 1}
-              className="p-2 rounded-lg glass-card text-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:border-primary/40 transition-all"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <span className="text-sm font-body text-muted-foreground">
-              <span className="text-foreground font-semibold">{page}</span> / {totalPages}
-            </span>
-            <button
-              onClick={() => changePage(Math.min(totalPages, page + 1))}
-              disabled={page >= totalPages}
-              className="p-2 rounded-lg glass-card text-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:border-primary/40 transition-all"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
+        {!isLoading && !isError && grouped.length > 0 && (
+          <div ref={sentinelRef} className="mt-8 flex justify-center">
+            {hasMore ? (
+              <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-body text-muted-foreground">
+                Прокрутите ниже, чтобы загрузить ещё
+              </div>
+            ) : total > EVENTS_PER_PAGE ? (
+              <div className="text-xs font-body text-muted-foreground/70">
+                Показаны все события
+              </div>
+            ) : null}
           </div>
         )}
       </section>

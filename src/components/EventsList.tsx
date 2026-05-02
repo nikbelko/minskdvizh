@@ -174,6 +174,7 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
   const visibleGroups = grouped.slice(0, visibleCount);
   const total = data?.total ?? 0;
   const hasMore = visibleCount < total;
+  const animateInitialBatch = visibleCount <= EVENTS_PER_PAGE;
 
   const loadMore = useCallback(() => {
     setVisibleCount((current) => {
@@ -311,13 +312,13 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
             {visibleGroups.map((group, i) => (
               <div
                 key={group.key}
-                className="opacity-0 animate-fade-up"
-                style={{
+                className={animateInitialBatch ? "opacity-0 animate-fade-up" : undefined}
+                style={animateInitialBatch ? {
                   animationDelay: `${i * 0.12}s`,
                   animationDuration: '0.5s',
                   animationTimingFunction: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                   animationFillMode: 'forwards',
-                }}
+                } : undefined}
               >
                 <EventGroupCard group={group} />
               </div>

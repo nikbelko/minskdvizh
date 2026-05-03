@@ -19,7 +19,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { RefreshCw, ShieldAlert, Users, Globe, Bell, Database, Clock3 } from 'lucide-react';
+import { RefreshCw, ShieldAlert, Users, Globe, Bell, Database, Clock3, TrendingUp, TrendingDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -27,12 +27,13 @@ const ADMIN_ID = 502917728;
 
 const chartConfig = {
   dau: { label: 'DAU', color: '#00e5ff' },
+  users: { label: 'Пользователи', color: '#00e5ff' },
   mau: { label: 'MAU', color: '#00e5ff' },
+  new_users: { label: 'Уникальные', color: '#a78bfa' },
   actions: { label: 'Действия', color: '#c026d3' },
   webapp_users: { label: 'WebApp', color: '#22c55e' },
   submissions: { label: 'Сабмиты', color: '#f59e0b' },
   submissions_no_admin: { label: 'Сабмиты без админа', color: '#f59e0b' },
-  new_users: { label: 'Новые пользователи', color: '#a78bfa' },
 } as const;
 
 function formatDayLabel(day: string) {
@@ -74,6 +75,31 @@ function deltaLabel(delta: number) {
   if (delta > 0) return `+${delta} к вчера`;
   if (delta < 0) return `${delta} к вчера`;
   return 'без изменений ко вчера';
+}
+
+interface QuickMetric {
+  label: string;
+  value: number;
+  delta: number;
+}
+
+function QuickSummaryCard({ metric }: { metric: QuickMetric }) {
+  const isPositive = metric.delta >= 0;
+  const TrendIcon = isPositive ? TrendingUp : TrendingDown;
+  const trendColor = metric.delta > 0 ? 'text-green-400' : metric.delta < 0 ? 'text-red-400' : 'text-muted-foreground';
+
+  return (
+    <div className="p-3 rounded-lg border border-white/10 bg-white/5">
+      <p className="text-xs text-muted-foreground mb-1">{metric.label}</p>
+      <div className="flex items-baseline justify-between">
+        <p className="text-2xl font-display font-bold">{metric.value}</p>
+        <div className={`flex items-center gap-0.5 text-xs ${trendColor}`}>
+          <TrendIcon className="h-3 w-3" />
+          <span>{Math.abs(metric.delta)}</span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const AdminDashboard = () => {
@@ -168,20 +194,19 @@ const AdminDashboard = () => {
               Динамика пользователей, активности, базы событий и подписок за {data?.period_days ?? 30} дней
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 text-sm font-body text-muted-foreground rounded-lg border border-white/10 bg-white/5 px-3 py-2">
-              <Checkbox checked={includeAdminData} onCheckedChange={(checked) => setIncludeAdminData(Boolean(checked))} />
-              Включать данные админа
-            </label>
-            <button
-              onClick={() => { haptic('selection'); refetch(); }}
-              className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-body text-foreground hover:border-primary/30 transition-colors"
-            >
-              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              Обновить
-            </button>
-          </div>
+          <button
+            onClick={() => { haptic('selection'); refetch(); }}
+            className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-body text-foreground hover:border-primary/30 transition-colors"
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Обновить
+          </button>
         </div>
+
+        <label className="flex items-center gap-2 text-xs font-body text-muted-foreground rounded-lg border border-white/10 bg-white/5 px-3 py-2 w-fit">
+          <Checkbox checked={includeAdminData} onCheckedChange={(checked) => setIncludeAdminData(Boolean(checked))} />
+          Admin данные
+        </label>
 
         {isError && (
           <Card className="border-red-500/20 bg-red-500/5">
@@ -204,31 +229,38 @@ const AdminDashboard = () => {
 
         {overview && (
           <>
-            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <StatCard
-                title="Сегодня: всего пользователей"
-                value={data?.today_summary.total_users ?? 0}
-                subtitle={deltaLabel(data?.today_summary.total_users_delta ?? 0)}
-                icon={Users}
+            {/* Quick Summary Section */}
+            <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <QuickSummaryCard
+                metric={{
+                  label: 'Пользователи',
+                  value: data?.today_summary.total_users ?? 0,
+                  delta: data?.today_summary.total_users_delta ?? 0,
+                }}
               />
-              <StatCard
-                title="Сегодня: из них уникальных"
-                value={data?.today_summary.unique_users_today ?? 0}
-                subtitle={deltaLabel(data?.today_summary.unique_users_delta ?? 0)}
-                icon={Users}
+              <QuickSummaryCard
+                metric={{
+                  label: 'Уникальные',
+                  value: data?.today_summary.unique_users_today ?? 0,
+                  delta: data?.today_summary.unique_users_delta ?? 0,
+                }}
               />
-              <StatCard
-                title="Сегодня: всего действий"
-                value={data?.today_summary.actions_today ?? 0}
-                subtitle={deltaLabel(data?.today_summary.actions_delta ?? 0)}
-                icon={RefreshCw}
+              <QuickSummaryCard
+                metric={{
+                  label: 'Действия',
+                  value: data?.today_summary.actions_today ?? 0,
+                  delta: data?.today_summary.actions_delta ?? 0,
+                }}
               />
-              <StatCard
-                title="Обновлено"
-                value={new Date(data!.generated_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
-                subtitle={new Date(data!.generated_at).toLocaleDateString('ru-RU')}
-                icon={Clock3}
-              />
+              <div className="p-3 rounded-lg border border-white/10 bg-white/5">
+                <p className="text-xs text-muted-foreground mb-1">Обновлено</p>
+                <p className="text-sm font-mono text-foreground break-words">
+                  {new Date(data!.generated_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {new Date(data!.generated_at).toLocaleDateString('ru-RU')}
+                </p>
+              </div>
             </section>
 
             <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -246,17 +278,17 @@ const AdminDashboard = () => {
               <Card className="border-white/10 bg-white/5">
                 <CardHeader>
                   <CardTitle>Дневная активность</CardTitle>
-                  <CardDescription>Действия, DAU и WebApp в выбранном диапазоне</CardDescription>
+                  <CardDescription>Пользователи, Уникальные, Действия и WebApp в выбранном диапазоне</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="mb-4 grid gap-3 sm:grid-cols-2">
+                  <div className="mb-4 grid gap-2 sm:grid-cols-2">
                     <div>
                       <div className="mb-1 text-xs font-body text-muted-foreground">От</div>
-                      <Input type="date" value={fromDate} max={toDate || undefined} onChange={(e) => setFromDate(e.target.value)} className="bg-white/5 border-white/10" />
+                      <Input type="date" value={fromDate} max={toDate || undefined} onChange={(e) => setFromDate(e.target.value)} className="bg-white/5 border-white/10 h-8 text-xs" />
                     </div>
                     <div>
                       <div className="mb-1 text-xs font-body text-muted-foreground">До</div>
-                      <Input type="date" value={toDate} min={fromDate || undefined} onChange={(e) => setToDate(e.target.value)} className="bg-white/5 border-white/10" />
+                      <Input type="date" value={toDate} min={fromDate || undefined} onChange={(e) => setToDate(e.target.value)} className="bg-white/5 border-white/10 h-8 text-xs" />
                     </div>
                   </div>
                   <ChartContainer config={chartConfig} className="h-[280px] w-full">
@@ -265,7 +297,8 @@ const AdminDashboard = () => {
                       <XAxis dataKey="day" tickFormatter={formatDayLabel} minTickGap={24} />
                       <YAxis />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Line type="monotone" dataKey="dau" stroke="var(--color-dau)" strokeWidth={2.5} dot={false} />
+                      <Line type="monotone" dataKey="users" stroke="var(--color-users)" strokeWidth={2.5} dot={false} name="Пользователи" />
+                      <Line type="monotone" dataKey="new_users" stroke="var(--color-new_users)" strokeWidth={2} dot={false} name="Уникальные" />
                       <Line type="monotone" dataKey="actions" stroke="var(--color-actions)" strokeWidth={2} dot={false} />
                       <Line type="monotone" dataKey="webapp_users" stroke="var(--color-webapp_users)" strokeWidth={2} dot={false} />
                     </LineChart>
@@ -296,7 +329,7 @@ const AdminDashboard = () => {
               <Card className="border-white/10 bg-white/5">
                 <CardHeader>
                   <CardTitle>Месячная динамика</CardTitle>
-                  <CardDescription>MAU, действия и WebApp по месяцам</CardDescription>
+                  <CardDescription>Пользователи, Уникальные и Действия по месяцам</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ChartContainer config={chartConfig} className="h-[260px] w-full">
@@ -305,8 +338,9 @@ const AdminDashboard = () => {
                       <XAxis dataKey="month" tickFormatter={formatMonthLabel} minTickGap={20} />
                       <YAxis />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Area type="monotone" dataKey="mau" stroke="var(--color-mau)" fill="var(--color-mau)" fillOpacity={0.18} />
-                      <Area type="monotone" dataKey="actions" stroke="var(--color-actions)" fill="var(--color-actions)" fillOpacity={0.12} />
+                      <Area type="monotone" dataKey="users" stroke="var(--color-users)" fill="var(--color-users)" fillOpacity={0.18} name="Пользователи" />
+                      <Area type="monotone" dataKey="new_users" stroke="var(--color-new_users)" fill="var(--color-new_users)" fillOpacity={0.12} name="Уникальные" />
+                      <Area type="monotone" dataKey="actions" stroke="var(--color-actions)" fill="var(--color-actions)" fillOpacity={0.08} name="Действия" />
                     </AreaChart>
                   </ChartContainer>
                 </CardContent>

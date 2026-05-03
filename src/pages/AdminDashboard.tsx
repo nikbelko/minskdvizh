@@ -19,7 +19,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { RefreshCw, ShieldAlert, Users, Globe, Bell, Database, Clock3, TrendingUp, TrendingDown } from 'lucide-react';
+import { RefreshCw, ShieldAlert, Users, Globe, Bell, Database, Clock3, TrendingUp, TrendingDown, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -71,12 +71,6 @@ function StatCard({
   );
 }
 
-function deltaLabel(delta: number) {
-  if (delta > 0) return `+${delta} к вчера`;
-  if (delta < 0) return `${delta} к вчера`;
-  return 'без изменений ко вчера';
-}
-
 interface QuickMetric {
   label: string;
   value: number;
@@ -102,12 +96,59 @@ function QuickSummaryCard({ metric }: { metric: QuickMetric }) {
   );
 }
 
+function CollapsibleSection({
+  title,
+  description,
+  isCollapsed,
+  onToggle,
+  children,
+}: {
+  title: string;
+  description?: string;
+  isCollapsed: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card className="border-white/10 bg-white/5">
+      <button
+        onClick={onToggle}
+        className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/10 transition-colors text-left"
+      >
+        <div>
+          <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+          {description && <CardDescription className="text-xs mt-1">{description}</CardDescription>}
+        </div>
+        <ChevronDown className={`h-4 w-4 flex-shrink-0 transition-transform ${isCollapsed ? '' : 'rotate-180'}`} />
+      </button>
+      {!isCollapsed && <CardContent className="pb-6 border-t border-white/10">{children}</CardContent>}
+    </Card>
+  );
+}
+
 const AdminDashboard = () => {
   const tgUser = getTelegramUser();
   const isAdmin = tgUser?.id === ADMIN_ID;
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [includeAdminData, setIncludeAdminData] = useState(false);
+
+  // Collapse state - all collapsed by default
+  const [collapsed, setCollapsed] = useState({
+    kpi: true,
+    daily: true,
+    submissions: true,
+    monthly: true,
+    funnel: true,
+    topActions: true,
+    sources: true,
+    subscriptions: true,
+    categories: true,
+  });
+
+  const toggleSection = (section: keyof typeof collapsed) => {
+    setCollapsed(prev => ({ ...prev, [section]: !prev[section] }));
+  };
 
   const { data, isLoading, isError, refetch, error } = useQuery({
     queryKey: ['admin-dashboard', tgUser?.id, includeAdminData],
@@ -173,9 +214,7 @@ const AdminDashboard = () => {
             <CardContent className="p-8 text-center">
               <ShieldAlert className="h-10 w-10 text-red-400 mx-auto mb-4" />
               <h1 className="text-xl font-display font-bold text-foreground">Доступ запрещён</h1>
-              <p className="mt-2 text-sm font-body text-muted-foreground">
-                Admin dashboard доступен только администратору бота.
-              </p>
+              <p className="mt-2 text-sm font-body text-muted-foreground">Admin dashboard доступен только администратору бота.</p>
             </CardContent>
           </Card>
         </div>
@@ -187,6 +226,7 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background relative">
       <div className="grain-overlay" />
       <div className="container mx-auto px-4 py-6 sm:py-8 space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Admin Dashboard</h1>
@@ -229,129 +269,144 @@ const AdminDashboard = () => {
 
         {overview && (
           <>
-            {/* Quick Summary Section */}
-            <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <QuickSummaryCard
-                metric={{
-                  label: 'Пользователи',
-                  value: data?.today_summary.total_users ?? 0,
-                  delta: data?.today_summary.total_users_delta ?? 0,
-                }}
-              />
-              <QuickSummaryCard
-                metric={{
-                  label: 'Уникальные',
-                  value: data?.today_summary.unique_users_today ?? 0,
-                  delta: data?.today_summary.unique_users_delta ?? 0,
-                }}
-              />
-              <QuickSummaryCard
-                metric={{
-                  label: 'Действия',
-                  value: data?.today_summary.actions_today ?? 0,
-                  delta: data?.today_summary.actions_delta ?? 0,
-                }}
-              />
-              <div className="p-3 rounded-lg border border-white/10 bg-white/5">
-                <p className="text-xs text-muted-foreground mb-1">Обновлено</p>
-                <p className="text-sm font-mono text-foreground break-words">
-                  {new Date(data!.generated_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {new Date(data!.generated_at).toLocaleDateString('ru-RU')}
-                </p>
-              </div>
-            </section>
-
-            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <StatCard title="Пользователи" value={overview.total_users} subtitle={`DAU ${overview.dau} • WAU ${overview.wau} • MAU ${overview.mau}`} icon={Users} />
-              <StatCard title="WebApp" value={overview.webapp_total} subtitle={`DAU ${overview.webapp_dau} • WAU ${overview.webapp_wau} • MAU ${overview.webapp_mau}`} icon={Globe} />
-              <StatCard title="Подписки" value={overview.subscribers_count} subtitle={`Всего подписок ${overview.subscriptions_total} • Flash ${overview.flash_total}`} icon={Bell} />
-              <StatCard title="База событий" value={overview.events_count} subtitle={`Flash-пользователей ${overview.flash_users}`} icon={Database} />
-              <StatCard title="Новые пользователи" value={totalNewUsers} subtitle={`+${overview.new_today} день • +${overview.new_7d} неделя • +${overview.new_30d} месяц`} icon={Users} />
-              <StatCard title="Очередь модерации" value={overview.pending_count} subtitle={`Одобрено ${overview.approved_total} • Отклонено ${overview.rejected_total}`} icon={Clock3} />
-              <StatCard title="Действия" value={overview.total_actions} subtitle={`Сегодня ${overview.actions_today} • Проекту ${overview.days_alive} дн`} icon={RefreshCw} />
-              <StatCard title="Flash-уведомления" value={overview.flash_notified_users_30d} subtitle={`Новых flash сегодня ${overview.flash_new_today} • за 30д ${overview.flash_new_30d}`} icon={Bell} />
-            </section>
-
-            <section className="grid gap-4 xl:grid-cols-2">
-              <Card className="border-white/10 bg-white/5">
-                <CardHeader>
-                  <CardTitle>Дневная активность</CardTitle>
-                  <CardDescription>Пользователи, Уникальные, Действия и WebApp в выбранном диапазоне</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4 grid gap-2 sm:grid-cols-2">
-                    <div>
-                      <div className="mb-1 text-xs font-body text-muted-foreground">От</div>
-                      <Input type="date" value={fromDate} max={toDate || undefined} onChange={(e) => setFromDate(e.target.value)} className="bg-white/5 border-white/10 h-8 text-xs" />
-                    </div>
-                    <div>
-                      <div className="mb-1 text-xs font-body text-muted-foreground">До</div>
-                      <Input type="date" value={toDate} min={fromDate || undefined} onChange={(e) => setToDate(e.target.value)} className="bg-white/5 border-white/10 h-8 text-xs" />
-                    </div>
+            {/* Quick Summary - Always Visible */}
+            <Card className="border-white/10 bg-white/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold">Быстрые контрольные значения (Сегодня)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <QuickSummaryCard
+                    metric={{
+                      label: 'Пользователи',
+                      value: data?.today_summary.total_users ?? 0,
+                      delta: data?.today_summary.total_users_delta ?? 0,
+                    }}
+                  />
+                  <QuickSummaryCard
+                    metric={{
+                      label: 'Уникальные',
+                      value: data?.today_summary.unique_users_today ?? 0,
+                      delta: data?.today_summary.unique_users_delta ?? 0,
+                    }}
+                  />
+                  <QuickSummaryCard
+                    metric={{
+                      label: 'Действия',
+                      value: data?.today_summary.actions_today ?? 0,
+                      delta: data?.today_summary.actions_delta ?? 0,
+                    }}
+                  />
+                  <div className="p-3 rounded-lg border border-white/10 bg-white/5">
+                    <p className="text-xs text-muted-foreground mb-1">Обновлено</p>
+                    <p className="text-sm font-mono text-foreground break-words">
+                      {new Date(data!.generated_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {new Date(data!.generated_at).toLocaleDateString('ru-RU')}
+                    </p>
                   </div>
-                  <ChartContainer config={chartConfig} className="h-[280px] w-full">
-                    <LineChart data={filteredDailyChart}>
-                      <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                      <XAxis dataKey="day" tickFormatter={formatDayLabel} minTickGap={24} />
-                      <YAxis />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Line type="monotone" dataKey="users" stroke="var(--color-users)" strokeWidth={2.5} dot={false} name="Пользователи" />
-                      <Line type="monotone" dataKey="new_users" stroke="var(--color-new_users)" strokeWidth={2} dot={false} name="Уникальные" />
-                      <Line type="monotone" dataKey="actions" stroke="var(--color-actions)" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="webapp_users" stroke="var(--color-webapp_users)" strokeWidth={2} dot={false} />
-                    </LineChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
+                </div>
+              </CardContent>
+            </Card>
 
-              <Card className="border-white/10 bg-white/5">
-                <CardHeader>
-                  <CardTitle>Сабмиты по дням</CardTitle>
-                  <CardDescription>Пользовательские отправки событий в выбранном диапазоне</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer config={chartConfig} className="h-[280px] w-full">
-                    <BarChart data={filteredDailyChart}>
-                      <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                      <XAxis dataKey="day" tickFormatter={formatDayLabel} minTickGap={24} />
-                      <YAxis />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey={submissionDataKey} fill="var(--color-submissions)" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
-            </section>
+            {/* KPI Section */}
+            <CollapsibleSection
+              title="KPI"
+              isCollapsed={collapsed.kpi}
+              onToggle={() => toggleSection('kpi')}
+            >
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <StatCard title="Пользователи" value={overview.total_users} subtitle={`DAU ${overview.dau} • WAU ${overview.wau} • MAU ${overview.mau}`} icon={Users} />
+                <StatCard title="WebApp" value={overview.webapp_total} subtitle={`DAU ${overview.webapp_dau} • WAU ${overview.webapp_wau} • MAU ${overview.webapp_mau}`} icon={Globe} />
+                <StatCard title="Подписки" value={overview.subscribers_count} subtitle={`Всего подписок ${overview.subscriptions_total} • Flash ${overview.flash_total}`} icon={Bell} />
+                <StatCard title="База событий" value={overview.events_count} subtitle={`Flash-пользователей ${overview.flash_users}`} icon={Database} />
+                <StatCard title="Новые пользователи" value={totalNewUsers} subtitle={`+${overview.new_today} день • +${overview.new_7d} неделя • +${overview.new_30d} месяц`} icon={Users} />
+                <StatCard title="Очередь модерации" value={overview.pending_count} subtitle={`Одобрено ${overview.approved_total} • Отклонено ${overview.rejected_total}`} icon={Clock3} />
+                <StatCard title="Действия" value={overview.total_actions} subtitle={`Сегодня ${overview.actions_today} • Проекту ${overview.days_alive} дн`} icon={RefreshCw} />
+                <StatCard title="Flash-уведомления" value={overview.flash_notified_users_30d} subtitle={`Новых flash сегодня ${overview.flash_new_today} • за 30д ${overview.flash_new_30d}`} icon={Bell} />
+              </div>
+            </CollapsibleSection>
 
-            <section className="grid gap-4 xl:grid-cols-2">
-              <Card className="border-white/10 bg-white/5">
-                <CardHeader>
-                  <CardTitle>Месячная динамика</CardTitle>
-                  <CardDescription>Пользователи, Уникальные и Действия по месяцам</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer config={chartConfig} className="h-[260px] w-full">
-                    <AreaChart data={data?.monthly_chart}>
-                      <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                      <XAxis dataKey="month" tickFormatter={formatMonthLabel} minTickGap={20} />
-                      <YAxis />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Area type="monotone" dataKey="users" stroke="var(--color-users)" fill="var(--color-users)" fillOpacity={0.18} name="Пользователи" />
-                      <Area type="monotone" dataKey="new_users" stroke="var(--color-new_users)" fill="var(--color-new_users)" fillOpacity={0.12} name="Уникальные" />
-                      <Area type="monotone" dataKey="actions" stroke="var(--color-actions)" fill="var(--color-actions)" fillOpacity={0.08} name="Действия" />
-                    </AreaChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
+            {/* Daily Activity Section */}
+            <CollapsibleSection
+              title="Дневная активность"
+              description="Пользователи, Уникальные, Действия и WebApp в выбранном диапазоне"
+              isCollapsed={collapsed.daily}
+              onToggle={() => toggleSection('daily')}
+            >
+              <div className="mb-4 grid gap-2 sm:grid-cols-2 w-fit">
+                <div>
+                  <div className="mb-1 text-xs font-body text-muted-foreground">От</div>
+                  <Input type="date" value={fromDate} max={toDate || undefined} onChange={(e) => setFromDate(e.target.value)} className="bg-white/5 border-white/10 h-8 text-xs" />
+                </div>
+                <div>
+                  <div className="mb-1 text-xs font-body text-muted-foreground">До</div>
+                  <Input type="date" value={toDate} min={fromDate || undefined} onChange={(e) => setToDate(e.target.value)} className="bg-white/5 border-white/10 h-8 text-xs" />
+                </div>
+              </div>
+              <ChartContainer config={chartConfig} className="h-[280px] w-full">
+                <LineChart data={filteredDailyChart}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis dataKey="day" tickFormatter={formatDayLabel} minTickGap={24} />
+                  <YAxis />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line type="monotone" dataKey="users" stroke="var(--color-users)" strokeWidth={2.5} dot={false} name="Пользователи" />
+                  <Line type="monotone" dataKey="new_users" stroke="var(--color-new_users)" strokeWidth={2} dot={false} name="Уникальные" />
+                  <Line type="monotone" dataKey="actions" stroke="var(--color-actions)" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="webapp_users" stroke="var(--color-webapp_users)" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ChartContainer>
+            </CollapsibleSection>
 
-              <Card className="border-white/10 bg-white/5">
-                <CardHeader>
-                  <CardTitle>Воронка действий за 30 дней</CardTitle>
-                  <CardDescription>Counts и конверсии между этапами</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
+            {/* Submissions Section */}
+            <CollapsibleSection
+              title="Сабмиты по дням"
+              description="Пользовательские отправки событий в выбранном диапазоне"
+              isCollapsed={collapsed.submissions}
+              onToggle={() => toggleSection('submissions')}
+            >
+              <ChartContainer config={chartConfig} className="h-[280px] w-full">
+                <BarChart data={filteredDailyChart}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis dataKey="day" tickFormatter={formatDayLabel} minTickGap={24} />
+                  <YAxis />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey={submissionDataKey} fill="var(--color-submissions)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ChartContainer>
+            </CollapsibleSection>
+
+            {/* Monthly & Funnel Grid */}
+            <div className="grid gap-4 xl:grid-cols-2">
+              {/* Monthly Section */}
+              <CollapsibleSection
+                title="Месячная динамика"
+                description="Пользователи, Уникальные и Действия по месяцам"
+                isCollapsed={collapsed.monthly}
+                onToggle={() => toggleSection('monthly')}
+              >
+                <ChartContainer config={chartConfig} className="h-[260px] w-full">
+                  <AreaChart data={data?.monthly_chart}>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                    <XAxis dataKey="month" tickFormatter={formatMonthLabel} minTickGap={20} />
+                    <YAxis />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area type="monotone" dataKey="users" stroke="var(--color-users)" fill="var(--color-users)" fillOpacity={0.18} name="Пользователи" />
+                    <Area type="monotone" dataKey="new_users" stroke="var(--color-new_users)" fill="var(--color-new_users)" fillOpacity={0.12} name="Уникальные" />
+                    <Area type="monotone" dataKey="actions" stroke="var(--color-actions)" fill="var(--color-actions)" fillOpacity={0.08} name="Действия" />
+                  </AreaChart>
+                </ChartContainer>
+              </CollapsibleSection>
+
+              {/* Funnel Section */}
+              <CollapsibleSection
+                title="Воронка действий за 30 дней"
+                description="Counts и конверсии между этапами"
+                isCollapsed={collapsed.funnel}
+                onToggle={() => toggleSection('funnel')}
+              >
+                <div className="space-y-3">
                   {funnelRows.map((row, index) => (
                     <div key={row.key} className="rounded-xl border border-white/10 bg-white/5 p-3">
                       <div className="flex items-center justify-between gap-3">
@@ -366,77 +421,87 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
-            </section>
+                </div>
+              </CollapsibleSection>
+            </div>
 
-            <section className="grid gap-4 xl:grid-cols-3">
-              <Card className="border-white/10 bg-white/5">
-                <CardHeader>
-                  <CardTitle>Топ действий</CardTitle>
-                  <CardDescription>Чаще всего пользователи делают это</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
+            {/* Top Actions, Sources, Subscriptions Grid */}
+            <div className="grid gap-4 xl:grid-cols-3">
+              {/* Top Actions */}
+              <CollapsibleSection
+                title="Топ действий"
+                description="Чаще всего пользователи делают это"
+                isCollapsed={collapsed.topActions}
+                onToggle={() => toggleSection('topActions')}
+              >
+                <div className="space-y-2">
                   {(data?.top_actions ?? []).map((row) => (
                     <div key={row.action} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2">
                       <span className="text-sm font-body text-foreground">{row.action}</span>
                       <span className="text-sm font-mono text-primary">{row.count}</span>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
+                </div>
+              </CollapsibleSection>
 
-              <Card className="border-white/10 bg-white/5">
-                <CardHeader>
-                  <CardTitle>Источники событий</CardTitle>
-                  <CardDescription>Предстоящие события по source_name</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
+              {/* Sources */}
+              <CollapsibleSection
+                title="Источники событий"
+                description="Предстоящие события по source_name"
+                isCollapsed={collapsed.sources}
+                onToggle={() => toggleSection('sources')}
+              >
+                <div className="space-y-2">
                   {topSources.map((row) => (
                     <div key={row.source_name} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2">
                       <span className="text-sm font-body text-foreground">{row.source_name}</span>
                       <span className="text-sm font-mono text-primary">{row.count}</span>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
+                </div>
+              </CollapsibleSection>
 
-              <Card className="border-white/10 bg-white/5">
-                <CardHeader>
-                  <CardTitle>Подписки по категориям</CardTitle>
-                  <CardDescription>Активные category subscriptions</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
+              {/* Subscriptions */}
+              <CollapsibleSection
+                title="Подписки по категориям"
+                description="Активные category subscriptions"
+                isCollapsed={collapsed.subscriptions}
+                onToggle={() => toggleSection('subscriptions')}
+              >
+                <div className="space-y-2">
                   {topSubscriptions.map((row) => (
                     <div key={row.category} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2">
                       <span className="text-sm font-body text-foreground">{row.category}</span>
                       <span className="text-sm font-mono text-primary">{row.count}</span>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
-            </section>
+                </div>
+              </CollapsibleSection>
+            </div>
 
-            <section className="grid gap-4 xl:grid-cols-2">
-              <Card className="border-white/10 bg-white/5">
-                <CardHeader>
-                  <CardTitle>Категории в базе</CardTitle>
-                  <CardDescription>Предстоящие события по категориям</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
+            {/* Categories & Summary Grid */}
+            <div className="grid gap-4 xl:grid-cols-2">
+              {/* Categories */}
+              <CollapsibleSection
+                title="Категории в базе"
+                description="Предстоящие события по категориям"
+                isCollapsed={collapsed.categories}
+                onToggle={() => toggleSection('categories')}
+              >
+                <div className="space-y-2">
                   {topCategories.map((row) => (
                     <div key={row.category} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2">
                       <span className="text-sm font-body text-foreground">{row.category}</span>
                       <span className="text-sm font-mono text-primary">{row.count}</span>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
+                </div>
+              </CollapsibleSection>
 
+              {/* Summary */}
               <Card className="border-white/10 bg-white/5">
-                <CardHeader>
-                  <CardTitle>Сводка</CardTitle>
-                  <CardDescription>Быстрые контрольные значения</CardDescription>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold">Сводка</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm font-body">
                   <div className="flex items-center justify-between"><span className="text-muted-foreground">Новых пользователей за 30 дней</span><span className="font-mono text-foreground">{overview.new_30d}</span></div>
@@ -448,7 +513,7 @@ const AdminDashboard = () => {
                   <div className="flex items-center justify-between"><span className="text-muted-foreground">Обновлено</span><span className="font-mono text-foreground">{new Date(data!.generated_at).toLocaleString('ru-RU')}</span></div>
                 </CardContent>
               </Card>
-            </section>
+            </div>
           </>
         )}
       </div>

@@ -272,22 +272,24 @@ const AdminDashboard = () => {
             {/* Quick Summary - Always Visible */}
             <Card className="border-white/10 bg-white/5">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold">Быстрые контрольные значения (Сегодня)</CardTitle>
+                <CardTitle className="text-sm font-semibold">
+                  Сводка {new Date().toLocaleDateString('ru-RU')}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <QuickSummaryCard
                     metric={{
                       label: 'Пользователи',
-                      value: data?.today_summary.total_users ?? 0,
-                      delta: data?.today_summary.total_users_delta ?? 0,
+                      value: data?.today_summary.unique_users_today ?? 0,
+                      delta: data?.today_summary.unique_users_delta ?? 0,
                     }}
                   />
                   <QuickSummaryCard
                     metric={{
                       label: 'Уникальные',
-                      value: data?.today_summary.unique_users_today ?? 0,
-                      delta: data?.today_summary.unique_users_delta ?? 0,
+                      value: data?.today_summary.total_users_delta ?? 0,
+                      delta: 0,
                     }}
                   />
                   <QuickSummaryCard

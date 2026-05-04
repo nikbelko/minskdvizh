@@ -273,7 +273,6 @@ const AdminDashboard = () => {
             {(() => {
               const todayData = data?.daily_chart?.[0];
               const yesterdayData = data?.daily_chart?.[1];
-              const uniqueUsersToday = yesterdayData?.new_users ?? 0;
               const activityRatio = (todayData?.users ?? 1) > 0 
                 ? (todayData?.actions / todayData?.users).toFixed(2)
                 : 0;
@@ -299,8 +298,8 @@ const AdminDashboard = () => {
                       <QuickSummaryCard
                         metric={{
                           label: 'Уникальные',
-                          value: uniqueUsersToday,
-                          delta: 0,
+                          value: todayData?.new_users ?? 0,
+                          delta: (todayData?.new_users ?? 0) - (yesterdayData?.new_users ?? 0),
                         }}
                       />
                       <QuickSummaryCard

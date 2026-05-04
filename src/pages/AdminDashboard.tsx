@@ -272,9 +272,10 @@ const AdminDashboard = () => {
             {/* Get today's data from daily_chart */}
             {(() => {
               const todayData = data?.daily_chart?.[0];
-              const uniqueUsersToday = todayData?.new_users ?? 0;
-              const activityRatio = (data?.today_summary.unique_users_today ?? 1) > 0 
-                ? (data?.today_summary.actions_today / data?.today_summary.unique_users_today).toFixed(2)
+              const yesterdayData = data?.daily_chart?.[1];
+              const uniqueUsersToday = yesterdayData?.new_users ?? 0;
+              const activityRatio = (todayData?.users ?? 1) > 0 
+                ? (todayData?.actions / todayData?.users).toFixed(2)
                 : 0;
 
               return (
@@ -291,8 +292,8 @@ const AdminDashboard = () => {
                       <QuickSummaryCard
                         metric={{
                           label: 'Пользователи',
-                          value: data?.today_summary.unique_users_today ?? 0,
-                          delta: data?.today_summary.unique_users_delta ?? 0,
+                          value: todayData?.users ?? 0,
+                          delta: (todayData?.users ?? 0) - (yesterdayData?.users ?? 0),
                         }}
                       />
                       <QuickSummaryCard
@@ -305,8 +306,8 @@ const AdminDashboard = () => {
                       <QuickSummaryCard
                         metric={{
                           label: 'Действия',
-                          value: data?.today_summary.actions_today ?? 0,
-                          delta: data?.today_summary.actions_delta ?? 0,
+                          value: todayData?.actions ?? 0,
+                          delta: (todayData?.actions ?? 0) - (yesterdayData?.actions ?? 0),
                         }}
                       />
                       <div className="p-3 rounded-lg border border-white/10 bg-white/5">

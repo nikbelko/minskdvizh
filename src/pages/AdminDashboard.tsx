@@ -271,8 +271,14 @@ const AdminDashboard = () => {
           <>
             {/* Get today's data from daily_chart */}
             {(() => {
-              const todayData = data?.daily_chart?.[0];
-              const yesterdayData = data?.daily_chart?.[1];
+              const dailyChart = data?.daily_chart ?? [];
+              const todayData = dailyChart[dailyChart.length - 1];
+              const yesterdayData = dailyChart[dailyChart.length - 2];
+              console.log('Daily chart data:', {
+                today: todayData,
+                yesterday: yesterdayData,
+                fullChart: dailyChart.slice(-3),
+              });
               const activityRatio = (todayData?.users ?? 1) > 0 
                 ? (todayData?.actions / todayData?.users).toFixed(2)
                 : 0;

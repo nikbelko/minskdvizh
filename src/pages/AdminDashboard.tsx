@@ -270,7 +270,7 @@ const AdminDashboard = () => {
         {overview && (
           <>
             {/* Get today's data from daily_chart */}
-            {useMemo(() => {
+            {(() => {
               const todayData = data?.daily_chart?.[0];
               const uniqueUsersToday = todayData?.new_users ?? 0;
               const activityRatio = (data?.today_summary.unique_users_today ?? 1) > 0 
@@ -278,52 +278,52 @@ const AdminDashboard = () => {
                 : 0;
 
               return (
-            <>
-            {/* Quick Summary - Always Visible */}
-            <Card className="border-white/10 bg-white/5">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold">
-                  Сводка {new Date().toLocaleDateString('ru-RU')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <QuickSummaryCard
-                    metric={{
-                      label: 'Пользователи',
-                      value: data?.today_summary.unique_users_today ?? 0,
-                      delta: data?.today_summary.unique_users_delta ?? 0,
-                    }}
-                  />
-                  <QuickSummaryCard
-                    metric={{
-                      label: 'Уникальные',
-                      value: uniqueUsersToday,
-                      delta: 0,
-                    }}
-                  />
-                  <QuickSummaryCard
-                    metric={{
-                      label: 'Действия',
-                      value: data?.today_summary.actions_today ?? 0,
-                      delta: data?.today_summary.actions_delta ?? 0,
-                    }}
-                  />
-                  <div className="p-3 rounded-lg border border-white/10 bg-white/5">
-                    <p className="text-xs text-muted-foreground mb-1">Активность</p>
-                    <p className="text-2xl font-display font-bold text-foreground">
-                      {activityRatio}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Действия/Пользователи
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            </>
+                <>
+                {/* Quick Summary - Always Visible */}
+                <Card className="border-white/10 bg-white/5">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">
+                      Сводка {new Date().toLocaleDateString('ru-RU')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <QuickSummaryCard
+                        metric={{
+                          label: 'Пользователи',
+                          value: data?.today_summary.unique_users_today ?? 0,
+                          delta: data?.today_summary.unique_users_delta ?? 0,
+                        }}
+                      />
+                      <QuickSummaryCard
+                        metric={{
+                          label: 'Уникальные',
+                          value: uniqueUsersToday,
+                          delta: 0,
+                        }}
+                      />
+                      <QuickSummaryCard
+                        metric={{
+                          label: 'Действия',
+                          value: data?.today_summary.actions_today ?? 0,
+                          delta: data?.today_summary.actions_delta ?? 0,
+                        }}
+                      />
+                      <div className="p-3 rounded-lg border border-white/10 bg-white/5">
+                        <p className="text-xs text-muted-foreground mb-1">Активность</p>
+                        <p className="text-2xl font-display font-bold text-foreground">
+                          {activityRatio}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Действия/Пользователи
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                </>
               );
-            }, [data])}
+            })()}
 
             {/* KPI Section */}
             <CollapsibleSection

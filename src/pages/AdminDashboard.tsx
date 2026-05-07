@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getTelegramUser, haptic } from '@/lib/telegram';
-import { fetchAdminDashboard } from '@/services/api';
+import { fetchAdminDashboard, fetchLastUpdated } from '@/services/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   ChartContainer,
@@ -77,6 +77,17 @@ interface QuickMetric {
   delta: number;
 }
 
+function formatTrend(value: number, delta: number) {
+  const prev = value - delta;
+  if (prev <= 0) {
+    if (value === 0) return '0% к вчера';
+    return 'новое значение';
+  }
+  const pct = (delta / prev) * 100;
+  const sign = pct > 0 ? '+' : '';
+  return `${sign}${pct.toFixed(0)}% к вчера`;
+}
+
 function QuickSummaryCard({ metric }: { metric: QuickMetric }) {
   const isPositive = metric.delta >= 0;
   const TrendIcon = isPositive ? TrendingUp : TrendingDown;
@@ -89,7 +100,7 @@ function QuickSummaryCard({ metric }: { metric: QuickMetric }) {
         <p className="text-2xl font-display font-bold">{metric.value}</p>
         <div className={`flex items-center gap-0.5 text-xs ${trendColor}`}>
           <TrendIcon className="h-3 w-3" />
-          <span>{Math.abs(metric.delta)}</span>
+          <span>{formatTrend(metric.value, metric.delta)}</span>
         </div>
       </div>
     </div>
@@ -154,6 +165,12 @@ const AdminDashboard = () => {
     queryKey: ['admin-dashboard', tgUser?.id, includeAdminData],
     queryFn: () => fetchAdminDashboard(tgUser!.id, 90, !includeAdminData),
     enabled: isAdmin,
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const { data: lastUpdated } = useQuery({
+    queryKey: ['last-updated'],
+    queryFn: fetchLastUpdated,
     staleTime: 60_000,
     retry: 1,
   });
@@ -271,17 +288,10 @@ const AdminDashboard = () => {
           <>
             {/* Get today's data from daily_chart */}
             {(() => {
-              const dailyChart = data?.daily_chart ?? [];
-              const todayData = dailyChart[dailyChart.length - 1];
-              const yesterdayData = dailyChart[dailyChart.length - 2];
-              console.log('Daily chart data:', {
-                today: todayData,
-                yesterday: yesterdayData,
-                fullChart: dailyChart.slice(-3),
-              });
-              const activityRatio = (todayData?.users ?? 1) > 0 
-                ? (todayData?.actions / todayData?.users).toFixed(2)
-                : 0;
+              const todaySummary = data?.today_summary;
+              const parserUpdated = lastUpdated
+                ? new Date(lastUpdated).toLocaleString('ru-RU')
+                : '—';
 
               return (
                 <>
@@ -297,32 +307,30 @@ const AdminDashboard = () => {
                       <QuickSummaryCard
                         metric={{
                           label: 'Пользователи',
-                          value: todayData?.users ?? 0,
-                          delta: (todayData?.users ?? 0) - (yesterdayData?.users ?? 0),
+                          value: todaySummary?.total_users ?? 0,
+                          delta: todaySummary?.total_users_delta ?? 0,
                         }}
                       />
                       <QuickSummaryCard
                         metric={{
                           label: 'Уникальные',
-                          value: todayData?.new_users ?? 0,
-                          delta: (todayData?.new_users ?? 0) - (yesterdayData?.new_users ?? 0),
+                          value: todaySummary?.unique_users_today ?? 0,
+                          delta: todaySummary?.unique_users_delta ?? 0,
                         }}
                       />
                       <QuickSummaryCard
                         metric={{
                           label: 'Действия',
-                          value: todayData?.actions ?? 0,
-                          delta: (todayData?.actions ?? 0) - (yesterdayData?.actions ?? 0),
+                          value: todaySummary?.actions_today ?? 0,
+                          delta: todaySummary?.actions_delta ?? 0,
                         }}
                       />
                       <div className="p-3 rounded-lg border border-white/10 bg-white/5">
-                        <p className="text-xs text-muted-foreground mb-1">Активность</p>
-                        <p className="text-2xl font-display font-bold text-foreground">
-                          {activityRatio}
+                        <p className="text-xs text-muted-foreground mb-1">Обновлено</p>
+                        <p className="text-sm font-display font-bold text-foreground break-words">
+                          {parserUpdated}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Действия/Пользователи
-                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">Последний парсинг</p>
                       </div>
                     </div>
                   </CardContent>

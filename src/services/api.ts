@@ -24,6 +24,26 @@ export interface ApiEvent {
   source_name?: string;
 }
 
+export interface EventAttendee {
+  user_id: number;
+  first_name: string;
+  telegram_username: string;
+  profile_url: string;
+}
+
+export interface EventAttendeesResponse {
+  event_id: number;
+  count: number;
+  current_user_attending: boolean;
+  attendees: EventAttendee[];
+}
+
+export interface EventAttendeeSummaryItem {
+  event_id: number;
+  count: number;
+  current_user_attending: boolean;
+}
+
 export type CategoryCounts = Record<CategorySlug, number>;
 
 // ── Flash subscriptions ────────────────────────────────────────────────────
@@ -261,4 +281,55 @@ export async function fetchAdminDashboard(userId: number, days = 30, excludeAdmi
     days: String(days),
     exclude_admin: excludeAdmin ? 'true' : 'false',
   });
+}
+
+export async function fetchAttendees(eventId: number, userId?: number): Promise<EventAttendeesResponse> {
+  const params: Record<string, string> = {};
+  if (userId) params.user_id = String(userId);
+  return apiFetch<EventAttendeesResponse>(`/api/events/${eventId}/attendees`, params);
+}
+
+export async function fetchAttendeesSummary(eventIds: number[], userId?: number): Promise<EventAttendeeSummaryItem[]> {
+  if (eventIds.length === 0) return [];
+  const res = await fetch(`${API_BASE}/api/events/attendees/summary`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ event_ids: eventIds, user_id: userId ?? null }),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  const data = await res.json();
+  return data.items ?? [];
+}
+
+export async function addAttendee(eventId: number, payload: {
+  userId: number;
+  username?: string;
+  firstName?: string;
+}): Promise<EventAttendeesResponse> {
+  const res = await fetch(`${API_BASE}/api/events/${eventId}/attend`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      user_id: payload.userId,
+      username: payload.username ?? '',
+      first_name: payload.firstName ?? '',
+      telegram_username: payload.username ?? '',
+    }),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function removeAttendee(eventId: number, payload: {
+  userId: number;
+  username?: string;
+  firstName?: string;
+}): Promise<EventAttendeesResponse> {
+  const url = new URL(`/api/events/${eventId}/attend`, API_BASE);
+  url.searchParams.set('user_id', String(payload.userId));
+  if (payload.username) url.searchParams.set('username', payload.username);
+  if (payload.firstName) url.searchParams.set('first_name', payload.firstName);
+  const res = await fetch(url.toString(), { method: 'DELETE' });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
 }

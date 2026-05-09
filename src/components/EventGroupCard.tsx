@@ -1,9 +1,10 @@
 import { type GroupedEvent, getCategoryBySlug } from '@/data/events';
-import { ArrowRight, Share2, ChevronDown, ChevronUp, MapPin, Clock, Banknote, CalendarDays, CalendarPlus } from 'lucide-react';
+import { ArrowRight, Share2, ChevronDown, ChevronUp, MapPin, Clock, Banknote, CalendarDays, CalendarPlus, Users } from 'lucide-react';
 import CategoryIcon from './CategoryIcon';
 import { toast } from 'sonner';
-import { haptic, openLink } from '@/lib/telegram';
-import { useState } from 'react';
+import { getTelegramUser, haptic, openLink } from '@/lib/telegram';
+import { useEffect, useState } from 'react';
+import AttendModal from './AttendModal';
 
 interface EventGroupCardProps {
   group: GroupedEvent;
@@ -13,6 +14,12 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
   const cat = getCategoryBySlug(group.category);
   const cinemaCount = group.cinemaShowtimes?.length ?? 0;
   const [showTimes, setShowTimes] = useState(cinemaCount <= 1);
+  const [attendeesOpen, setAttendeesOpen] = useState(false);
+  const [attendeeCount, setAttendeeCount] = useState(group.attendeeCount ?? 0);
+  const [currentUserAttending, setCurrentUserAttending] = useState(group.currentUserAttending ?? false);
+
+  useEffect(() => setAttendeeCount(group.attendeeCount ?? 0), [group.attendeeCount]);
+  useEffect(() => setCurrentUserAttending(group.currentUserAttending ?? false), [group.currentUserAttending]);
 
   const formatDateShort = (dateStr: string) => {
     const d = new Date(dateStr + 'T00:00:00');
@@ -95,7 +102,19 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
     }
   };
 
+  const handleAttendOpen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const tgUser = getTelegramUser();
+    if (!tgUser?.id) {
+      toast.error('Функция доступна только в Telegram Mini App');
+      return;
+    }
+    haptic('selection');
+    setAttendeesOpen(true);
+  };
+
   return (
+    <>
     <div
       className={`glass-card border-l-4 ${cat.borderClass} p-4 hover:border-l-primary transition-all duration-300 group/card relative ${cinemaCount > 1 ? 'cursor-pointer' : ''}`}
       onClick={cinemaCount > 1 && !showTimes ? () => { haptic('light'); setShowTimes(true); } : undefined}
@@ -243,6 +262,25 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
 
       </div>{/* /pr-10 */}
 
+      <div className="mt-3 pr-10">
+        <button
+          onClick={handleAttendOpen}
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition-all ${
+            currentUserAttending
+              ? 'bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/30 hover:bg-amber-500/25'
+              : 'bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground'
+          }`}
+          title={currentUserAttending ? 'Вы отметили это событие' : 'Посмотреть, кто идет'}
+        >
+          <Users className="h-3.5 w-3.5" />
+          {attendeeCount > 0 && (
+            <span className="text-[11px] leading-none">
+              {attendeeCount}
+            </span>
+          )}
+        </button>
+      </div>
+
       {/* Подробнее — absolute, по правому краю под иконками */}
       {group.sourceUrl && (
         <a href={group.sourceUrl} target="_blank" rel="noopener noreferrer"
@@ -252,6 +290,19 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
         </a>
       )}
     </div>
+    <AttendModal
+      open={attendeesOpen}
+      onOpenChange={setAttendeesOpen}
+      eventId={group.primaryEventId}
+      eventTitle={group.title}
+      attendeeCount={attendeeCount}
+      currentUserAttending={currentUserAttending}
+      onStateChange={({ attendeeCount: nextCount, currentUserAttending: nextAttending }) => {
+        setAttendeeCount(nextCount);
+        setCurrentUserAttending(nextAttending);
+      }}
+    />
+    </>
   );
 };
 

@@ -24,6 +24,7 @@ export interface EventItem {
 
 export interface GroupedEvent {
   key: string;
+  primaryEventId: number;
   title: string;
   category: CategorySlug;
   price?: string;
@@ -31,6 +32,8 @@ export interface GroupedEvent {
   description?: string;
   location?: string;
   sourceName?: string;
+  attendeeCount?: number;
+  currentUserAttending?: boolean;
   // Cinema
   cinemaDate?: string;
   cinemaShowtimes?: { venue: string; times: string[] }[];
@@ -105,6 +108,7 @@ function groupCinemaEvents(events: EventItem[]): GroupedEvent[] {
   const prices: Record<string, string> = {};
   const descriptions: Record<string, string> = {};
   const sourceNames: Record<string, string> = {};
+  const primaryIds: Record<string, number> = {};
 
   for (const e of events) {
     if (!grouped[e.title]) grouped[e.title] = {};
@@ -114,6 +118,7 @@ function groupCinemaEvents(events: EventItem[]): GroupedEvent[] {
     if (e.time) grouped[e.title][e.date][venue].push(e.time);
 
     const k = `${e.title}__${e.date}`;
+    if (!primaryIds[k]) primaryIds[k] = Number(e.id);
     if (!sourceUrls[k] && e.sourceUrl) sourceUrls[k] = e.sourceUrl;
     if (!prices[k] && e.price) prices[k] = e.price;
     if (!descriptions[k] && e.description) descriptions[k] = e.description;
@@ -136,6 +141,7 @@ function groupCinemaEvents(events: EventItem[]): GroupedEvent[] {
       const firstShowtime = earliestTime ? sortTimeValue(earliestTime) : '99:99';
       result.push({
         key: `cinema:${title}:${date}`,
+        primaryEventId: primaryIds[k],
         title,
         category: 'cinema',
         price: prices[k],
@@ -155,6 +161,7 @@ function groupCinemaEvents(events: EventItem[]): GroupedEvent[] {
 
 function groupOtherEvents(events: EventItem[]): GroupedEvent[] {
   const grouped: Record<string, {
+    primaryEventId: number;
     title: string; place: string; price: string;
     category: CategorySlug; sourceUrl: string;
     description: string; location: string; sourceName: string;
@@ -174,6 +181,7 @@ function groupOtherEvents(events: EventItem[]): GroupedEvent[] {
 
     if (!grouped[key]) {
       grouped[key] = {
+        primaryEventId: Number(e.id),
         title: e.title,
         place: e.venue || '',
         price: e.price || '',
@@ -222,6 +230,7 @@ const byTime: Record<string, { dates: string[]; end_time?: string }> = {};
 
     return {
       key: `other:${g.title}:${g.place}`,
+      primaryEventId: g.primaryEventId,
       title: g.title,
       category: g.category as CategorySlug,
       price: g.price || undefined,

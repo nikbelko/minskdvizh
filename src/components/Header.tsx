@@ -318,8 +318,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
               <div className="p-3">
                 {!addMode ? (
                   <>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-xs font-display font-bold text-foreground">🔔 Мои подписки</h3>
+                    <div className="flex items-center justify-end mb-2">
                       <button onClick={() => setAddMode(true)} className="text-xs text-primary font-body font-medium hover:underline">+ Добавить</button>
                     </div>
 
@@ -340,7 +339,10 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                         {/* Regular subscriptions */}
                         {subs.length > 0 && (
                           <div className="space-y-1 mb-2">
-                            <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wide px-1 mb-1">Категории</p>
+                            <div className="flex items-center gap-1.5 px-1 mb-1">
+                              <Bell className="h-3 w-3 text-amber-400" />
+                              <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wide">Мои подписки</p>
+                            </div>
                             <div className="space-y-1 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin">
                               {subs.map(sub => (
                                 <div key={sub.slug} className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-secondary/30">

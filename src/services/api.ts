@@ -82,6 +82,7 @@ export interface AdminOverview {
   rejected_total: number;
   submitted_period: number;
   submitted_period_no_admin: number;
+  attendees_total: number;
 }
 
 export interface AdminDailyPoint {

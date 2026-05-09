@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getTelegramUser, haptic } from '@/lib/telegram';
+import { getTelegramUser, haptic, showBackButton, hideBackButton } from '@/lib/telegram';
 import { fetchAdminDashboard } from '@/services/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
@@ -19,9 +19,10 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { RefreshCw, ShieldAlert, Users, Globe, Bell, Database, Clock3, TrendingUp, TrendingDown, ChevronDown } from 'lucide-react';
+import { RefreshCw, ShieldAlert, Users, Globe, Bell, Database, Clock3, TrendingUp, TrendingDown, ChevronDown, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useNavigate } from 'react-router-dom';
 
 const ADMIN_ID = 502917728;
 
@@ -138,6 +139,7 @@ function CollapsibleSection({
 }
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const tgUser = getTelegramUser();
   const isAdmin = tgUser?.id === ADMIN_ID;
   const [fromDate, setFromDate] = useState('');
@@ -160,6 +162,11 @@ const AdminDashboard = () => {
   const toggleSection = (section: keyof typeof collapsed) => {
     setCollapsed(prev => ({ ...prev, [section]: !prev[section] }));
   };
+
+  useEffect(() => {
+    showBackButton(() => navigate('/'));
+    return () => hideBackButton();
+  }, [navigate]);
 
   const { data, isLoading, isError, refetch, error } = useQuery({
     queryKey: ['admin-dashboard', tgUser?.id, includeAdminData],
@@ -245,13 +252,22 @@ const AdminDashboard = () => {
               Динамика пользователей, активности, базы событий и подписок за {data?.period_days ?? 30} дней
             </p>
           </div>
-          <button
-            onClick={() => { haptic('selection'); refetch(); }}
-            className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-body text-foreground hover:border-primary/30 transition-colors"
-          >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Обновить
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { haptic('selection'); refetch(); }}
+              className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-body text-foreground hover:border-primary/30 transition-colors"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Обновить
+            </button>
+            <button
+              onClick={() => { haptic('light'); navigate('/'); }}
+              className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 p-2.5 text-muted-foreground hover:border-primary/30 hover:text-foreground transition-colors"
+              title="Закрыть"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         <label className="flex items-center gap-2 text-xs font-body text-muted-foreground rounded-lg border border-white/10 bg-white/5 px-3 py-2 w-fit">
@@ -341,6 +357,7 @@ const AdminDashboard = () => {
                 <StatCard title="WebApp" value={overview.webapp_total} subtitle={`DAU ${overview.webapp_dau} • WAU ${overview.webapp_wau} • MAU ${overview.webapp_mau}`} icon={Globe} />
                 <StatCard title="Подписки" value={overview.subscribers_count} subtitle={`Всего подписок ${overview.subscriptions_total} • Flash ${overview.flash_total}`} icon={Bell} />
                 <StatCard title="База событий" value={overview.events_count} subtitle={`Flash-пользователей ${overview.flash_users}`} icon={Database} />
+                <StatCard title="Attendees" value={overview.attendees_total} subtitle="Отметки «Я иду»" icon={Users} />
                 <StatCard title="Новые пользователи" value={totalNewUsers} subtitle={`+${overview.new_today} день • +${overview.new_7d} неделя • +${overview.new_30d} месяц`} icon={Users} />
                 <StatCard title="Очередь модерации" value={overview.pending_count} subtitle={`Одобрено ${overview.approved_total} • Отклонено ${overview.rejected_total}`} icon={Clock3} />
                 <StatCard title="Действия" value={overview.total_actions} subtitle={`Сегодня ${overview.actions_today} • Проекту ${overview.days_alive} дн`} icon={RefreshCw} />

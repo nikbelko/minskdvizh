@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getTelegramUser, haptic } from '@/lib/telegram';
-import { fetchAdminDashboard, fetchLastUpdated } from '@/services/api';
+import { fetchAdminDashboard } from '@/services/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   ChartContainer,
@@ -73,7 +73,7 @@ function StatCard({
 
 interface QuickMetric {
   label: string;
-  value: number;
+  value: number | string;
   delta: number;
 }
 
@@ -100,7 +100,7 @@ function QuickSummaryCard({ metric }: { metric: QuickMetric }) {
         <p className="text-2xl font-display font-bold">{metric.value}</p>
         <div className={`flex items-center gap-0.5 text-xs ${trendColor}`}>
           <TrendIcon className="h-3 w-3" />
-          <span>{formatTrend(metric.value, metric.delta)}</span>
+          <span>{formatTrend(Number(metric.value), metric.delta)}</span>
         </div>
       </div>
     </div>
@@ -165,12 +165,6 @@ const AdminDashboard = () => {
     queryKey: ['admin-dashboard', tgUser?.id, includeAdminData],
     queryFn: () => fetchAdminDashboard(tgUser!.id, 90, !includeAdminData),
     enabled: isAdmin,
-    staleTime: 60_000,
-    retry: 1,
-  });
-  const { data: lastUpdated } = useQuery({
-    queryKey: ['last-updated'],
-    queryFn: fetchLastUpdated,
     staleTime: 60_000,
     retry: 1,
   });
@@ -289,9 +283,6 @@ const AdminDashboard = () => {
             {/* Get today's data from daily_chart */}
             {(() => {
               const todaySummary = data?.today_summary;
-              const parserUpdated = lastUpdated
-                ? new Date(lastUpdated).toLocaleString('ru-RU')
-                : '—';
 
               return (
                 <>
@@ -307,8 +298,8 @@ const AdminDashboard = () => {
                       <QuickSummaryCard
                         metric={{
                           label: 'Пользователи',
-                          value: todaySummary?.total_users ?? 0,
-                          delta: todaySummary?.total_users_delta ?? 0,
+                          value: todaySummary?.users_today ?? 0,
+                          delta: todaySummary?.users_delta ?? 0,
                         }}
                       />
                       <QuickSummaryCard
@@ -325,13 +316,13 @@ const AdminDashboard = () => {
                           delta: todaySummary?.actions_delta ?? 0,
                         }}
                       />
-                      <div className="p-3 rounded-lg border border-white/10 bg-white/5">
-                        <p className="text-xs text-muted-foreground mb-1">Обновлено</p>
-                        <p className="text-sm font-display font-bold text-foreground break-words">
-                          {parserUpdated}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">Последний парсинг</p>
-                      </div>
+                      <QuickSummaryCard
+                        metric={{
+                          label: 'Активность',
+                          value: (todaySummary?.activity_today ?? 0).toFixed(2),
+                          delta: todaySummary?.activity_delta ?? 0,
+                        }}
+                      />
                     </div>
                   </CardContent>
                 </Card>

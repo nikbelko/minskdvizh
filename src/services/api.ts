@@ -93,12 +93,14 @@ export interface AdminDashboard {
   generated_at: string;
   period_days: number;
   today_summary: {
-    total_users: number;
-    total_users_delta: number;
+    users_today: number;
+    users_delta: number;
     unique_users_today: number;
     unique_users_delta: number;
     actions_today: number;
     actions_delta: number;
+    activity_today: number;
+    activity_delta: number;
   };
   overview: AdminOverview;
   daily_chart: AdminDailyPoint[];

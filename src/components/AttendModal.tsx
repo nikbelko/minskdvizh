@@ -10,6 +10,7 @@ interface AttendModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   eventId: number;
+  eventKey: string;
   eventTitle: string;
   attendeeCount: number;
   currentUserAttending: boolean;
@@ -20,6 +21,7 @@ export default function AttendModal({
   open,
   onOpenChange,
   eventId,
+  eventKey,
   eventTitle,
   attendeeCount,
   currentUserAttending,
@@ -35,8 +37,8 @@ export default function AttendModal({
   useEffect(() => setLocalAttending(currentUserAttending), [currentUserAttending]);
 
   const query = useQuery({
-    queryKey: ['event-attendees', eventId, tgUser?.id],
-    queryFn: () => fetchAttendees(eventId, tgUser?.id),
+    queryKey: ['event-attendees', eventKey, tgUser?.id],
+    queryFn: () => fetchAttendees(eventId, eventKey, tgUser?.id),
     enabled: open,
     staleTime: 30_000,
   });
@@ -67,11 +69,13 @@ export default function AttendModal({
     try {
       const response = localAttending
         ? await removeAttendee(eventId, {
+            eventKey,
             userId: tgUser.id,
             username: tgUser.username,
             firstName: tgUser.first_name,
           })
         : await addAttendee(eventId, {
+            eventKey,
             userId: tgUser.id,
             username: tgUser.username,
             firstName: tgUser.first_name,

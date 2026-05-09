@@ -294,6 +294,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
       open={attendeesOpen}
       onOpenChange={setAttendeesOpen}
       eventId={group.primaryEventId}
+      eventKey={group.key}
       eventTitle={group.title}
       attendeeCount={attendeeCount}
       currentUserAttending={currentUserAttending}

@@ -47,16 +47,16 @@ export function useEvents(params: {
       }
 
       const grouped = groupEvents(response.events);
-      const eventIds = grouped.map((event) => event.primaryEventId).filter(Boolean);
-      if (eventIds.length === 0) {
+      const eventKeys = grouped.map((event) => event.key).filter(Boolean);
+      if (eventKeys.length === 0) {
         return { grouped, total: grouped.length };
       }
 
       try {
-        const summary = await fetchAttendeesSummary(eventIds, tgUser?.id);
-        const summaryById = new Map(summary.map((item) => [item.event_id, item]));
+        const summary = await fetchAttendeesSummary(eventKeys, tgUser?.id);
+        const summaryByKey = new Map(summary.map((item) => [item.event_key, item]));
         const enriched = grouped.map((event) => {
-          const row = summaryById.get(event.primaryEventId);
+          const row = summaryByKey.get(event.key);
           return {
             ...event,
             attendeeCount: row?.count ?? 0,

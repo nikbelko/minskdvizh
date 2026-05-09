@@ -32,14 +32,14 @@ export interface EventAttendee {
 }
 
 export interface EventAttendeesResponse {
-  event_id: number;
+  event_key: string;
   count: number;
   current_user_attending: boolean;
   attendees: EventAttendee[];
 }
 
 export interface EventAttendeeSummaryItem {
-  event_id: number;
+  event_key: string;
   count: number;
   current_user_attending: boolean;
 }
@@ -283,18 +283,19 @@ export async function fetchAdminDashboard(userId: number, days = 30, excludeAdmi
   });
 }
 
-export async function fetchAttendees(eventId: number, userId?: number): Promise<EventAttendeesResponse> {
+export async function fetchAttendees(eventId: number, eventKey: string, userId?: number): Promise<EventAttendeesResponse> {
   const params: Record<string, string> = {};
   if (userId) params.user_id = String(userId);
+  params.event_key = eventKey;
   return apiFetch<EventAttendeesResponse>(`/api/events/${eventId}/attendees`, params);
 }
 
-export async function fetchAttendeesSummary(eventIds: number[], userId?: number): Promise<EventAttendeeSummaryItem[]> {
-  if (eventIds.length === 0) return [];
+export async function fetchAttendeesSummary(eventKeys: string[], userId?: number): Promise<EventAttendeeSummaryItem[]> {
+  if (eventKeys.length === 0) return [];
   const res = await fetch(`${API_BASE}/api/events/attendees/summary`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ event_ids: eventIds, user_id: userId ?? null }),
+    body: JSON.stringify({ event_keys: eventKeys, user_id: userId ?? null }),
   });
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   const data = await res.json();
@@ -302,6 +303,7 @@ export async function fetchAttendeesSummary(eventIds: number[], userId?: number)
 }
 
 export async function addAttendee(eventId: number, payload: {
+  eventKey: string;
   userId: number;
   username?: string;
   firstName?: string;
@@ -310,6 +312,8 @@ export async function addAttendee(eventId: number, payload: {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      event_id: eventId,
+      event_key: payload.eventKey,
       user_id: payload.userId,
       username: payload.username ?? '',
       first_name: payload.firstName ?? '',
@@ -321,12 +325,14 @@ export async function addAttendee(eventId: number, payload: {
 }
 
 export async function removeAttendee(eventId: number, payload: {
+  eventKey: string;
   userId: number;
   username?: string;
   firstName?: string;
 }): Promise<EventAttendeesResponse> {
   const url = new URL(`/api/events/${eventId}/attend`, API_BASE);
   url.searchParams.set('user_id', String(payload.userId));
+  url.searchParams.set('event_key', payload.eventKey);
   if (payload.username) url.searchParams.set('username', payload.username);
   if (payload.firstName) url.searchParams.set('first_name', payload.firstName);
   const res = await fetch(url.toString(), { method: 'DELETE' });

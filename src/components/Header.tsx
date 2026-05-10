@@ -169,14 +169,14 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
   useEffect(() => {
     if (subsOpen && userId) {
       setLoading(true);
-      Promise.all([
+      Promise.allSettled([
         fetchSubscriptions(userId),
         fetchFlashSubscriptions(userId),
         fetchUserAttendingEvents(userId),
       ]).then(([regularSubs, flashSubsData, attendingData]) => {
-        setSubs(regularSubs);
-        setFlashSubs(flashSubsData);
-        setAttendingEvents(attendingData);
+        setSubs(regularSubs.status === 'fulfilled' ? regularSubs.value : []);
+        setFlashSubs(flashSubsData.status === 'fulfilled' ? flashSubsData.value : []);
+        setAttendingEvents(attendingData.status === 'fulfilled' ? attendingData.value : []);
         setLoading(false);
       }).catch(() => setLoading(false));
     }
@@ -403,12 +403,12 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                         </div>
 
                         {/* Flash subscriptions */}
-                        {flashSubs.length > 0 && (
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-1.5 px-1 mb-1">
-                              <Zap className="h-3 w-3 text-amber-400" />
-                              <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wide">Флеш-подписки</p>
-                            </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5 px-1 mb-1">
+                            <Zap className="h-3 w-3 text-amber-400" />
+                            <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wide">Флеш-подписки</p>
+                          </div>
+                          {flashSubs.length > 0 ? (
                             <div className="space-y-1 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin">
                               {flashSubs.map(f => (
                                 <div
@@ -429,11 +429,17 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                                 </div>
                               ))}
                             </div>
+                          ) : (
+                            <div className="px-2.5 py-1.5 rounded-lg bg-secondary/20 text-[10px] text-muted-foreground">
+                              Нет активных флеш-подписок
+                            </div>
+                          )}
+                          {flashSubs.length > 0 && (
                             <p className="text-[10px] text-amber-400/70 font-body px-1 pt-0.5">
                               Уведомление придёт в бот при появлении новых событий
                             </p>
-                          </div>
-                        )}
+                          )}
+                        </div>
 
                         <div className="space-y-1 mb-2">
                           <div className="flex items-center justify-between gap-2 px-1 mb-1">

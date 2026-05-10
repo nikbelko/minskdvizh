@@ -44,6 +44,16 @@ export interface EventAttendeeSummaryItem {
   current_user_attending: boolean;
 }
 
+export interface UserAttendingEvent {
+  event_key: string;
+  id: number;
+  title: string;
+  event_date: string;
+  show_time?: string;
+  place?: string;
+  category: CategorySlug;
+}
+
 export type CategoryCounts = Record<CategorySlug, number>;
 
 // ── Flash subscriptions ────────────────────────────────────────────────────
@@ -301,6 +311,13 @@ export async function fetchAttendeesSummary(eventKeys: string[], userId?: number
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   const data = await res.json();
   return data.items ?? [];
+}
+
+export async function fetchUserAttendingEvents(userId: number): Promise<UserAttendingEvent[]> {
+  const data = await apiFetch<{ events: UserAttendingEvent[] }>('/api/user/attending', {
+    user_id: String(userId),
+  });
+  return data.events ?? [];
 }
 
 export async function addAttendee(eventId: number, payload: {

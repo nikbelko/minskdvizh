@@ -1,15 +1,18 @@
-import { Search, X, Bell, BellOff, Zap } from 'lucide-react';
+import { Search, X, Bell, BellOff, Zap, UserRound, Plus, Users, BarChart3 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { getTelegramUser, haptic } from '@/lib/telegram';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { categories } from '@/data/events';
 import CategoryIcon from './CategoryIcon';
 import {
   fetchFlashSubscriptions,
+  fetchUserAttendingEvents,
   addFlashSubscription,
   removeFlashSubscription,
   type FlashSubscription,
+  type UserAttendingEvent,
 } from '@/services/api';
 
 interface HeaderProps {
@@ -127,13 +130,16 @@ const NeonLogo = () => (
 );
 
 const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }: HeaderProps) => {
+  const navigate = useNavigate();
   const [subsOpen, setSubsOpen] = useState(false);
   const [addMode, setAddMode] = useState(false);
   const [subs, setSubs] = useState<SubItem[]>([]);
   const [flashSubs, setFlashSubs] = useState<FlashSubscription[]>([]);
+  const [attendingEvents, setAttendingEvents] = useState<UserAttendingEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const tgUser = getTelegramUser();
   const userId = tgUser?.id;
+  const isAdmin = tgUser?.id === 502917728;
   const panelRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
 
@@ -166,9 +172,11 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
       Promise.all([
         fetchSubscriptions(userId),
         fetchFlashSubscriptions(userId),
-      ]).then(([regularSubs, flashSubsData]) => {
+        fetchUserAttendingEvents(userId),
+      ]).then(([regularSubs, flashSubsData, attendingData]) => {
         setSubs(regularSubs);
         setFlashSubs(flashSubsData);
+        setAttendingEvents(attendingData);
         setLoading(false);
       }).catch(() => setLoading(false));
     }
@@ -227,9 +235,21 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
     }
   };
 
+  const handleOpenSubmit = () => {
+    closePanel();
+    haptic('selection');
+    window.dispatchEvent(new CustomEvent('open-submit-event-modal'));
+  };
+
+  const handleOpenAdmin = () => {
+    closePanel();
+    haptic('selection');
+    navigate('/admin');
+  };
+
   const closePanel = () => { setSubsOpen(false); setAddMode(false); };
 
-  const totalSubsCount = subs.length + flashSubs.length;
+  const totalSubsCount = subs.length + flashSubs.length + attendingEvents.length;
 
   const glassStyle = {
     background: 'hsla(var(--glass-bg))',
@@ -268,7 +288,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
             )}
           </div>
 
-          {/* Subscriptions button */}
+          {/* Profile button */}
           <button
             aria-label="subscriptions"
             onClick={(e) => {
@@ -279,8 +299,8 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
             className="sm:hidden flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-body font-medium transition-colors relative flex-shrink-0"
             style={{ background: 'linear-gradient(135deg, #c026d3 0%, #7c3aed 50%, #00e5ff 100%)', color: 'white', border: 'none' }}
           >
-            <Bell className="h-3.5 w-3.5 flex-shrink-0" />
-            <span className="hidden xs:inline">Подписки</span>
+            <UserRound className="h-3.5 w-3.5 flex-shrink-0" />
+            <span className="hidden xs:inline">Профиль</span>
             {totalSubsCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                 {totalSubsCount}
@@ -318,31 +338,23 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
               <div className="p-3">
                 {!addMode ? (
                   <>
-                    <div className="flex items-center justify-end mb-2">
-                      <button onClick={() => setAddMode(true)} className="text-xs text-primary font-body font-medium hover:underline">+ Добавить</button>
-                    </div>
-
                     {loading ? (
                       <div className="text-center py-4">
                         <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
                         <p className="text-xs text-muted-foreground mt-1">Загрузка...</p>
                       </div>
-                    ) : subs.length === 0 && flashSubs.length === 0 ? (
-                      <div className="text-center py-2">
-                        <p className="text-xs text-muted-foreground font-body mb-2">Нет активных подписок</p>
-                        <button onClick={() => setAddMode(true)} className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-body font-medium">
-                          Подписаться на категорию
-                        </button>
-                      </div>
                     ) : (
                       <>
                         {/* Regular subscriptions */}
-                        {subs.length > 0 && (
-                          <div className="space-y-1 mb-2">
-                            <div className="flex items-center gap-1.5 px-1 mb-1">
+                        <div className="space-y-1 mb-2">
+                          <div className="flex items-center justify-between gap-2 px-1 mb-1">
+                            <div className="flex items-center gap-1.5">
                               <Bell className="h-3 w-3 text-amber-400" />
                               <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wide">Мои подписки</p>
                             </div>
+                            <button onClick={() => setAddMode(true)} className="text-[10px] text-primary font-body font-medium hover:underline">+ Добавить</button>
+                          </div>
+                          {subs.length > 0 ? (
                             <div className="space-y-1 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin">
                               {subs.map(sub => (
                                 <div key={sub.slug} className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-secondary/30">
@@ -360,8 +372,35 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                                 </div>
                               ))}
                             </div>
+                          ) : (
+                            <div className="px-2.5 py-1.5 rounded-lg bg-secondary/20 text-[10px] text-muted-foreground">
+                              Нет активных подписок
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="space-y-1 mb-2">
+                          <div className="flex items-center gap-1.5 px-1 mb-1">
+                            <Users className="h-3 w-3 text-amber-400" />
+                            <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wide">Я иду</p>
                           </div>
-                        )}
+                          {attendingEvents.length > 0 ? (
+                            <div className="space-y-1 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin">
+                              {attendingEvents.map((event) => (
+                                <div key={event.event_key} className="px-2.5 py-1.5 rounded-lg bg-secondary/30">
+                                  <div className="text-xs font-body text-foreground truncate">{event.title}</div>
+                                  <div className="text-[10px] text-muted-foreground mt-0.5">
+                                    {event.event_date}{event.show_time ? ` · ${event.show_time}` : ''}{event.place ? ` · ${event.place}` : ''}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="px-2.5 py-1.5 rounded-lg bg-secondary/20 text-[10px] text-muted-foreground">
+                              Пока нет отмеченных событий
+                            </div>
+                          )}
+                        </div>
 
                         {/* Flash subscriptions */}
                         {flashSubs.length > 0 && (
@@ -396,7 +435,36 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                           </div>
                         )}
 
-                        {(subs.length > 4 || flashSubs.length > 4) && (
+                        <div className="space-y-1 mb-2">
+                          <div className="flex items-center justify-between gap-2 px-1 mb-1">
+                            <div className="flex items-center gap-1.5">
+                              <Plus className="h-3 w-3 text-amber-400" />
+                              <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wide">Мои события</p>
+                            </div>
+                            <button onClick={handleOpenSubmit} className="text-[10px] text-primary font-body font-medium hover:underline">+ Добавить</button>
+                          </div>
+                          <div className="px-2.5 py-1.5 rounded-lg bg-secondary/20 text-[10px] text-muted-foreground">
+                            Добавьте своё событие через форму модерации
+                          </div>
+                        </div>
+
+                        {isAdmin && (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 px-1 mb-1">
+                              <BarChart3 className="h-3 w-3 text-amber-400" />
+                              <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wide">Admin</p>
+                            </div>
+                            <button
+                              onClick={handleOpenAdmin}
+                              className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg bg-secondary/30 text-xs font-body text-foreground hover:bg-secondary/50 transition-colors"
+                            >
+                              <span>Открыть панель</span>
+                              <BarChart3 className="h-3.5 w-3.5 text-primary" />
+                            </button>
+                          </div>
+                        )}
+
+                        {(subs.length > 4 || flashSubs.length > 4 || attendingEvents.length > 4) && (
                           <div className="text-[10px] text-muted-foreground text-center mt-1.5 font-body border-t border-border/50 pt-1.5">↑ можно скроллить ↑</div>
                         )}
                       </>

@@ -426,6 +426,12 @@ export default function SubmitEventModal() {
     if (!open) { setShowTimeSet(false); setTab('single'); setIsFree(false); setCalendarOpen(false); }
   }, [open]);
 
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener('open-submit-event-modal', handler as EventListener);
+    return () => window.removeEventListener('open-submit-event-modal', handler as EventListener);
+  }, []);
+
   const handleClose = () => { setOpen(false); setForm(EMPTY_FORM); setErrors({}); };
 
   const validate = (): boolean => {

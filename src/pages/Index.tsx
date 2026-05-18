@@ -122,7 +122,7 @@ const Index = () => {
         calendarDate={calendarDate}
         onCalendarDate={handleCalendarDate}
       />
-      <SubmitEventModal />
+      <SubmitEventModal hideTrigger />
       <TelegramFloatWidget />
     </div>
   );

@@ -14,6 +14,7 @@ import {
   type FlashSubscription,
   type UserAttendingEvent,
 } from '@/services/api';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface HeaderProps {
   searchQuery: string;
@@ -296,10 +297,9 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
               setSubsOpen(prev => !prev);
               setAddMode(false);
             }}
-            className="sm:hidden flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-body font-medium transition-colors relative flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #c026d3 0%, #7c3aed 50%, #00e5ff 100%)', color: 'white', border: 'none' }}
+            className="sm:hidden glass-card flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-body font-medium transition-colors relative flex-shrink-0 text-foreground hover:border-primary/30"
           >
-            <UserRound className="h-3.5 w-3.5 flex-shrink-0" />
+            <UserRound className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
             <span className="hidden xs:inline">Профиль</span>
             {totalSubsCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
@@ -405,8 +405,17 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                         {/* Flash subscriptions */}
                         <div className="space-y-1">
                           <div className="flex items-center gap-1.5 px-1 mb-1">
-                            <Zap className="h-3 w-3 text-amber-400" />
-                            <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wide">Флеш-подписки</p>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center gap-1.5 cursor-help">
+                                  <Zap className="h-3 w-3 text-amber-400" />
+                                  <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wide">Флеш-подписки</p>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-[220px] text-[11px] leading-snug">
+                                Уведомление придёт в бот при появлении новых событий
+                              </TooltipContent>
+                            </Tooltip>
                           </div>
                           {flashSubs.length > 0 ? (
                             <div className="space-y-1 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin">
@@ -433,11 +442,6 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                             <div className="px-2.5 py-1.5 rounded-lg bg-secondary/20 text-[10px] text-muted-foreground">
                               Нет активных флеш-подписок
                             </div>
-                          )}
-                          {flashSubs.length > 0 && (
-                            <p className="text-[10px] text-amber-400/70 font-body px-1 pt-0.5">
-                              Уведомление придёт в бот при появлении новых событий
-                            </p>
                           )}
                         </div>
 

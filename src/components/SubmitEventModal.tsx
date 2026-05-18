@@ -393,7 +393,7 @@ function BatchTab({ onClose }: { onClose: () => void }) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-export default function SubmitEventModal() {
+export default function SubmitEventModal({ hideTrigger = false }: { hideTrigger?: boolean }) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<'single' | 'batch'>('single');
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
@@ -536,13 +536,14 @@ export default function SubmitEventModal() {
 
   return (
     <>
-      {/* Floating button */}
-      <button onClick={() => { haptic('light'); setOpen(true); }}
-        className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 z-40 flex items-center gap-1.5 px-3 py-2 rounded-lg font-body font-medium text-xs text-white shadow-lg shadow-primary/30 transition-all hover:scale-105 active:scale-95"
-        style={{ background: 'linear-gradient(135deg, #c026d3, #9333ea)' }}>
-        <Plus className="h-3.5 w-3.5" />
-        <span>Добавить</span>
-      </button>
+      {!hideTrigger && (
+        <button onClick={() => { haptic('light'); setOpen(true); }}
+          className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 z-40 flex items-center gap-1.5 px-3 py-2 rounded-lg font-body font-medium text-xs text-white shadow-lg shadow-primary/30 transition-all hover:scale-105 active:scale-95"
+          style={{ background: 'linear-gradient(135deg, #c026d3, #9333ea)' }}>
+          <Plus className="h-3.5 w-3.5" />
+          <span>Добавить</span>
+        </button>
+      )}
 
       {/* Backdrop desktop */}
       {open && <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 hidden sm:block" onClick={handleClose} />}

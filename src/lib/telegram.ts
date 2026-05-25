@@ -21,6 +21,7 @@ export function tgReady() {
     if (!tg) return;
     tg.ready();
     tg.expand();
+    tg.disableVerticalSwipes?.();
   } catch {
     // silently ignore
   }

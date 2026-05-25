@@ -273,7 +273,7 @@ export async function fetchCategoryCounts(filter?: 'today' | 'tomorrow' | 'weeke
 }
 
 export async function fetchCalendarDates(): Promise<string[]> {
-  const data = await apiFetch<{ dates: string[] } | string[]>('/api/calendar/dates');
+  const data = await apiFetch<{ dates: string[] } | string[]>('/api/calendar/dates?months_ahead=12');
   return Array.isArray(data) ? data : data.dates ?? [];
 }
 

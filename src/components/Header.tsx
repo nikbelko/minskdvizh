@@ -142,6 +142,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
   const userId = tgUser?.id;
   const isAdmin = tgUser?.id === 502917728;
   const panelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const headerRef = useRef<HTMLElement>(null);
 
   // Scroll lock when panel open
@@ -184,16 +185,17 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
   }, [subsOpen, userId]);
 
   useEffect(() => {
-    const handleHeaderClick = (e: MouseEvent) => {
-      if (headerRef.current && headerRef.current.contains(e.target as Node) && subsOpen) {
-        const target = e.target as HTMLElement;
-        if (!target.closest('button[aria-label="subscriptions"]')) {
-          closePanel();
-        }
-      }
+    if (!subsOpen) return;
+
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (panelRef.current?.contains(target)) return;
+      if (triggerRef.current?.contains(target)) return;
+      closePanel();
     };
-    document.addEventListener('click', handleHeaderClick);
-    return () => document.removeEventListener('click', handleHeaderClick);
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, [subsOpen]);
 
   const handleClearSearch = () => {
@@ -291,18 +293,19 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
 
           {/* Profile button */}
           <button
+            ref={triggerRef}
             aria-label="subscriptions"
             onClick={(e) => {
               e.stopPropagation();
               setSubsOpen(prev => !prev);
               setAddMode(false);
             }}
-            className="sm:hidden glass-card flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-body font-medium transition-colors relative flex-shrink-0 text-foreground hover:border-primary/30"
+            className="sm:hidden glass-card overflow-visible flex min-h-10 min-w-10 items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-body font-medium transition-colors relative flex-shrink-0 text-foreground hover:border-primary/30 touch-manipulation"
           >
             <UserRound className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
             <span className="hidden xs:inline">Профиль</span>
             {totalSubsCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 z-10 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-background shadow-md">
                 {totalSubsCount}
               </span>
             )}
@@ -403,7 +406,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                         </div>
 
                         {/* Flash subscriptions */}
-                        <div className="space-y-1">
+                        <div className="space-y-1 mb-2">
                           <div className="flex items-center gap-1.5 px-1 mb-1">
                             <Tooltip>
                               <TooltipTrigger asChild>

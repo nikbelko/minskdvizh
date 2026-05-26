@@ -34,6 +34,11 @@ export interface GroupedEvent {
   sourceName?: string;
   attendeeCount?: number;
   currentUserAttending?: boolean;
+  ticketSellCount?: number;
+  ticketBuyCount?: number;
+  ticketTotalCount?: number;
+  currentUserSelling?: boolean;
+  currentUserBuying?: boolean;
   // Cinema
   cinemaDate?: string;
   cinemaShowtimes?: { venue: string; times: string[] }[];

@@ -44,6 +44,40 @@ export interface EventAttendeeSummaryItem {
   current_user_attending: boolean;
 }
 
+export interface TicketPost {
+  id: number;
+  user_id: number;
+  post_type: 'sell' | 'buy';
+  qty: number;
+  price_text: string;
+  note: string;
+  first_name: string;
+  telegram_username: string;
+  profile_url: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EventTicketsResponse {
+  event_key: string;
+  sell_count: number;
+  buy_count: number;
+  total_count: number;
+  current_user_sell: boolean;
+  current_user_buy: boolean;
+  sell_posts: TicketPost[];
+  buy_posts: TicketPost[];
+}
+
+export interface EventTicketSummaryItem {
+  event_key: string;
+  sell_count: number;
+  buy_count: number;
+  total_count: number;
+  current_user_sell: boolean;
+  current_user_buy: boolean;
+}
+
 export interface UserAttendingEvent {
   event_key: string;
   id: number;
@@ -318,6 +352,73 @@ export async function fetchUserAttendingEvents(userId: number): Promise<UserAtte
     user_id: String(userId),
   });
   return data.events ?? [];
+}
+
+export async function fetchTicketPosts(eventId: number, eventKey: string, userId?: number): Promise<EventTicketsResponse> {
+  const params: Record<string, string> = {};
+  if (userId) params.user_id = String(userId);
+  params.event_key = eventKey;
+  return apiFetch<EventTicketsResponse>(`/api/events/${eventId}/tickets`, params);
+}
+
+export async function fetchTicketSummary(eventKeys: string[], userId?: number): Promise<EventTicketSummaryItem[]> {
+  if (eventKeys.length === 0) return [];
+  const res = await fetch(`${API_BASE}/api/events/tickets/summary`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ event_keys: eventKeys, user_id: userId ?? null }),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  const data = await res.json();
+  return data.items ?? [];
+}
+
+export async function upsertTicketPost(eventId: number, payload: {
+  eventKey: string;
+  userId: number;
+  postType: 'sell' | 'buy';
+  qty: number;
+  priceText?: string;
+  note?: string;
+  username?: string;
+  firstName?: string;
+}): Promise<EventTicketsResponse> {
+  const res = await fetch(`${API_BASE}/api/events/${eventId}/tickets`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      event_id: eventId,
+      event_key: payload.eventKey,
+      user_id: payload.userId,
+      username: payload.username ?? '',
+      first_name: payload.firstName ?? '',
+      telegram_username: payload.username ?? '',
+      post_type: payload.postType,
+      qty: payload.qty,
+      price_text: payload.priceText ?? '',
+      note: payload.note ?? '',
+    }),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function removeTicketPost(eventId: number, payload: {
+  eventKey: string;
+  userId: number;
+  postType: 'sell' | 'buy';
+  username?: string;
+  firstName?: string;
+}): Promise<EventTicketsResponse> {
+  const url = new URL(`/api/events/${eventId}/tickets`, API_BASE);
+  url.searchParams.set('user_id', String(payload.userId));
+  url.searchParams.set('event_key', payload.eventKey);
+  url.searchParams.set('post_type', payload.postType);
+  if (payload.username) url.searchParams.set('username', payload.username);
+  if (payload.firstName) url.searchParams.set('first_name', payload.firstName);
+  const res = await fetch(url.toString(), { method: 'DELETE' });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
 }
 
 export async function addAttendee(eventId: number, payload: {

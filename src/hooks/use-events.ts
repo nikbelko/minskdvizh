@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchEvents, fetchEventsByFilter, fetchCategoryCounts, fetchCalendarDates, fetchAttendeesSummary } from '@/services/api';
+import { fetchEvents, fetchEventsByFilter, fetchCategoryCounts, fetchCalendarDates, fetchAttendeesSummary, fetchTicketSummary } from '@/services/api';
 import { groupEvents } from '@/data/events';
 import type { CategorySlug } from '@/data/events';
 import type { QuickFilter } from '@/components/Hero';
@@ -53,14 +53,24 @@ export function useEvents(params: {
       }
 
       try {
-        const summary = await fetchAttendeesSummary(eventKeys, tgUser?.id);
-        const summaryByKey = new Map(summary.map((item) => [item.event_key, item]));
+        const [attendanceSummary, ticketSummary] = await Promise.all([
+          fetchAttendeesSummary(eventKeys, tgUser?.id),
+          fetchTicketSummary(eventKeys, tgUser?.id),
+        ]);
+        const attendanceByKey = new Map(attendanceSummary.map((item) => [item.event_key, item]));
+        const ticketByKey = new Map(ticketSummary.map((item) => [item.event_key, item]));
         const enriched = grouped.map((event) => {
-          const row = summaryByKey.get(event.key);
+          const attendance = attendanceByKey.get(event.key);
+          const ticket = ticketByKey.get(event.key);
           return {
             ...event,
-            attendeeCount: row?.count ?? 0,
-            currentUserAttending: row?.current_user_attending ?? false,
+            attendeeCount: attendance?.count ?? 0,
+            currentUserAttending: attendance?.current_user_attending ?? false,
+            ticketSellCount: ticket?.sell_count ?? 0,
+            ticketBuyCount: ticket?.buy_count ?? 0,
+            ticketTotalCount: ticket?.total_count ?? 0,
+            currentUserSelling: ticket?.current_user_sell ?? false,
+            currentUserBuying: ticket?.current_user_buy ?? false,
           };
         });
         return { grouped: enriched, total: enriched.length };

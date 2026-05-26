@@ -1,10 +1,11 @@
 import { type GroupedEvent, getCategoryBySlug } from '@/data/events';
-import { ArrowRight, Share2, ChevronDown, ChevronUp, MapPin, Clock, Banknote, CalendarDays, CalendarPlus, Users } from 'lucide-react';
+import { ArrowRight, Share2, ChevronDown, ChevronUp, MapPin, Clock, Banknote, CalendarDays, CalendarPlus, Users, Ticket } from 'lucide-react';
 import CategoryIcon from './CategoryIcon';
 import { toast } from 'sonner';
 import { getTelegramUser, haptic, openLink } from '@/lib/telegram';
 import { useEffect, useState } from 'react';
 import AttendModal from './AttendModal';
+import TicketBoardModal from './TicketBoardModal';
 
 interface EventGroupCardProps {
   group: GroupedEvent;
@@ -15,11 +16,22 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
   const cinemaCount = group.cinemaShowtimes?.length ?? 0;
   const [showTimes, setShowTimes] = useState(cinemaCount <= 1);
   const [attendeesOpen, setAttendeesOpen] = useState(false);
+  const [ticketsOpen, setTicketsOpen] = useState(false);
   const [attendeeCount, setAttendeeCount] = useState(group.attendeeCount ?? 0);
   const [currentUserAttending, setCurrentUserAttending] = useState(group.currentUserAttending ?? false);
+  const [ticketSellCount, setTicketSellCount] = useState(group.ticketSellCount ?? 0);
+  const [ticketBuyCount, setTicketBuyCount] = useState(group.ticketBuyCount ?? 0);
+  const [ticketTotalCount, setTicketTotalCount] = useState(group.ticketTotalCount ?? 0);
+  const [currentUserSelling, setCurrentUserSelling] = useState(group.currentUserSelling ?? false);
+  const [currentUserBuying, setCurrentUserBuying] = useState(group.currentUserBuying ?? false);
 
   useEffect(() => setAttendeeCount(group.attendeeCount ?? 0), [group.attendeeCount]);
   useEffect(() => setCurrentUserAttending(group.currentUserAttending ?? false), [group.currentUserAttending]);
+  useEffect(() => setTicketSellCount(group.ticketSellCount ?? 0), [group.ticketSellCount]);
+  useEffect(() => setTicketBuyCount(group.ticketBuyCount ?? 0), [group.ticketBuyCount]);
+  useEffect(() => setTicketTotalCount(group.ticketTotalCount ?? 0), [group.ticketTotalCount]);
+  useEffect(() => setCurrentUserSelling(group.currentUserSelling ?? false), [group.currentUserSelling]);
+  useEffect(() => setCurrentUserBuying(group.currentUserBuying ?? false), [group.currentUserBuying]);
 
   const formatDateShort = (dateStr: string) => {
     const d = new Date(dateStr + 'T00:00:00');
@@ -111,6 +123,17 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
     }
     haptic('selection');
     setAttendeesOpen(true);
+  };
+
+  const handleTicketsOpen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const tgUser = getTelegramUser();
+    if (!tgUser?.id) {
+      toast.error('Функция доступна только в Telegram Mini App');
+      return;
+    }
+    haptic('selection');
+    setTicketsOpen(true);
   };
 
   return (
@@ -262,7 +285,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
 
       </div>{/* /pr-10 */}
 
-      <div className="mt-3 pr-10">
+      <div className="mt-3 pr-10 flex flex-wrap gap-2">
         <button
           onClick={handleAttendOpen}
           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition-all ${
@@ -276,6 +299,22 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
           {attendeeCount > 0 && (
             <span className="text-[11px] leading-none">
               {attendeeCount}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={handleTicketsOpen}
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition-all ${
+            currentUserSelling || currentUserBuying
+              ? 'bg-primary/20 text-primary ring-1 ring-primary/30 hover:bg-primary/25'
+              : 'bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground'
+          }`}
+          title={currentUserSelling || currentUserBuying ? 'Ваше объявление по билетам активно' : 'Билеты и инвайты'}
+        >
+          <Ticket className="h-3.5 w-3.5" />
+          {ticketTotalCount > 0 && (
+            <span className="text-[11px] leading-none">
+              {ticketTotalCount}
             </span>
           )}
         </button>
@@ -301,6 +340,24 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
       onStateChange={({ attendeeCount: nextCount, currentUserAttending: nextAttending }) => {
         setAttendeeCount(nextCount);
         setCurrentUserAttending(nextAttending);
+      }}
+    />
+    <TicketBoardModal
+      open={ticketsOpen}
+      onOpenChange={setTicketsOpen}
+      eventId={group.primaryEventId}
+      eventKey={group.key}
+      eventTitle={group.title}
+      sellCount={ticketSellCount}
+      buyCount={ticketBuyCount}
+      currentUserSelling={currentUserSelling}
+      currentUserBuying={currentUserBuying}
+      onStateChange={({ sellCount: nextSell, buyCount: nextBuy, totalCount: nextTotal, currentUserSelling: nextSelling, currentUserBuying: nextBuying }) => {
+        setTicketSellCount(nextSell);
+        setTicketBuyCount(nextBuy);
+        setTicketTotalCount(nextTotal);
+        setCurrentUserSelling(nextSelling);
+        setCurrentUserBuying(nextBuying);
       }}
     />
     </>

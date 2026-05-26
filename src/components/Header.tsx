@@ -1,4 +1,4 @@
-import { Search, X, Bell, BellOff, Zap, UserRound, Plus, Users, BarChart3 } from 'lucide-react';
+import { Search, X, Bell, BellOff, Zap, UserRound, Plus, Users, BarChart3, Ticket } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { getTelegramUser, haptic } from '@/lib/telegram';
@@ -9,10 +9,13 @@ import CategoryIcon from './CategoryIcon';
 import {
   fetchFlashSubscriptions,
   fetchUserAttendingEvents,
+  fetchUserTicketPosts,
   addFlashSubscription,
   removeFlashSubscription,
+  removeTicketPost,
   type FlashSubscription,
   type UserAttendingEvent,
+  type UserTicketPost,
 } from '@/services/api';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -137,6 +140,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
   const [subs, setSubs] = useState<SubItem[]>([]);
   const [flashSubs, setFlashSubs] = useState<FlashSubscription[]>([]);
   const [attendingEvents, setAttendingEvents] = useState<UserAttendingEvent[]>([]);
+  const [ticketPosts, setTicketPosts] = useState<UserTicketPost[]>([]);
   const [loading, setLoading] = useState(false);
   const tgUser = getTelegramUser();
   const userId = tgUser?.id;
@@ -175,10 +179,12 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
         fetchSubscriptions(userId),
         fetchFlashSubscriptions(userId),
         fetchUserAttendingEvents(userId),
-      ]).then(([regularSubs, flashSubsData, attendingData]) => {
+        fetchUserTicketPosts(userId),
+      ]).then(([regularSubs, flashSubsData, attendingData, ticketPostsData]) => {
         setSubs(regularSubs.status === 'fulfilled' ? regularSubs.value : []);
         setFlashSubs(flashSubsData.status === 'fulfilled' ? flashSubsData.value : []);
         setAttendingEvents(attendingData.status === 'fulfilled' ? attendingData.value : []);
+        setTicketPosts(ticketPostsData.status === 'fulfilled' ? ticketPostsData.value : []);
         setLoading(false);
       }).catch(() => setLoading(false));
     }
@@ -250,9 +256,31 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
     navigate('/admin');
   };
 
+  const handleRemoveTicket = async (post: UserTicketPost) => {
+    if (!userId) {
+      toast.error('Не удалось определить пользователя');
+      return;
+    }
+    try {
+      await removeTicketPost(post.event_id, {
+        eventKey: post.event_key,
+        userId,
+        postType: post.post_type,
+        username: tgUser?.username,
+        firstName: tgUser?.first_name,
+      });
+      setTicketPosts((prev) =>
+        prev.filter((item) => !(item.event_key === post.event_key && item.post_type === post.post_type)),
+      );
+      toast.success('Объявление снято');
+    } catch {
+      toast.error('Не удалось снять объявление');
+    }
+  };
+
   const closePanel = () => { setSubsOpen(false); setAddMode(false); };
 
-  const totalSubsCount = subs.length + flashSubs.length + attendingEvents.length;
+  const totalSubsCount = subs.length + flashSubs.length + attendingEvents.length + ticketPosts.length;
 
   const glassStyle = {
     background: 'hsla(var(--glass-bg))',
@@ -405,6 +433,44 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                           )}
                         </div>
 
+                        <div className="space-y-1 mb-2">
+                          <div className="flex items-center gap-1.5 px-1 mb-1">
+                            <Ticket className="h-3 w-3 text-amber-400" />
+                            <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wide">Мои билеты</p>
+                          </div>
+                          {ticketPosts.length > 0 ? (
+                            <div className="space-y-1 max-h-[140px] overflow-y-auto pr-1 scrollbar-thin">
+                              {ticketPosts.map((post) => (
+                                <div key={`${post.event_key}:${post.post_type}`} className="flex items-start justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-secondary/30">
+                                  <div className="min-w-0">
+                                    <div className="text-xs font-body text-foreground truncate">{post.title}</div>
+                                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                                      {post.post_type === 'sell' ? 'Продаю' : 'Ищу'} {post.qty}
+                                      {post.price_text ? ` · ${post.price_text}` : ''}
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground">
+                                      {post.event_date}{post.show_time ? ` · ${post.show_time}` : ''}{post.place ? ` · ${post.place}` : ''}
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRemoveTicket(post);
+                                    }}
+                                    className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-red-400 transition-colors font-body shrink-0"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="px-2.5 py-1.5 rounded-lg bg-secondary/20 text-[10px] text-muted-foreground">
+                              Нет активных объявлений
+                            </div>
+                          )}
+                        </div>
+
                         {/* Flash subscriptions */}
                         <div className="space-y-1 mb-2">
                           <div className="flex items-center gap-1.5 px-1 mb-1">
@@ -477,7 +543,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                           </div>
                         )}
 
-                        {(subs.length > 4 || flashSubs.length > 4 || attendingEvents.length > 4) && (
+                        {(subs.length > 4 || flashSubs.length > 4 || attendingEvents.length > 4 || ticketPosts.length > 4) && (
                           <div className="text-[10px] text-muted-foreground text-center mt-1.5 font-body border-t border-border/50 pt-1.5">↑ можно скроллить ↑</div>
                         )}
                       </>

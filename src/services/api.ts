@@ -88,6 +88,22 @@ export interface UserAttendingEvent {
   category: CategorySlug;
 }
 
+export interface UserTicketPost {
+  event_key: string;
+  event_id: number;
+  title: string;
+  event_date: string;
+  show_time?: string;
+  place?: string;
+  category: CategorySlug;
+  post_type: 'sell' | 'buy';
+  qty: number;
+  price_text: string;
+  note: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export type CategoryCounts = Record<CategorySlug, number>;
 
 // ── Flash subscriptions ────────────────────────────────────────────────────
@@ -352,6 +368,13 @@ export async function fetchUserAttendingEvents(userId: number): Promise<UserAtte
     user_id: String(userId),
   });
   return data.events ?? [];
+}
+
+export async function fetchUserTicketPosts(userId: number): Promise<UserTicketPost[]> {
+  const data = await apiFetch<{ posts: UserTicketPost[] }>('/api/user/tickets', {
+    user_id: String(userId),
+  });
+  return data.posts ?? [];
 }
 
 export async function fetchTicketPosts(eventId: number, eventKey: string, userId?: number): Promise<EventTicketsResponse> {

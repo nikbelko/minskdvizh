@@ -19,7 +19,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { RefreshCw, ShieldAlert, Users, Globe, Bell, Database, Clock3, TrendingUp, TrendingDown, ChevronDown, X } from 'lucide-react';
+import { RefreshCw, ShieldAlert, Users, Globe, Bell, Database, Clock3, TrendingUp, TrendingDown, ChevronDown, X, Ticket } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useNavigate } from 'react-router-dom';
@@ -27,9 +27,7 @@ import { useNavigate } from 'react-router-dom';
 const ADMIN_ID = 502917728;
 
 const chartConfig = {
-  dau: { label: 'DAU', color: '#00e5ff' },
   users: { label: 'Пользователи', color: '#00e5ff' },
-  mau: { label: 'MAU', color: '#00e5ff' },
   new_users: { label: 'Уникальные', color: '#a78bfa' },
   actions: { label: 'Действия', color: '#c026d3' },
   webapp_users: { label: 'WebApp', color: '#22c55e' },
@@ -86,7 +84,7 @@ function formatTrend(value: number, delta: number) {
   }
   const pct = (delta / prev) * 100;
   const sign = pct > 0 ? '+' : '';
-  return `${sign}${pct.toFixed(0)}% к вчера`;
+  return `${sign}${pct.toFixed(0)}% к ср. 30д`;
 }
 
 function QuickSummaryCard({ metric }: { metric: QuickMetric }) {
@@ -181,8 +179,6 @@ const AdminDashboard = () => {
   const topSources = useMemo(() => (data?.events_by_source ?? []).slice(0, 8), [data]);
   const topCategories = useMemo(() => (data?.events_by_category ?? []).slice(0, 8), [data]);
   const topSubscriptions = useMemo(() => (data?.subscriptions_by_category ?? []).slice(0, 8), [data]);
-  const totalNewUsers = overview?.total_users ?? 0;
-
   useEffect(() => {
     if (!data?.daily_chart?.length) return;
     const defaultTo = data.daily_chart[data.daily_chart.length - 1]?.day ?? '';
@@ -208,12 +204,16 @@ const AdminDashboard = () => {
     const discovery = (data?.funnel.filter_category ?? 0) + (data?.funnel.open_category ?? 0);
     const subscribed = (data?.funnel.subscribe ?? 0) + (data?.funnel.web_flash_subscribe ?? 0);
     const submitted = (data?.funnel.submit_event_sent ?? 0) + (data?.funnel.web_submit_event ?? 0);
+    const attendees = data?.funnel.event_attend ?? 0;
+    const tickets = data?.funnel.ticket_post ?? 0;
     const rows = [
       { key: 'start', label: 'Start', count: start },
       { key: 'webapp', label: 'WebApp open', count: webapp },
       { key: 'discovery', label: 'Explore', count: discovery },
       { key: 'subscribed', label: 'Subscribe', count: subscribed },
       { key: 'submitted', label: 'Submit event', count: submitted },
+      { key: 'attendees', label: 'Attendees', count: attendees },
+      { key: 'tickets', label: 'Tickets', count: tickets },
     ];
     return rows.map((row, index) => {
       const prev = index === 0 ? row.count : rows[index - 1].count;
@@ -248,9 +248,6 @@ const AdminDashboard = () => {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Admin Dashboard</h1>
-            <p className="text-sm font-body text-muted-foreground mt-1">
-              Динамика пользователей, активности, базы событий и подписок за {data?.period_days ?? 30} дней
-            </p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -356,11 +353,12 @@ const AdminDashboard = () => {
                 <StatCard title="Пользователи" value={overview.total_users} subtitle={`DAU ${overview.dau} • WAU ${overview.wau} • MAU ${overview.mau}`} icon={Users} />
                 <StatCard title="WebApp" value={overview.webapp_total} subtitle={`DAU ${overview.webapp_dau} • WAU ${overview.webapp_wau} • MAU ${overview.webapp_mau}`} icon={Globe} />
                 <StatCard title="Подписки" value={overview.subscribers_count} subtitle={`Всего подписок ${overview.subscriptions_total} • Flash ${overview.flash_total}`} icon={Bell} />
-                <StatCard title="База событий" value={overview.events_count} subtitle={`Flash-пользователей ${overview.flash_users}`} icon={Database} />
+                <StatCard title="База событий" value={overview.events_count} subtitle={`User submitted ${overview.user_submitted_count}`} icon={Database} />
                 <StatCard title="Attendees" value={overview.attendees_total} subtitle="Отметки «Я иду»" icon={Users} />
-                <StatCard title="Новые пользователи" value={totalNewUsers} subtitle={`+${overview.new_today} день • +${overview.new_7d} неделя • +${overview.new_30d} месяц`} icon={Users} />
+                <StatCard title="Новые пользователи" value={overview.total_unique_users} subtitle={`+${overview.new_today} день • +${overview.new_7d} неделя • +${overview.new_30d} месяц`} icon={Users} />
                 <StatCard title="Очередь модерации" value={overview.pending_count} subtitle={`Одобрено ${overview.approved_total} • Отклонено ${overview.rejected_total}`} icon={Clock3} />
-                <StatCard title="Действия" value={overview.total_actions} subtitle={`Сегодня ${overview.actions_today} • Проекту ${overview.days_alive} дн`} icon={RefreshCw} />
+                <StatCard title="Действия" value={overview.total_actions} subtitle={`Today ${overview.actions_today}, Week ${overview.actions_7d}, Month ${overview.actions_30d}`} icon={RefreshCw} />
+                <StatCard title="Tickets" value={overview.tickets_active_total} subtitle={`Closed ${overview.tickets_closed_sell}/${overview.tickets_closed_buy}, Expired ${overview.tickets_expired_sell}/${overview.tickets_expired_buy}`} icon={Ticket} />
                 <StatCard title="Flash-уведомления" value={overview.flash_notified_users_30d} subtitle={`Новых flash сегодня ${overview.flash_new_today} • за 30д ${overview.flash_new_30d}`} icon={Bell} />
               </div>
             </CollapsibleSection>
@@ -415,7 +413,7 @@ const AdminDashboard = () => {
             </CollapsibleSection>
 
             {/* Monthly & Funnel Grid */}
-            <div className="grid gap-4 xl:grid-cols-2">
+            <div className="grid gap-4">
               {/* Monthly Section */}
               <CollapsibleSection
                 title="Месячная динамика"
@@ -436,7 +434,6 @@ const AdminDashboard = () => {
                 </ChartContainer>
               </CollapsibleSection>
 
-              {/* Funnel Section */}
               <CollapsibleSection
                 title="Воронка действий за 30 дней"
                 description="Counts и конверсии между этапами"
@@ -538,15 +535,18 @@ const AdminDashboard = () => {
               {/* Summary */}
               <Card className="border-white/10 bg-white/5">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold">Сводка</CardTitle>
+                  <CardTitle className="text-sm font-semibold">Сводка 30 дней</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm font-body">
-                  <div className="flex items-center justify-between"><span className="text-muted-foreground">Новых пользователей за 30 дней</span><span className="font-mono text-foreground">{overview.new_30d}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-muted-foreground">Flash-пользователей</span><span className="font-mono text-foreground">{overview.flash_users}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-muted-foreground">Новых flash сегодня</span><span className="font-mono text-foreground">{overview.flash_new_today}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-muted-foreground">WebApp MAU</span><span className="font-mono text-foreground">{overview.webapp_mau}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-muted-foreground">Сабмиты без админа за период</span><span className="font-mono text-foreground">{overview.submitted_period_no_admin}</span></div>
-                  <div className="flex items-center justify-between"><span className="text-muted-foreground">Общее число действий сегодня</span><span className="font-mono text-foreground">{overview.actions_today}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted-foreground">Пользователей</span><span className="font-mono text-foreground">{overview.summary_30d_users}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted-foreground">Новых пользователей</span><span className="font-mono text-foreground">{overview.summary_30d_new_users}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted-foreground">Действия</span><span className="font-mono text-foreground">{overview.summary_30d_actions}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted-foreground">WebApp</span><span className="font-mono text-foreground">{overview.summary_30d_webapp}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted-foreground">Активность</span><span className="font-mono text-foreground">{overview.summary_30d_activity.toFixed(2)}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted-foreground">Подписок</span><span className="font-mono text-foreground">{overview.summary_30d_subscriptions}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted-foreground">Flash-подписок</span><span className="font-mono text-foreground">{overview.summary_30d_flash_subscriptions}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted-foreground">Attendees</span><span className="font-mono text-foreground">{overview.summary_30d_attendees}</span></div>
+                  <div className="flex items-center justify-between"><span className="text-muted-foreground">Tickets</span><span className="font-mono text-foreground">{overview.summary_30d_tickets}</span></div>
                   <div className="flex items-center justify-between"><span className="text-muted-foreground">Обновлено</span><span className="font-mono text-foreground">{new Date(data!.generated_at).toLocaleString('ru-RU')}</span></div>
                 </CardContent>
               </Card>

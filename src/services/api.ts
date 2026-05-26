@@ -116,9 +116,12 @@ export interface FlashSubscription {
 
 export interface AdminOverview {
   total_users: number;
+  total_unique_users: number;
   days_alive: number;
   total_actions: number;
   actions_today: number;
+  actions_7d: number;
+  actions_30d: number;
   dau: number;
   wau: number;
   mau: number;
@@ -126,10 +129,12 @@ export interface AdminOverview {
   new_7d: number;
   new_30d: number;
   webapp_total: number;
+  webapp_unique_total: number;
   webapp_dau: number;
   webapp_wau: number;
   webapp_mau: number;
   events_count: number;
+  user_submitted_count: number;
   subscribers_count: number;
   subscriptions_total: number;
   flash_total: number;
@@ -143,6 +148,22 @@ export interface AdminOverview {
   submitted_period: number;
   submitted_period_no_admin: number;
   attendees_total: number;
+  tickets_active_total: number;
+  tickets_active_sell: number;
+  tickets_active_buy: number;
+  tickets_closed_sell: number;
+  tickets_closed_buy: number;
+  tickets_expired_sell: number;
+  tickets_expired_buy: number;
+  summary_30d_users: number;
+  summary_30d_new_users: number;
+  summary_30d_actions: number;
+  summary_30d_webapp: number;
+  summary_30d_activity: number;
+  summary_30d_subscriptions: number;
+  summary_30d_flash_subscriptions: number;
+  summary_30d_attendees: number;
+  summary_30d_tickets: number;
 }
 
 export interface AdminDailyPoint {

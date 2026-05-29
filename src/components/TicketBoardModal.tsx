@@ -32,6 +32,7 @@ interface TicketBoardModalProps {
 }
 
 type PostType = 'sell' | 'buy';
+const MAX_TICKETS = 99;
 
 export default function TicketBoardModal({
   open,
@@ -47,7 +48,7 @@ export default function TicketBoardModal({
 }: TicketBoardModalProps) {
   const tgUser = getTelegramUser();
   const [postType, setPostType] = useState<PostType>('sell');
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState('1');
   const [priceText, setPriceText] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
@@ -83,15 +84,21 @@ export default function TicketBoardModal({
 
   useEffect(() => {
     if (!myPost) {
-      setQty(1);
+      setQty('1');
       setPriceText('');
       setNote('');
       return;
     }
-    setQty(myPost.qty);
+    setQty(String(myPost.qty));
     setPriceText(myPost.price_text || '');
     setNote(myPost.note || '');
   }, [myPost]);
+
+  const normalizeQty = (value: string) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 1) return 1;
+    return Math.min(MAX_TICKETS, Math.floor(parsed));
+  };
 
   const sync = (next: EventTicketsResponse) => {
     setLocalData(next);
@@ -116,7 +123,7 @@ export default function TicketBoardModal({
         eventKey,
         userId: tgUser.id,
         postType,
-        qty,
+        qty: normalizeQty(qty),
         priceText,
         note,
         username: tgUser.username,
@@ -232,9 +239,13 @@ export default function TicketBoardModal({
             <input
               type="number"
               min={1}
-              max={4}
+              max={MAX_TICKETS}
               value={qty}
-              onChange={(e) => setQty(Math.max(1, Math.min(4, Number(e.target.value) || 1)))}
+              onChange={(e) => {
+                const next = e.target.value.replace(/[^\d]/g, '');
+                setQty(next);
+              }}
+              onBlur={() => setQty(String(normalizeQty(qty)))}
               className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
             <input

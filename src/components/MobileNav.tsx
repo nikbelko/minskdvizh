@@ -107,7 +107,7 @@ const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, s
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-display font-bold text-foreground">Категории</h3>
               {activeCategory && (
-                <button onClick={() => { onCategorySelect(null); setCategoriesOpen(false); }} className="text-xs text-primary hover:underline font-body">Сбросить</button>
+                <button onClick={() => { onCategorySelect(null); setCategoriesOpen(false); }} className="text-xs text-primary font-body active:scale-95 sm:hover:underline">Сбросить</button>
               )}
             </div>
             <div className="grid grid-cols-4 gap-2">
@@ -115,8 +115,8 @@ const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, s
                 <button
                   key={cat.slug}
                   onClick={() => handleCategoryClick(cat.slug)}
-                  className={`flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all ${
-                    activeCategory === cat.slug ? 'bg-primary/20 ring-1 ring-primary' : 'hover:bg-secondary/50'
+                  className={`flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all active:scale-95 ${
+                    activeCategory === cat.slug ? 'bg-primary/20 ring-1 ring-primary' : 'active:bg-secondary/50 sm:hover:bg-secondary/50'
                   }`}
                 >
                   <CategoryIcon slug={cat.slug} size="sm" />
@@ -165,7 +165,7 @@ const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, s
               {searchQuery && (
                 <button
                   onClick={() => { onSearchChange(''); haptic('selection'); }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-all active:scale-90 active:text-foreground sm:hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -185,7 +185,7 @@ const MobileNav = ({ activeTab, onTabChange, activeCategory, onCategorySelect, s
               className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-all duration-200 active:scale-90 ${
                 isActive(key)
                   ? 'text-primary scale-105'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/30'
+                  : 'text-muted-foreground active:text-foreground active:bg-secondary/30 sm:hover:text-foreground sm:hover:bg-secondary/30'
               }`}
             >
               <Icon className={`h-5 w-5 transition-transform duration-200 ${isActive(key) ? 'scale-110' : ''}`} />

@@ -139,7 +139,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
   return (
     <>
     <div
-      className={`glass-card border-l-4 ${cat.borderClass} p-4 hover:border-l-primary transition-all duration-300 group/card relative ${cinemaCount > 1 ? 'cursor-pointer' : ''}`}
+      className={`glass-card border-l-4 ${cat.borderClass} p-4 transition-all duration-200 group/card relative active:scale-[0.995] active:border-l-primary sm:hover:border-l-primary ${cinemaCount > 1 ? 'cursor-pointer' : ''}`}
       onClick={cinemaCount > 1 && !showTimes ? () => { haptic('light'); setShowTimes(true); } : undefined}
     >
 
@@ -147,12 +147,12 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
       <div className="absolute top-4 right-4 flex flex-col items-center gap-0.5">
         <CategoryIcon slug={group.category} size="card" />
         <button onClick={(e) => { e.stopPropagation(); handleCalendarExport(); }}
-          className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/card:opacity-100"
+          className="p-1 rounded-md text-muted-foreground transition-all active:scale-90 active:bg-primary/10 active:text-primary sm:opacity-0 sm:group-hover/card:opacity-100 sm:hover:text-primary sm:hover:bg-primary/10"
           title="Добавить в календарь">
           <CalendarPlus className="h-3.5 w-3.5" />
         </button>
         <button onClick={(e) => { e.stopPropagation(); handleShare(); }}
-          className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover/card:opacity-100"
+          className="p-1 rounded-md text-muted-foreground transition-all active:scale-90 active:bg-primary/10 active:text-primary sm:opacity-0 sm:group-hover/card:opacity-100 sm:hover:text-primary sm:hover:bg-primary/10"
           title="Поделиться">
           <Share2 className="h-3.5 w-3.5" />
         </button>
@@ -161,7 +161,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
       {/* Весь контент с отступом справа — не перекрывается с absolute иконками */}
       <div className="pr-10">
 
-      <h4 className="text-foreground font-body font-bold text-base group-hover/card:text-primary transition-colors mb-0.5">
+      <h4 className="text-foreground font-body font-bold text-base transition-colors mb-0.5 sm:group-hover/card:text-primary">
         {group.title}
       </h4>
 
@@ -181,7 +181,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
           </span>
           {cinemaCount > 1 && (
             <button onClick={(e) => { e.stopPropagation(); haptic('light'); setShowTimes(p => !p); }}
-              className="flex items-center gap-1.5 text-xs text-primary font-body font-medium mt-0.5 hover:opacity-80 transition-opacity">
+              className="flex items-center gap-1.5 text-xs text-primary font-body font-medium mt-0.5 transition-all active:scale-[0.98] sm:hover:opacity-80">
               {showTimes ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
               {showTimes ? 'Скрыть сеансы' : `Сеансы (${cinemaCount} ${cinemaCount <= 4 ? 'кинотеатра' : 'кинотеатров'})`}
             </button>
@@ -290,8 +290,8 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
           onClick={handleAttendOpen}
           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition-all ${
             currentUserAttending
-              ? 'bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/30 hover:bg-amber-500/25'
-              : 'bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground'
+              ? 'bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/30 active:scale-95 active:bg-amber-500/25 sm:hover:bg-amber-500/25'
+              : 'bg-secondary/60 text-muted-foreground active:scale-95 active:bg-secondary active:text-foreground sm:hover:bg-secondary sm:hover:text-foreground'
           }`}
           title={currentUserAttending ? 'Вы отметили это событие' : 'Посмотреть, кто идет'}
         >
@@ -306,8 +306,8 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
           onClick={handleTicketsOpen}
           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition-all ${
             currentUserSelling || currentUserBuying
-              ? 'bg-primary/20 text-primary ring-1 ring-primary/30 hover:bg-primary/25'
-              : 'bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground'
+              ? 'bg-primary/20 text-primary ring-1 ring-primary/30 active:scale-95 active:bg-primary/25 sm:hover:bg-primary/25'
+              : 'bg-secondary/60 text-muted-foreground active:scale-95 active:bg-secondary active:text-foreground sm:hover:bg-secondary sm:hover:text-foreground'
           }`}
           title={currentUserSelling || currentUserBuying ? 'Ваше объявление по билетам активно' : 'Билеты и инвайты'}
         >
@@ -324,7 +324,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
       {group.sourceUrl && (
         <a href={group.sourceUrl} target="_blank" rel="noopener noreferrer"
           onClick={handleSourceClick}
-          className="absolute bottom-3 right-4 flex items-center gap-1 text-xs text-primary font-body font-medium opacity-0 group-hover/card:opacity-100 transition-opacity">
+          className="absolute bottom-3 right-4 flex items-center gap-1 text-xs text-primary font-body font-medium transition-all active:scale-95 sm:opacity-0 sm:group-hover/card:opacity-100">
           Подробнее <ArrowRight className="h-3 w-3" />
         </a>
       )}

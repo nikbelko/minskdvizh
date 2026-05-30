@@ -313,7 +313,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
               className="w-full rounded-lg border border-border bg-secondary/50 py-2 pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all font-body"
             />
             {searchQuery && (
-              <button onClick={handleClearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+              <button onClick={handleClearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-all active:scale-90 active:text-foreground sm:hover:text-foreground">
                 <X className="h-4 w-4" />
               </button>
             )}
@@ -328,7 +328,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
               setSubsOpen(prev => !prev);
               setAddMode(false);
             }}
-            className="sm:hidden glass-card overflow-visible flex min-h-10 min-w-10 items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-body font-medium transition-colors relative flex-shrink-0 text-foreground hover:border-primary/30 touch-manipulation"
+            className="sm:hidden glass-card overflow-visible flex min-h-10 min-w-10 items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-body font-medium transition-all relative flex-shrink-0 text-foreground active:scale-95 active:border-primary/30 touch-manipulation"
           >
             <UserRound className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
             <span className="hidden xs:inline">Профиль</span>
@@ -383,7 +383,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                               <Bell className="h-3 w-3 text-amber-400" />
                               <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wide">Мои подписки</p>
                             </div>
-                            <button onClick={() => setAddMode(true)} className="text-[10px] text-primary font-body font-medium hover:underline">+ Добавить</button>
+                            <button onClick={() => setAddMode(true)} className="text-[10px] text-primary font-body font-medium active:scale-95 sm:hover:underline">+ Добавить</button>
                           </div>
                           {subs.length > 0 ? (
                             <div className="space-y-1 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin">
@@ -395,7 +395,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                                   </div>
                                   <button
                                     onClick={(e) => { e.stopPropagation(); handleUnsubscribe(sub.slug, sub.name); }}
-                                    className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-red-400 transition-colors font-body shrink-0 ml-2"
+                                    className="flex items-center gap-1 text-[10px] text-muted-foreground transition-all active:scale-95 active:text-red-400 sm:hover:text-red-400 font-body shrink-0 ml-2"
                                   >
                                     <BellOff className="h-3 w-3" />
                                     <span>Отписаться</span>
@@ -457,7 +457,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                                       e.stopPropagation();
                                       handleRemoveTicket(post);
                                     }}
-                                    className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-red-400 transition-colors font-body shrink-0"
+                                    className="flex items-center gap-1 text-[10px] text-muted-foreground transition-all active:scale-95 active:text-red-400 sm:hover:text-red-400 font-body shrink-0"
                                   >
                                     <X className="h-3 w-3" />
                                   </button>
@@ -500,7 +500,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                                   </div>
                                   <button
                                     onClick={(e) => { e.stopPropagation(); handleFlashUnsubscribe(f.id, f.query); }}
-                                    className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-red-400 transition-colors font-body shrink-0 ml-2"
+                                    className="flex items-center gap-1 text-[10px] text-muted-foreground transition-all active:scale-95 active:text-red-400 sm:hover:text-red-400 font-body shrink-0 ml-2"
                                   >
                                     <X className="h-3 w-3" />
                                   </button>
@@ -520,7 +520,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                               <Plus className="h-3 w-3 text-amber-400" />
                               <p className="text-[10px] text-muted-foreground font-body uppercase tracking-wide">Мои события</p>
                             </div>
-                            <button onClick={handleOpenSubmit} className="text-[10px] text-primary font-body font-medium hover:underline">+ Добавить</button>
+                            <button onClick={handleOpenSubmit} className="text-[10px] text-primary font-body font-medium active:scale-95 sm:hover:underline">+ Добавить</button>
                           </div>
                           <div className="px-2.5 py-1.5 rounded-lg bg-secondary/20 text-[10px] text-muted-foreground">
                             Добавьте своё событие через форму модерации
@@ -535,7 +535,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                             </div>
                             <button
                               onClick={handleOpenAdmin}
-                              className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg bg-secondary/30 text-xs font-body text-foreground hover:bg-secondary/50 transition-colors"
+                              className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg bg-secondary/30 text-xs font-body text-foreground transition-all active:scale-[0.98] active:bg-secondary/50 sm:hover:bg-secondary/50"
                             >
                               <span>Открыть панель</span>
                               <BarChart3 className="h-3.5 w-3.5 text-primary" />
@@ -553,7 +553,7 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                   <>
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-xs font-display font-bold text-foreground">Выберите категорию</h3>
-                      <button onClick={() => setAddMode(false)} className="text-xs text-muted-foreground hover:text-foreground font-body">← Назад</button>
+                      <button onClick={() => setAddMode(false)} className="text-xs text-muted-foreground active:scale-95 active:text-foreground sm:hover:text-foreground font-body">← Назад</button>
                     </div>
                     <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
                       {categories.map((cat) => {
@@ -563,8 +563,8 @@ const Header = ({ searchQuery, onSearchChange, onCalendarToggle, calendarOpen }:
                             key={cat.slug}
                             onClick={() => handleSubscribe(cat.slug, cat.name)}
                             disabled={loading}
-                            className={`flex flex-col items-center gap-1.5 p-2.5 rounded-lg transition-all shrink-0 min-w-[64px] ${
-                              isSubscribed ? 'bg-primary/20 ring-1 ring-primary opacity-70' : 'hover:bg-secondary/50'
+                            className={`flex flex-col items-center gap-1.5 p-2.5 rounded-lg transition-all shrink-0 min-w-[64px] active:scale-95 ${
+                              isSubscribed ? 'bg-primary/20 ring-1 ring-primary opacity-70' : 'active:bg-secondary/50 sm:hover:bg-secondary/50'
                             } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             <CategoryIcon slug={cat.slug as any} size="sm" />

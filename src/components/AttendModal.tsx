@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { addAttendee, fetchAttendees, removeAttendee, type EventAttendee } from '@/services/api';
@@ -32,9 +32,13 @@ export default function AttendModal({
   const [localCount, setLocalCount] = useState(attendeeCount);
   const [localAttending, setLocalAttending] = useState(currentUserAttending);
   const [localAttendees, setLocalAttendees] = useState<EventAttendee[] | null>(null);
+  const [dragX, setDragX] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => setLocalCount(attendeeCount), [attendeeCount]);
   useEffect(() => setLocalAttending(currentUserAttending), [currentUserAttending]);
+  useEffect(() => setDragX(0), [localAttending, open]);
 
   const query = useQuery({
     queryKey: ['event-attendees', eventKey, tgUser?.id],
@@ -90,6 +94,42 @@ export default function AttendModal({
     }
   };
 
+  const getSliderMax = () => {
+    const width = sliderRef.current?.getBoundingClientRect().width ?? 0;
+    return Math.max(0, width - 52);
+  };
+
+  const updateDrag = (clientX: number) => {
+    const rect = sliderRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const next = Math.max(0, Math.min(getSliderMax(), clientX - rect.left - 24));
+    setDragX(next);
+  };
+
+  const handleSliderPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (busy) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDragging(true);
+    updateDrag(event.clientX);
+    haptic('light');
+  };
+
+  const handleSliderPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragging || busy) return;
+    updateDrag(event.clientX);
+  };
+
+  const handleSliderPointerUp = async () => {
+    if (!dragging || busy) return;
+    const max = getSliderMax();
+    const completed = max > 0 && dragX >= max * 0.78;
+    setDragging(false);
+    setDragX(0);
+    if (completed) {
+      await handleToggle();
+    }
+  };
+
   const openChat = (username: string) => {
     if (!username) return;
     haptic('light');
@@ -109,21 +149,38 @@ export default function AttendModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-center justify-between rounded-xl border border-border/60 bg-secondary/20 px-3 py-2">
+        <div className="space-y-3 rounded-xl border border-border/60 bg-secondary/20 px-3 py-3">
           <div className="text-sm text-muted-foreground">
             {localCount} {localCount === 1 ? 'человек' : localCount < 5 ? 'человека' : 'человек'}
           </div>
-          <button
-            onClick={handleToggle}
-            disabled={busy}
-            className={`rounded-lg px-3 py-2 text-sm font-semibold transition-all ${
-              localAttending
-                ? 'bg-secondary text-foreground hover:bg-secondary/80'
-                : 'bg-amber-500 text-black hover:bg-amber-400'
-            } disabled:opacity-60`}
+          <div
+            ref={sliderRef}
+            role="button"
+            aria-label={localAttending ? 'Свайпните, чтобы отменить отметку' : 'Свайпните, чтобы отметить Я иду'}
+            aria-disabled={busy}
+            onPointerDown={handleSliderPointerDown}
+            onPointerMove={handleSliderPointerMove}
+            onPointerUp={handleSliderPointerUp}
+            onPointerCancel={() => {
+              setDragging(false);
+              setDragX(0);
+            }}
+            className={`relative h-12 select-none overflow-hidden rounded-full border border-primary/35 bg-primary/10 touch-none ${
+              busy ? 'opacity-60' : 'active:scale-[0.99]'
+            } transition-transform`}
           >
-            {busy ? '...' : localAttending ? 'Я не иду' : '👥 Я иду'}
-          </button>
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-primary/25"
+              style={{ width: `${dragX + 48}px` }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center px-14 text-center text-sm font-semibold text-primary">
+              {busy ? 'Обновляем...' : localAttending ? 'Свайпните, чтобы отменить' : 'Свайпните: Я иду'}
+            </div>
+            <div
+              className="absolute left-1 top-1 h-10 w-10 rounded-full bg-primary shadow-lg shadow-primary/30 transition-transform"
+              style={{ transform: `translateX(${dragX}px)` }}
+            />
+          </div>
         </div>
 
         <div className="max-h-[320px] overflow-y-auto space-y-2 pr-1">

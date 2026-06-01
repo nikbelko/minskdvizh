@@ -139,7 +139,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
   return (
     <>
     <div
-      className={`glass-card border-l-4 ${cat.borderClass} p-4 transition-all duration-200 group/card relative active:scale-[0.995] active:border-l-primary sm:hover:border-l-primary ${cinemaCount > 1 ? 'cursor-pointer' : ''}`}
+      className={`glass-card border-l-4 ${cat.borderClass} select-none p-4 transition-all duration-200 group/card relative active:scale-[0.995] active:border-l-primary sm:hover:border-l-primary ${cinemaCount > 1 ? 'cursor-pointer' : ''}`}
       onClick={cinemaCount > 1 && !showTimes ? () => { haptic('light'); setShowTimes(true); } : undefined}
     >
 
@@ -161,7 +161,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
       {/* Весь контент с отступом справа — не перекрывается с absolute иконками */}
       <div className="pr-10">
 
-      <h4 className="text-foreground font-body font-bold text-base transition-colors mb-0.5 sm:group-hover/card:text-primary">
+      <h4 className="text-foreground font-body font-bold text-base transition-colors mb-0.5 group-active/card:text-primary sm:group-hover/card:text-primary">
         {group.title}
       </h4>
 

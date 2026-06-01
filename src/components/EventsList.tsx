@@ -60,7 +60,7 @@ const FlashBanner = ({ query, onSubscribe, onDismiss, loading, alreadySubscribed
         <button
           onClick={onSubscribe}
           disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-body font-semibold text-black transition-all hover:opacity-90 active:scale-95 disabled:opacity-60"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-body font-semibold text-black transition-all active:scale-95 active:opacity-90 disabled:opacity-60 sm:hover:opacity-90"
           style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)' }}
         >
           {loading ? (
@@ -73,7 +73,7 @@ const FlashBanner = ({ query, onSubscribe, onDismiss, loading, alreadySubscribed
       )}
       <button
         onClick={onDismiss}
-        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+        className="p-1.5 rounded-lg text-muted-foreground transition-all active:scale-95 active:text-foreground active:bg-secondary/50 sm:hover:text-foreground sm:hover:bg-secondary/50"
       >
         <X className="h-3.5 w-3.5" />
       </button>
@@ -258,7 +258,7 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
               {debouncedSearch.trim() && onSearchClear && (
                 <button
                   onClick={() => { onSearchClear(); haptic('selection'); }}
-                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-body border border-border/50 rounded-md px-1.5 py-0.5"
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground transition-all active:scale-95 active:text-foreground font-body border border-border/50 rounded-md px-1.5 py-0.5 sm:hover:text-foreground"
                   title="Очистить поиск"
                 >
                   «{debouncedSearch}» <X className="h-3 w-3" />
@@ -267,7 +267,7 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
               {calendarDate && onCalendarClear && (
                 <button
                   onClick={() => { onCalendarClear(); haptic('selection'); }}
-                  className="flex items-center gap-1.5 text-xs text-accent font-body font-medium border border-accent/30 rounded-md px-1.5 py-0.5 hover:border-accent/60 transition-colors"
+                  className="flex items-center gap-1.5 text-xs text-accent font-body font-medium border border-accent/30 rounded-md px-1.5 py-0.5 transition-all active:scale-95 active:border-accent/60 sm:hover:border-accent/60"
                   title="Сбросить дату"
                 >
                   {calendarDate.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })}
@@ -297,7 +297,7 @@ const EventsList = ({ activeCategory, onCategoryChange, quickFilter, searchQuery
             <p className="text-foreground font-body font-semibold mb-3">Не удалось загрузить события</p>
             <button
               onClick={() => refetch()}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-body font-medium hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-body font-medium transition-all active:scale-[0.98] active:bg-primary/90 sm:hover:bg-primary/90"
             >
               <RefreshCw className="h-4 w-4" />
               Попробовать снова

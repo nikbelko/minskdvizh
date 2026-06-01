@@ -35,6 +35,7 @@ export default function AttendModal({
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
+  const dragStartRef = useRef({ clientX: 0, dragX: 0 });
 
   useEffect(() => setLocalCount(attendeeCount), [attendeeCount]);
   useEffect(() => setLocalAttending(currentUserAttending), [currentUserAttending]);
@@ -96,13 +97,14 @@ export default function AttendModal({
 
   const getSliderMax = () => {
     const width = sliderRef.current?.getBoundingClientRect().width ?? 0;
-    return Math.max(0, width - 52);
+    return Math.max(0, width - 48);
   };
 
   const updateDrag = (clientX: number) => {
-    const rect = sliderRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const next = Math.max(0, Math.min(getSliderMax(), clientX - rect.left - 24));
+    const next = Math.max(0, Math.min(
+      getSliderMax(),
+      dragStartRef.current.dragX + clientX - dragStartRef.current.clientX,
+    ));
     setDragX(next);
   };
 
@@ -110,7 +112,7 @@ export default function AttendModal({
     if (busy) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragging(true);
-    updateDrag(event.clientX);
+    dragStartRef.current = { clientX: event.clientX, dragX };
     haptic('light');
   };
 
@@ -170,16 +172,20 @@ export default function AttendModal({
             } transition-transform`}
           >
             <div
-              className="absolute inset-y-0 left-0 rounded-full bg-primary/25"
-              style={{ width: `${dragX + 48}px` }}
+              className="absolute inset-y-0 left-0 rounded-full bg-primary/25 transition-[width]"
+              style={{ width: `${Math.max(48, dragX + 48)}px` }}
             />
-            <div className="absolute inset-0 flex items-center justify-center px-14 text-center text-sm font-semibold text-primary">
-              {busy ? 'Обновляем...' : localAttending ? 'Свайпните, чтобы отменить' : 'Свайпните: Я иду'}
+            <div className="absolute inset-0 flex items-center justify-center px-14 text-center text-sm font-semibold text-primary/90">
+              {busy ? 'Обновляем...' : localAttending ? 'Я не иду' : 'Я иду'}
             </div>
             <div
-              className="absolute left-1 top-1 h-10 w-10 rounded-full bg-primary shadow-lg shadow-primary/30 transition-transform"
+              className={`absolute left-1 top-1 flex h-10 w-10 items-center justify-center rounded-full bg-primary shadow-lg shadow-primary/30 ${
+                dragging ? '' : 'transition-transform duration-200 ease-out'
+              }`}
               style={{ transform: `translateX(${dragX}px)` }}
-            />
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground/90" />
+            </div>
           </div>
         </div>
 
@@ -207,7 +213,7 @@ export default function AttendModal({
                 <button
                   onClick={() => openChat(attendee.telegram_username)}
                   disabled={!attendee.telegram_username}
-                  className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-primary hover:bg-primary/10 disabled:text-muted-foreground disabled:hover:bg-transparent"
+                  className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-primary transition-all active:scale-95 active:bg-primary/10 disabled:text-muted-foreground disabled:active:bg-transparent sm:hover:bg-primary/10"
                 >
                   <MessageCircle className="h-3.5 w-3.5" />
                   Написать

@@ -191,7 +191,7 @@ export default function TicketBoardModal({
             <button
               onClick={() => openChat(post.telegram_username)}
               disabled={!post.telegram_username || post.user_id === tgUser?.id}
-              className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-primary hover:bg-primary/10 disabled:text-muted-foreground disabled:hover:bg-transparent"
+              className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-primary transition-all active:scale-95 active:bg-primary/10 disabled:text-muted-foreground disabled:active:bg-transparent sm:hover:bg-primary/10"
             >
               <MessageCircle className="h-3.5 w-3.5" />
               Написать
@@ -228,7 +228,7 @@ export default function TicketBoardModal({
                 className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-all ${
                   postType === type
                     ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary/40 text-muted-foreground hover:bg-secondary/70 hover:text-foreground'
+                    : 'bg-secondary/40 text-muted-foreground active:scale-[0.98] active:bg-secondary/70 active:text-foreground sm:hover:bg-secondary/70 sm:hover:text-foreground'
                 }`}
               >
                 {type === 'sell' ? 'Продаю' : 'Ищу'}
@@ -268,7 +268,7 @@ export default function TicketBoardModal({
             <button
               onClick={handleSave}
               disabled={busy}
-              className="flex-1 rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-black hover:bg-amber-400 disabled:opacity-60"
+              className="flex-1 rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-black transition-all active:scale-[0.98] active:bg-amber-400 disabled:opacity-60 sm:hover:bg-amber-400"
             >
               {busy ? '...' : myPost ? 'Обновить' : 'Опубликовать'}
             </button>
@@ -276,7 +276,7 @@ export default function TicketBoardModal({
               <button
                 onClick={handleRemove}
                 disabled={busy}
-                className="rounded-lg bg-secondary px-3 py-2 text-sm font-semibold text-foreground hover:bg-secondary/80 disabled:opacity-60"
+                className="rounded-lg bg-secondary px-3 py-2 text-sm font-semibold text-foreground transition-all active:scale-[0.98] active:bg-secondary/80 disabled:opacity-60 sm:hover:bg-secondary/80"
               >
                 Снять
               </button>

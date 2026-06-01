@@ -53,6 +53,13 @@ const CalendarView = ({ selectedDate, onSelectDate, onClose, embedded = false }:
   const monthEnd = endOfMonth(currentMonth);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
   const startDayOfWeek = (getDay(monthStart) + 6) % 7;
+  const calendarCells = [
+    ...Array.from({ length: startDayOfWeek }, (_, i) => ({ type: 'empty' as const, key: `empty-start-${i}` })),
+    ...days.map((day) => ({ type: 'day' as const, key: day.toISOString(), day })),
+  ];
+  while (calendarCells.length < 42) {
+    calendarCells.push({ type: 'empty', key: `empty-end-${calendarCells.length}` });
+  }
 
   const hasEvent = (day: Date) => eventDatesSet.has(format(day, 'yyyy-MM-dd'));
   const today = startOfDay(new Date());
@@ -61,13 +68,13 @@ const CalendarView = ({ selectedDate, onSelectDate, onClose, embedded = false }:
   const calendarContent = (
     <>
       <div className="flex items-center justify-between mb-4">
-        <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+        <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-all active:scale-95 active:bg-secondary/50 active:text-foreground sm:hover:text-foreground sm:hover:bg-secondary/50">
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <h3 className="text-base font-display font-bold capitalize">
+        <h3 className="min-w-[132px] text-center text-base font-display font-bold capitalize">
           {format(currentMonth, 'LLLL yyyy', { locale: ru })}
         </h3>
-        <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+        <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-all active:scale-95 active:bg-secondary/50 active:text-foreground sm:hover:text-foreground sm:hover:bg-secondary/50">
           <ChevronRight className="h-5 w-5" />
         </button>
       </div>
@@ -78,11 +85,12 @@ const CalendarView = ({ selectedDate, onSelectDate, onClose, embedded = false }:
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-0.5">
-        {Array.from({ length: startDayOfWeek }).map((_, i) => (
-          <div key={`empty-${i}`} />
-        ))}
-        {days.map((day) => {
+      <div className="grid grid-cols-7 gap-0.5 grid-rows-6">
+        {calendarCells.map((cell) => {
+          if (cell.type === 'empty') {
+            return <div key={cell.key} className="min-h-10" />;
+          }
+          const day = cell.day;
           const isToday = isDateToday(day);
           const isSelected = selectedDate && isSameDay(day, selectedDate);
           const hasEvents = hasEvent(day);
@@ -92,11 +100,11 @@ const CalendarView = ({ selectedDate, onSelectDate, onClose, embedded = false }:
               key={day.toISOString()}
               onClick={() => active ? (onSelectDate(day), onClose?.()) : undefined}
               disabled={!active}
-              className={`relative flex flex-col items-center justify-center py-2 rounded-lg text-sm font-body transition-all ${
+              className={`relative flex min-h-10 flex-col items-center justify-center rounded-lg text-sm font-body transition-all ${
                 isSelected ? 'bg-primary text-primary-foreground'
                   : isToday && active ? 'ring-2 ring-accent text-accent font-bold'
                   : isToday ? 'ring-2 ring-accent/30 text-muted-foreground'
-                  : active ? 'text-foreground hover:bg-secondary/50 cursor-pointer'
+                  : active ? 'text-foreground active:scale-95 active:bg-secondary/50 sm:hover:bg-secondary/50 cursor-pointer'
                   : 'text-muted-foreground/30 cursor-default'
               }`}
             >
@@ -123,7 +131,7 @@ const CalendarView = ({ selectedDate, onSelectDate, onClose, embedded = false }:
             <button
               onClick={() => onSelectDate(null)}
               title="Сбросить выбор"
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+              className="p-1.5 rounded-lg text-muted-foreground transition-all active:scale-95 active:text-destructive active:bg-destructive/10 sm:hover:text-destructive sm:hover:bg-destructive/10"
             >
               <X className="h-4 w-4" />
             </button>

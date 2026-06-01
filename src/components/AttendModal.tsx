@@ -37,9 +37,21 @@ export default function AttendModal({
   const sliderRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef({ clientX: 0, dragX: 0 });
 
+  function getSliderMax() {
+    const width = sliderRef.current?.getBoundingClientRect().width ?? 0;
+    return Math.max(0, width - 92);
+  }
+
+  function getRestingX() {
+    return localAttending ? getSliderMax() : 0;
+  }
+
   useEffect(() => setLocalCount(attendeeCount), [attendeeCount]);
   useEffect(() => setLocalAttending(currentUserAttending), [currentUserAttending]);
-  useEffect(() => setDragX(0), [localAttending, open]);
+  useEffect(() => {
+    if (!open) return;
+    requestAnimationFrame(() => setDragX(localAttending ? getSliderMax() : 0));
+  }, [localAttending, open]);
 
   const query = useQuery({
     queryKey: ['event-attendees', eventKey, tgUser?.id],
@@ -95,11 +107,6 @@ export default function AttendModal({
     }
   };
 
-  const getSliderMax = () => {
-    const width = sliderRef.current?.getBoundingClientRect().width ?? 0;
-    return Math.max(0, width - 48);
-  };
-
   const updateDrag = (clientX: number) => {
     const next = Math.max(0, Math.min(
       getSliderMax(),
@@ -112,7 +119,9 @@ export default function AttendModal({
     if (busy) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragging(true);
-    dragStartRef.current = { clientX: event.clientX, dragX };
+    const restingX = getRestingX();
+    setDragX(restingX);
+    dragStartRef.current = { clientX: event.clientX, dragX: restingX };
     haptic('light');
   };
 
@@ -124,11 +133,14 @@ export default function AttendModal({
   const handleSliderPointerUp = async () => {
     if (!dragging || busy) return;
     const max = getSliderMax();
-    const completed = max > 0 && dragX >= max * 0.78;
+    const completed = max > 0 && (
+      localAttending ? dragX <= max * 0.22 : dragX >= max * 0.78
+    );
     setDragging(false);
-    setDragX(0);
     if (completed) {
       await handleToggle();
+    } else {
+      setDragX(getRestingX());
     }
   };
 
@@ -165,26 +177,30 @@ export default function AttendModal({
             onPointerUp={handleSliderPointerUp}
             onPointerCancel={() => {
               setDragging(false);
-              setDragX(0);
+              setDragX(getRestingX());
             }}
-            className={`relative h-12 select-none overflow-hidden rounded-full border border-primary/35 bg-primary/10 touch-none ${
+            className={`relative h-12 select-none overflow-hidden rounded-xl border border-primary/35 bg-primary/10 touch-none ${
               busy ? 'opacity-60' : 'active:scale-[0.99]'
             } transition-transform`}
           >
             <div
-              className="absolute inset-y-0 left-0 rounded-full bg-primary/25 transition-[width]"
-              style={{ width: `${Math.max(48, dragX + 48)}px` }}
+              className={`absolute inset-y-0 rounded-xl bg-primary/25 ${
+                dragging ? '' : 'transition-all duration-200 ease-out'
+              }`}
+              style={localAttending
+                ? { left: `${dragX + 4}px`, right: '4px' }
+                : { left: '4px', width: `${Math.max(88, dragX + 88)}px` }}
             />
-            <div className="absolute inset-0 flex items-center justify-center px-14 text-center text-sm font-semibold text-primary/90">
+            <div className="absolute inset-0 flex items-center justify-center px-24 text-center text-sm font-semibold text-primary/90">
               {busy ? 'Обновляем...' : localAttending ? 'Я не иду' : 'Я иду'}
             </div>
             <div
-              className={`absolute left-1 top-1 flex h-10 w-10 items-center justify-center rounded-full bg-primary shadow-lg shadow-primary/30 ${
+              className={`absolute left-1 top-1 flex h-10 w-[88px] items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-lg shadow-primary/30 ${
                 dragging ? '' : 'transition-transform duration-200 ease-out'
               }`}
-              style={{ transform: `translateX(${dragX}px)` }}
+              style={{ transform: `translateX(${dragging ? dragX : getRestingX()}px)` }}
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground/90" />
+              <Users className="h-4 w-4" />
             </div>
           </div>
         </div>

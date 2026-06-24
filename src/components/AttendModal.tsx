@@ -46,12 +46,19 @@ export default function AttendModal({
     return localAttending ? getSliderMax() : 0;
   }
 
-  useEffect(() => setLocalCount(attendeeCount), [attendeeCount]);
-  useEffect(() => setLocalAttending(currentUserAttending), [currentUserAttending]);
   useEffect(() => {
-    if (!open) return;
-    requestAnimationFrame(() => setDragX(localAttending ? getSliderMax() : 0));
-  }, [localAttending, open]);
+    if (dragging || busy) return;
+    setLocalCount(attendeeCount);
+  }, [attendeeCount]);
+  useEffect(() => {
+    if (dragging || busy) return;
+    setLocalAttending(currentUserAttending);
+  }, [currentUserAttending]);
+  useEffect(() => {
+    if (!open || dragging || busy) return;
+    const frame = requestAnimationFrame(() => setDragX(localAttending ? getSliderMax() : 0));
+    return () => cancelAnimationFrame(frame);
+  }, [localAttending, open, dragging, busy]);
 
   const query = useQuery({
     queryKey: ['event-attendees', eventKey, tgUser?.id],
@@ -61,7 +68,7 @@ export default function AttendModal({
   });
 
   useEffect(() => {
-    if (!query.data) return;
+    if (!query.data || dragging || busy) return;
     setLocalCount(query.data.count);
     setLocalAttending(query.data.current_user_attending);
     setLocalAttendees(query.data.attendees);
@@ -76,15 +83,15 @@ export default function AttendModal({
     onStateChange({ attendeeCount: count, currentUserAttending: attending });
   };
 
-  const handleToggle = async () => {
+  const handleToggle = async (fromAttending = localAttending) => {
     if (!tgUser?.id) {
       toast.error('Отметка доступна только в Telegram Mini App');
-      return;
+      return false;
     }
     setBusy(true);
     haptic('medium');
     try {
-      const response = localAttending
+      const response = fromAttending
         ? await removeAttendee(eventId, {
             eventKey,
             userId: tgUser.id,
@@ -99,9 +106,11 @@ export default function AttendModal({
           });
 
       syncState(response.count, response.current_user_attending, response.attendees);
-      toast.success(localAttending ? 'Отметка отменена' : 'Вы отмечены как идущий');
+      toast.success(fromAttending ? 'Отметка отменена' : 'Вы отмечены как идущий');
+      return true;
     } catch {
       toast.error('Не удалось обновить отметку');
+      return false;
     } finally {
       setBusy(false);
     }
@@ -136,9 +145,17 @@ export default function AttendModal({
     const completed = max > 0 && (
       localAttending ? dragX <= max * 0.22 : dragX >= max * 0.78
     );
+    const fromAttending = localAttending;
+    const nextAttending = !fromAttending;
     setDragging(false);
     if (completed) {
-      await handleToggle();
+      setLocalAttending(nextAttending);
+      setDragX(nextAttending ? max : 0);
+      const ok = await handleToggle(fromAttending);
+      if (!ok) {
+        setLocalAttending(fromAttending);
+        setDragX(fromAttending ? max : 0);
+      }
     } else {
       setDragX(getRestingX());
     }

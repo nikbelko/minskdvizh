@@ -15,6 +15,7 @@ interface EventGroupCardProps {
 const EventGroupCard = ({ group }: EventGroupCardProps) => {
   const cat = getCategoryBySlug(group.category);
   const cinemaCount = group.cinemaShowtimes?.length ?? 0;
+  const ratingKey = group.ratingKey ?? group.key;
   const [showTimes, setShowTimes] = useState(cinemaCount <= 1);
   const [attendeesOpen, setAttendeesOpen] = useState(false);
   const [ticketsOpen, setTicketsOpen] = useState(false);
@@ -322,24 +323,6 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
           )}
         </button>
         <button
-          onClick={handleRatingOpen}
-          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition-all ${
-            currentUserRating !== null && currentUserRating !== undefined
-              ? 'bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/30 active:scale-95 active:bg-amber-500/25 sm:hover:bg-amber-500/25'
-              : 'bg-secondary/60 text-muted-foreground active:scale-95 active:bg-secondary active:text-foreground sm:hover:bg-secondary sm:hover:text-foreground'
-          }`}
-          title={currentUserRating ? `Ваша оценка: ${currentUserRating}/5` : 'Оценить событие'}
-        >
-          <Star className="h-3.5 w-3.5" />
-          {ratingVotes > 0 ? (
-            <span className="text-[11px] leading-none">
-              {ratingAverage.toFixed(1)}
-            </span>
-          ) : (
-            <span className="text-[11px] leading-none">Оценить</span>
-          )}
-        </button>
-        <button
           onClick={handleTicketsOpen}
           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition-all ${
             currentUserSelling || currentUserBuying
@@ -353,6 +336,24 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
             <span className="text-[11px] leading-none">
               {ticketTotalCount}
             </span>
+          )}
+        </button>
+        <button
+          onClick={handleRatingOpen}
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition-all ${
+            currentUserRating !== null && currentUserRating !== undefined
+              ? 'bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/30 active:scale-95 active:bg-amber-500/25 sm:hover:bg-amber-500/25'
+              : 'bg-secondary/60 text-muted-foreground active:scale-95 active:bg-secondary active:text-foreground sm:hover:bg-secondary sm:hover:text-foreground'
+          }`}
+          title={currentUserRating ? `Ваша оценка: ${currentUserRating}/5` : 'Оценить событие'}
+        >
+          <Star className="h-3.5 w-3.5" />
+          {ratingVotes > 0 ? (
+            <span className="text-[11px] leading-none">
+              {Number(ratingAverage || 0).toFixed(1)}
+            </span>
+          ) : (
+            <span className="text-[11px] leading-none">Оценить</span>
           )}
         </button>
       </div>
@@ -383,7 +384,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
       open={ratingOpen}
       onOpenChange={setRatingOpen}
       eventId={group.primaryEventId}
-      eventKey={group.key}
+      eventKey={ratingKey}
       eventTitle={group.title}
       averageScore={ratingAverage}
       votes={ratingVotes}

@@ -47,7 +47,7 @@ export function useEvents(params: {
       }
 
       const grouped = groupEvents(response.events);
-      const eventKeys = grouped.map((event) => event.key).filter(Boolean);
+      const eventKeys = grouped.map((event) => event.ratingKey ?? event.key).filter(Boolean);
       if (eventKeys.length === 0) {
         return { grouped, total: grouped.length };
       }
@@ -62,9 +62,10 @@ export function useEvents(params: {
         const ticketByKey = new Map(ticketSummary.map((item) => [item.event_key, item]));
         const ratingByKey = new Map(ratingSummary.map((item) => [item.event_key, item]));
         const enriched = grouped.map((event) => {
+          const sharedKey = event.ratingKey ?? event.key;
           const attendance = attendanceByKey.get(event.key);
           const ticket = ticketByKey.get(event.key);
-          const rating = ratingByKey.get(event.key);
+          const rating = ratingByKey.get(sharedKey);
           return {
             ...event,
             attendeeCount: attendance?.count ?? 0,

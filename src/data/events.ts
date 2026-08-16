@@ -24,6 +24,7 @@ export interface EventItem {
 
 export interface GroupedEvent {
   key: string;
+  ratingKey?: string;
   primaryEventId: number;
   title: string;
   category: CategorySlug;
@@ -149,6 +150,7 @@ function groupCinemaEvents(events: EventItem[]): GroupedEvent[] {
       const firstShowtime = earliestTime ? sortTimeValue(earliestTime) : '99:99';
       result.push({
         key: `cinema:${title}:${date}`,
+        ratingKey: `cinema:${title}`,
         primaryEventId: primaryIds[k],
         title,
         category: 'cinema',
@@ -238,6 +240,7 @@ const byTime: Record<string, { dates: string[]; end_time?: string }> = {};
 
     return {
       key: `other:${g.title}:${g.place}`,
+      ratingKey: `other:${g.title}:${g.place}`,
       primaryEventId: g.primaryEventId,
       title: g.title,
       category: g.category as CategorySlug,

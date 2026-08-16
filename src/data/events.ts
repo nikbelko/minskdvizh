@@ -34,6 +34,9 @@ export interface GroupedEvent {
   sourceName?: string;
   attendeeCount?: number;
   currentUserAttending?: boolean;
+  ratingAverage?: number;
+  ratingVotes?: number;
+  currentUserRating?: number | null;
   ticketSellCount?: number;
   ticketBuyCount?: number;
   ticketTotalCount?: number;

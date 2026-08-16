@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchEvents, fetchEventsByFilter, fetchCategoryCounts, fetchCalendarDates, fetchAttendeesSummary, fetchTicketSummary } from '@/services/api';
+import { fetchEvents, fetchEventsByFilter, fetchCategoryCounts, fetchCalendarDates, fetchAttendeesSummary, fetchTicketSummary, fetchRatingSummary } from '@/services/api';
 import { groupEvents } from '@/data/events';
 import type { CategorySlug } from '@/data/events';
 import type { QuickFilter } from '@/components/Hero';
@@ -53,19 +53,25 @@ export function useEvents(params: {
       }
 
       try {
-        const [attendanceSummary, ticketSummary] = await Promise.all([
+        const [attendanceSummary, ticketSummary, ratingSummary] = await Promise.all([
           fetchAttendeesSummary(eventKeys, tgUser?.id),
           fetchTicketSummary(eventKeys, tgUser?.id),
+          fetchRatingSummary(eventKeys, tgUser?.id),
         ]);
         const attendanceByKey = new Map(attendanceSummary.map((item) => [item.event_key, item]));
         const ticketByKey = new Map(ticketSummary.map((item) => [item.event_key, item]));
+        const ratingByKey = new Map(ratingSummary.map((item) => [item.event_key, item]));
         const enriched = grouped.map((event) => {
           const attendance = attendanceByKey.get(event.key);
           const ticket = ticketByKey.get(event.key);
+          const rating = ratingByKey.get(event.key);
           return {
             ...event,
             attendeeCount: attendance?.count ?? 0,
             currentUserAttending: attendance?.current_user_attending ?? false,
+            ratingAverage: rating?.average_score ?? 0,
+            ratingVotes: rating?.votes ?? 0,
+            currentUserRating: rating?.current_user_score ?? null,
             ticketSellCount: ticket?.sell_count ?? 0,
             ticketBuyCount: ticket?.buy_count ?? 0,
             ticketTotalCount: ticket?.total_count ?? 0,

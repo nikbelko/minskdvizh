@@ -78,6 +78,13 @@ export interface EventTicketSummaryItem {
   current_user_buy: boolean;
 }
 
+export interface EventRatingSummaryItem {
+  event_key: string;
+  average_score: number;
+  votes: number;
+  current_user_score?: number | null;
+}
+
 export interface UserAttendingEvent {
   event_key: string;
   id: number;
@@ -415,6 +422,41 @@ export async function fetchTicketSummary(eventKeys: string[], userId?: number): 
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   const data = await res.json();
   return data.items ?? [];
+}
+
+export async function fetchRatingSummary(eventKeys: string[], userId?: number): Promise<EventRatingSummaryItem[]> {
+  if (eventKeys.length === 0) return [];
+  const res = await fetch(`${API_BASE}/api/events/ratings/summary`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ event_keys: eventKeys, user_id: userId ?? null }),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  const data = await res.json();
+  return data.items ?? [];
+}
+
+export async function upsertEventRating(eventId: number, payload: {
+  eventKey: string;
+  userId: number;
+  score: number;
+  username?: string;
+  firstName?: string;
+}): Promise<{ event_key: string; average_score: number; votes: number; current_user_score?: number | null }> {
+  const res = await fetch(`${API_BASE}/api/events/${eventId}/rating`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      event_id: eventId,
+      event_key: payload.eventKey,
+      user_id: payload.userId,
+      username: payload.username ?? '',
+      first_name: payload.firstName ?? '',
+      score: payload.score,
+    }),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
 }
 
 export async function upsertTicketPost(eventId: number, payload: {

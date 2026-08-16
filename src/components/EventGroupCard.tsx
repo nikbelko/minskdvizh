@@ -1,11 +1,12 @@
 import { type GroupedEvent, getCategoryBySlug } from '@/data/events';
-import { ArrowRight, Share2, ChevronDown, ChevronUp, MapPin, Clock, Banknote, CalendarDays, CalendarPlus, Users, Ticket } from 'lucide-react';
+import { ArrowRight, Share2, ChevronDown, ChevronUp, MapPin, Clock, Banknote, CalendarDays, CalendarPlus, Users, Ticket, Star } from 'lucide-react';
 import CategoryIcon from './CategoryIcon';
 import { toast } from 'sonner';
 import { getTelegramUser, haptic, openLink } from '@/lib/telegram';
 import { useEffect, useState } from 'react';
 import AttendModal from './AttendModal';
 import TicketBoardModal from './TicketBoardModal';
+import RatingModal from './RatingModal';
 
 interface EventGroupCardProps {
   group: GroupedEvent;
@@ -17,8 +18,12 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
   const [showTimes, setShowTimes] = useState(cinemaCount <= 1);
   const [attendeesOpen, setAttendeesOpen] = useState(false);
   const [ticketsOpen, setTicketsOpen] = useState(false);
+  const [ratingOpen, setRatingOpen] = useState(false);
   const [attendeeCount, setAttendeeCount] = useState(group.attendeeCount ?? 0);
   const [currentUserAttending, setCurrentUserAttending] = useState(group.currentUserAttending ?? false);
+  const [ratingAverage, setRatingAverage] = useState(group.ratingAverage ?? 0);
+  const [ratingVotes, setRatingVotes] = useState(group.ratingVotes ?? 0);
+  const [currentUserRating, setCurrentUserRating] = useState<number | null>(group.currentUserRating ?? null);
   const [ticketSellCount, setTicketSellCount] = useState(group.ticketSellCount ?? 0);
   const [ticketBuyCount, setTicketBuyCount] = useState(group.ticketBuyCount ?? 0);
   const [ticketTotalCount, setTicketTotalCount] = useState(group.ticketTotalCount ?? 0);
@@ -27,6 +32,9 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
 
   useEffect(() => setAttendeeCount(group.attendeeCount ?? 0), [group.attendeeCount]);
   useEffect(() => setCurrentUserAttending(group.currentUserAttending ?? false), [group.currentUserAttending]);
+  useEffect(() => setRatingAverage(group.ratingAverage ?? 0), [group.ratingAverage]);
+  useEffect(() => setRatingVotes(group.ratingVotes ?? 0), [group.ratingVotes]);
+  useEffect(() => setCurrentUserRating(group.currentUserRating ?? null), [group.currentUserRating]);
   useEffect(() => setTicketSellCount(group.ticketSellCount ?? 0), [group.ticketSellCount]);
   useEffect(() => setTicketBuyCount(group.ticketBuyCount ?? 0), [group.ticketBuyCount]);
   useEffect(() => setTicketTotalCount(group.ticketTotalCount ?? 0), [group.ticketTotalCount]);
@@ -134,6 +142,17 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
     }
     haptic('selection');
     setTicketsOpen(true);
+  };
+
+  const handleRatingOpen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const tgUser = getTelegramUser();
+    if (!tgUser?.id) {
+      toast.error('Функция доступна только в Telegram Mini App');
+      return;
+    }
+    haptic('selection');
+    setRatingOpen(true);
   };
 
   return (
@@ -303,6 +322,24 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
           )}
         </button>
         <button
+          onClick={handleRatingOpen}
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition-all ${
+            currentUserRating !== null && currentUserRating !== undefined
+              ? 'bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/30 active:scale-95 active:bg-amber-500/25 sm:hover:bg-amber-500/25'
+              : 'bg-secondary/60 text-muted-foreground active:scale-95 active:bg-secondary active:text-foreground sm:hover:bg-secondary sm:hover:text-foreground'
+          }`}
+          title={currentUserRating ? `Ваша оценка: ${currentUserRating}/5` : 'Оценить событие'}
+        >
+          <Star className="h-3.5 w-3.5" />
+          {ratingVotes > 0 ? (
+            <span className="text-[11px] leading-none">
+              {ratingAverage.toFixed(1)}
+            </span>
+          ) : (
+            <span className="text-[11px] leading-none">Оценить</span>
+          )}
+        </button>
+        <button
           onClick={handleTicketsOpen}
           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition-all ${
             currentUserSelling || currentUserBuying
@@ -340,6 +377,21 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
       onStateChange={({ attendeeCount: nextCount, currentUserAttending: nextAttending }) => {
         setAttendeeCount(nextCount);
         setCurrentUserAttending(nextAttending);
+      }}
+    />
+    <RatingModal
+      open={ratingOpen}
+      onOpenChange={setRatingOpen}
+      eventId={group.primaryEventId}
+      eventKey={group.key}
+      eventTitle={group.title}
+      averageScore={ratingAverage}
+      votes={ratingVotes}
+      currentUserRating={currentUserRating}
+      onStateChange={({ averageScore: nextAverage, votes: nextVotes, currentUserRating: nextRating }) => {
+        setRatingAverage(nextAverage);
+        setRatingVotes(nextVotes);
+        setCurrentUserRating(nextRating);
       }}
     />
     <TicketBoardModal

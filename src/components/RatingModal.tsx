@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { fetchRatingSummary, upsertEventRating, type EventRatingSummaryItem } from '@/services/api';
+import { fetchRatingSummary, removeEventRating, upsertEventRating, type EventRatingSummaryItem } from '@/services/api';
 import { getTelegramUser, haptic } from '@/lib/telegram';
 import { Star } from 'lucide-react';
 import { toast } from 'sonner';
@@ -115,6 +115,30 @@ export default function RatingModal({
     }
   };
 
+  const removeRating = async () => {
+    if (!tgUser?.id) {
+      toast.error('Функция доступна только в Telegram Mini App');
+      return;
+    }
+    setBusy(true);
+    haptic('selection');
+    try {
+      const next = await removeEventRating(eventId, {
+        eventKey,
+        userId: tgUser.id,
+        username: tgUser.username,
+        firstName: tgUser.first_name,
+      });
+      setSelected(null);
+      sync(next);
+      toast.success('Оценка удалена');
+    } catch {
+      toast.error('Не удалось удалить оценку');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const scoreText = data.votes > 0
     ? `${data.average_score.toFixed(1)} ★ • ${data.votes} оцен${data.votes % 10 === 1 && data.votes % 100 !== 11 ? 'ка' : data.votes % 10 >= 2 && data.votes % 10 <= 4 && !(data.votes % 100 >= 12 && data.votes % 100 <= 14) ? 'ки' : 'ок'}`
     : 'Пока нет оценок';
@@ -159,6 +183,17 @@ export default function RatingModal({
               ? `Ваша оценка: ${selected}/5`
               : 'Нажмите на звёзды, чтобы оценить событие'}
           </div>
+
+          {selected !== null && (
+            <button
+              type="button"
+              onClick={removeRating}
+              disabled={busy}
+              className="w-full rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Удалить оценку
+            </button>
+          )}
         </div>
       </DialogContent>
     </Dialog>

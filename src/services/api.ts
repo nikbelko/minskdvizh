@@ -459,6 +459,22 @@ export async function upsertEventRating(eventId: number, payload: {
   return res.json();
 }
 
+export async function removeEventRating(eventId: number, payload: {
+  eventKey: string;
+  userId: number;
+  username?: string;
+  firstName?: string;
+}): Promise<{ event_key: string; average_score: number; votes: number; current_user_score?: number | null }> {
+  const url = new URL(`/api/events/${eventId}/rating`, API_BASE);
+  url.searchParams.set('user_id', String(payload.userId));
+  url.searchParams.set('event_key', payload.eventKey);
+  if (payload.username) url.searchParams.set('username', payload.username);
+  if (payload.firstName) url.searchParams.set('first_name', payload.firstName);
+  const res = await fetch(url.toString(), { method: 'DELETE' });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
 export async function upsertTicketPost(eventId: number, payload: {
   eventKey: string;
   userId: number;

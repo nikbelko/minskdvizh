@@ -9,7 +9,7 @@ import {
   type TicketPost,
 } from '@/services/api';
 import { getTelegramUser, haptic, openLink } from '@/lib/telegram';
-import { MessageCircle, Ticket } from 'lucide-react';
+import { AlertCircle, MessageCircle, Ticket } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface TicketBoardModalProps {
@@ -81,6 +81,8 @@ export default function TicketBoardModal({
     const source = postType === 'sell' ? data.sell_posts : data.buy_posts;
     return source.find((item) => item.user_id === tgUser?.id) ?? null;
   }, [data.buy_posts, data.sell_posts, postType, tgUser?.id]);
+
+  const privacyHint = '⚠️ Чтобы другие могли написать вам в Telegram, проверьте: Настройки → Конфиденциальность → Сообщения → Разрешите сообщения от всех или контактов.';
 
   useEffect(() => {
     if (!myPost) {
@@ -187,6 +189,12 @@ export default function TicketBoardModal({
                 {post.price_text ? ` · ${post.price_text}` : ''}
               </div>
               {post.note && <div className="mt-0.5 text-xs text-muted-foreground truncate">{post.note}</div>}
+              {post.user_id === tgUser?.id && post.telegram_username && (
+                <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-200">
+                  <AlertCircle className="h-3 w-3" />
+                  Проверьте настройки сообщений
+                </div>
+              )}
             </div>
             <button
               onClick={() => openChat(post.telegram_username)}
@@ -205,12 +213,12 @@ export default function TicketBoardModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md rounded-2xl font-body">
-        <DialogHeader>
-          <DialogTitle className="font-display text-lg flex items-center gap-2">
+        <DialogHeader className="min-w-0">
+          <DialogTitle className="font-display flex items-center gap-2 text-lg">
             <Ticket className="h-5 w-5 text-amber-500" />
             Билеты и инвайты
           </DialogTitle>
-          <DialogDescription className="line-clamp-2">{eventTitle}</DialogDescription>
+          <DialogDescription className="line-clamp-2 break-words pr-1">{eventTitle}</DialogDescription>
         </DialogHeader>
 
         <div className="rounded-xl border border-border/60 bg-secondary/20 px-3 py-2 text-sm text-muted-foreground">
@@ -220,6 +228,13 @@ export default function TicketBoardModal({
         </div>
 
         <div className="space-y-3 rounded-xl border border-border/50 bg-background/50 p-3">
+          {myPost && (
+            <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+              <span>{privacyHint}</span>
+            </div>
+          )}
+
           <div className="flex gap-2">
             {(['sell', 'buy'] as PostType[]).map((type) => (
               <button

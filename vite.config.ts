@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: '0.0.0.0',
     port: parseInt(process.env.PORT || '3000'),
+    allowedHosts: ['minskdvizh-web.up.railway.app', 'localhost', '127.0.0.1'],
     hmr: {
       overlay: false,
     },

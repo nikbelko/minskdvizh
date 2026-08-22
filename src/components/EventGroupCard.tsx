@@ -135,6 +135,7 @@ const EventGroupCard = ({ group }: EventGroupCardProps) => {
   };
 
   const handleTicketsOpen = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     const tgUser = getTelegramUser();
     if (!tgUser?.id) {

@@ -212,96 +212,104 @@ export default function TicketBoardModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-2xl font-body">
-        <DialogHeader className="min-w-0">
-          <DialogTitle className="font-display flex items-center gap-2 text-lg">
-            <Ticket className="h-5 w-5 text-amber-500" />
-            Билеты и инвайты
-          </DialogTitle>
-          <DialogDescription className="line-clamp-2 break-words pr-1">{eventTitle}</DialogDescription>
-        </DialogHeader>
+      <DialogContent
+        className="max-w-md rounded-2xl font-body"
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
+        <div className="flex max-h-[90vh] min-h-0 flex-col gap-4 overflow-hidden">
+          <DialogHeader className="min-w-0 shrink-0">
+            <DialogTitle className="font-display flex items-center gap-2 text-lg">
+              <Ticket className="h-5 w-5 text-amber-500" />
+              Билеты и инвайты
+            </DialogTitle>
+            <DialogDescription className="line-clamp-2 break-words pr-1">{eventTitle}</DialogDescription>
+          </DialogHeader>
 
-        <div className="rounded-xl border border-border/60 bg-secondary/20 px-3 py-2 text-sm text-muted-foreground">
-          Продают: <span className="text-foreground font-semibold">{data.sell_count}</span>
-          <span className="mx-2">•</span>
-          Ищут: <span className="text-foreground font-semibold">{data.buy_count}</span>
-        </div>
-
-        <div className="space-y-3 rounded-xl border border-border/50 bg-background/50 p-3">
-          {myPost && (
-            <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
-              <span>{privacyHint}</span>
-            </div>
-          )}
-
-          <div className="flex gap-2">
-            {(['sell', 'buy'] as PostType[]).map((type) => (
-              <button
-                key={type}
-                onClick={() => setPostType(type)}
-                className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-all ${
-                  postType === type
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary/40 text-muted-foreground active:scale-[0.98] active:bg-secondary/70 active:text-foreground sm:hover:bg-secondary/70 sm:hover:text-foreground'
-                }`}
-              >
-                {type === 'sell' ? 'Продаю' : 'Ищу'}
-              </button>
-            ))}
+          <div className="rounded-xl border border-border/60 bg-secondary/20 px-3 py-2 text-sm text-muted-foreground shrink-0">
+            Продают: <span className="text-foreground font-semibold">{data.sell_count}</span>
+            <span className="mx-2">•</span>
+            Ищут: <span className="text-foreground font-semibold">{data.buy_count}</span>
           </div>
-          <div className="grid grid-cols-[90px_1fr] gap-2">
-            <input
-              type="number"
-              min={1}
-              max={MAX_TICKETS}
-              value={qty}
-              onChange={(e) => {
-                const next = e.target.value.replace(/[^\d]/g, '');
-                setQty(next);
-              }}
-              onBlur={() => setQty(String(normalizeQty(qty)))}
-              className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-            />
-            <input
-              type="text"
-              value={priceText}
-              onChange={(e) => setPriceText(e.target.value)}
-              placeholder={postType === 'sell' ? 'Цена или "по номиналу"' : 'Ваш бюджет'}
-              className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-            />
-          </div>
-          <textarea
-            rows={2}
-            maxLength={160}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Комментарий: сектор, ряд, обмен, срочно..."
-            className="w-full resize-none rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-          />
-          <div className="flex gap-2">
-            <button
-              onClick={handleSave}
-              disabled={busy}
-              className="flex-1 rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-black transition-all active:scale-[0.98] active:bg-amber-400 disabled:opacity-60 sm:hover:bg-amber-400"
-            >
-              {busy ? '...' : myPost ? 'Обновить' : 'Опубликовать'}
-            </button>
+
+          <div className="space-y-3 rounded-xl border border-border/50 bg-background/50 p-3 shrink-0">
             {myPost && (
-              <button
-                onClick={handleRemove}
-                disabled={busy}
-                className="rounded-lg bg-secondary px-3 py-2 text-sm font-semibold text-foreground transition-all active:scale-[0.98] active:bg-secondary/80 disabled:opacity-60 sm:hover:bg-secondary/80"
-              >
-                Снять
-              </button>
+              <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+                <span>{privacyHint}</span>
+              </div>
             )}
-          </div>
-        </div>
 
-        <div className="max-h-[320px] space-y-4 overflow-y-auto pr-1">
-          {renderPosts('Продают', data.sell_posts, 'Пока никто не продаёт билеты')}
-          {renderPosts('Ищут', data.buy_posts, 'Пока никто не ищет билеты')}
+            <div className="flex gap-2">
+              {(['sell', 'buy'] as PostType[]).map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setPostType(type)}
+                  className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-all ${
+                    postType === type
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary/40 text-muted-foreground active:scale-[0.98] active:bg-secondary/70 active:text-foreground sm:hover:bg-secondary/70 sm:hover:text-foreground'
+                  }`}
+                >
+                  {type === 'sell' ? 'Продаю' : 'Ищу'}
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-[90px_1fr] gap-2">
+              <input
+                type="number"
+                min={1}
+                max={MAX_TICKETS}
+                value={qty}
+                onChange={(e) => {
+                  const next = e.target.value.replace(/[^\d]/g, '');
+                  setQty(next);
+                }}
+                onBlur={() => setQty(String(normalizeQty(qty)))}
+                className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <input
+                type="text"
+                value={priceText}
+                onChange={(e) => setPriceText(e.target.value)}
+                placeholder={postType === 'sell' ? 'Цена или "по номиналу"' : 'Ваш бюджет'}
+                className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+            <textarea
+              rows={2}
+              maxLength={160}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Комментарий: сектор, ряд, обмен, срочно..."
+              className="w-full resize-none rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={busy}
+                className="flex-1 rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-black transition-all active:scale-[0.98] active:bg-amber-400 disabled:opacity-60 sm:hover:bg-amber-400"
+              >
+                {busy ? '...' : myPost ? 'Обновить' : 'Опубликовать'}
+              </button>
+              {myPost && (
+                <button
+                  type="button"
+                  onClick={handleRemove}
+                  disabled={busy}
+                  className="rounded-lg bg-secondary px-3 py-2 text-sm font-semibold text-foreground transition-all active:scale-[0.98] active:bg-secondary/80 disabled:opacity-60 sm:hover:bg-secondary/80"
+                >
+                  Снять
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+            {renderPosts('Продают', data.sell_posts, 'Пока никто не продаёт билеты')}
+            {renderPosts('Ищут', data.buy_posts, 'Пока никто не ищет билеты')}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

@@ -82,7 +82,7 @@ export default function TicketBoardModal({
     return source.find((item) => item.user_id === tgUser?.id) ?? null;
   }, [data.buy_posts, data.sell_posts, postType, tgUser?.id]);
 
-  const privacyHint = '⚠️ Чтобы другие могли написать вам в Telegram, проверьте: Настройки → Конфиденциальность → Сообщения → Разрешите сообщения от всех или контактов.';
+  const privacyHint = '⚠️ Проверить: Настройки → Конфиденциальность → Сообщения → Разрешить сообщения от всех или контактов.';
 
   useEffect(() => {
     if (!myPost) {
@@ -233,9 +233,9 @@ export default function TicketBoardModal({
 
           <div className="space-y-3 rounded-xl border border-border/50 bg-background/50 p-3 shrink-0">
             {myPost && (
-              <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+              <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-[11px] leading-relaxed text-amber-100">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
-                <span>{privacyHint}</span>
+                <span className="break-words">{privacyHint}</span>
               </div>
             )}
 
@@ -306,7 +306,7 @@ export default function TicketBoardModal({
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+          <div className="min-h-0 max-h-[38vh] flex-1 space-y-4 overflow-y-auto pr-1">
             {renderPosts('Продают', data.sell_posts, 'Пока никто не продаёт билеты')}
             {renderPosts('Ищут', data.buy_posts, 'Пока никто не ищет билеты')}
           </div>

@@ -82,7 +82,7 @@ export default function TicketBoardModal({
     return source.find((item) => item.user_id === tgUser?.id) ?? null;
   }, [data.buy_posts, data.sell_posts, postType, tgUser?.id]);
 
-  const privacyHint = '⚠️ Проверить: Настройки → Конфиденциальность → Сообщения → Разрешить сообщения от всех или контактов.';
+  const privacyHint = 'Проверить: Настройки → Конфиденциальность → Сообщения → Разрешить сообщения от всех или контактов.';
 
   useEffect(() => {
     if (!myPost) {
@@ -132,7 +132,16 @@ export default function TicketBoardModal({
         firstName: tgUser.first_name,
       });
       sync(response);
-      toast.success(postType === 'sell' ? 'Объявление о продаже сохранено' : 'Объявление о поиске сохранено');
+      const message = postType === 'sell' ? 'Объявление о продаже сохранено' : 'Объявление о поиске сохранено';
+      toast.success(message, {
+        description: (
+          <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1.5 text-[11px] leading-relaxed text-amber-100">
+            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-300" />
+            <span>{privacyHint}</span>
+          </div>
+        ),
+        duration: 6000,
+      });
     } catch {
       toast.error('Не удалось сохранить объявление');
     } finally {
@@ -232,13 +241,6 @@ export default function TicketBoardModal({
           </div>
 
           <div className="space-y-3 rounded-xl border border-border/50 bg-background/50 p-3 shrink-0">
-            {myPost && (
-              <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-[11px] leading-relaxed text-amber-100">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
-                <span className="break-words">{privacyHint}</span>
-              </div>
-            )}
-
             <div className="flex gap-2">
               {(['sell', 'buy'] as PostType[]).map((type) => (
                 <button

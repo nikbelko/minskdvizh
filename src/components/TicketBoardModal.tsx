@@ -198,12 +198,6 @@ export default function TicketBoardModal({
                 {post.price_text ? ` · ${post.price_text}` : ''}
               </div>
               {post.note && <div className="mt-0.5 text-xs text-muted-foreground truncate">{post.note}</div>}
-              {post.user_id === tgUser?.id && post.telegram_username && (
-                <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-200">
-                  <AlertCircle className="h-3 w-3" />
-                  Проверьте настройки сообщений
-                </div>
-              )}
             </div>
             <button
               onClick={() => openChat(post.telegram_username)}

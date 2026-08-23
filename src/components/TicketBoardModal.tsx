@@ -133,15 +133,19 @@ export default function TicketBoardModal({
       });
       sync(response);
       const message = postType === 'sell' ? 'Объявление о продаже сохранено' : 'Объявление о поиске сохранено';
-      toast.success(message, {
-        description: (
-          <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1.5 text-[11px] leading-relaxed text-amber-100">
-            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-300" />
-            <span>{privacyHint}</span>
-          </div>
-        ),
-        duration: 6000,
-      });
+      if (response.dm_blocked) {
+        toast.warning(message, {
+          description: (
+            <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1.5 text-[11px] leading-relaxed text-amber-100">
+              <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-300" />
+              <span>{privacyHint}</span>
+            </div>
+          ),
+          duration: 7000,
+        });
+      } else {
+        toast.success(message);
+      }
     } catch {
       toast.error('Не удалось сохранить объявление');
     } finally {

@@ -82,7 +82,7 @@ export default function TicketBoardModal({
     return source.find((item) => item.user_id === tgUser?.id) ?? null;
   }, [data.buy_posts, data.sell_posts, postType, tgUser?.id]);
 
-  const privacyHint = 'Проверить: Настройки → Конфиденциальность → Сообщения → Разрешить сообщения от всех или контактов.';
+  const privacyHint = 'Чтобы люди смогли связаться с вами, проверьте настройки Telegram: Конфиденциальность → Сообщения → Все';
 
   useEffect(() => {
     if (!myPost) {
@@ -207,6 +207,7 @@ export default function TicketBoardModal({
               onClick={() => openChat(post.telegram_username)}
               disabled={!post.telegram_username || post.user_id === tgUser?.id}
               className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-primary transition-all active:scale-95 active:bg-primary/10 disabled:text-muted-foreground disabled:active:bg-transparent sm:hover:bg-primary/10"
+              title={post.telegram_username ? 'Написать в Telegram' : 'Нет username'}
             >
               <MessageCircle className="h-3.5 w-3.5" />
               Написать
